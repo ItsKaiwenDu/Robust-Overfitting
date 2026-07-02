@@ -172,7 +172,8 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 * Here $\Omega(\theta)$ is regularization penalty (such as sum of squared weights for L2, or sum of absolute weights for L1), and $\lambda$ is a hyperparameter that controls how strongly penalty is applied.
 * L2 regularization (also called weight decay) is most common form used in deep learning. L1 regularization encourages model to set many weights to exactly zero, producing sparser models.
 * Results: even with optimal value of $\lambda = 5 \times 10^{-3}$, best L2 regularization can achieve is 55.2% robust test error at end of training, which is worse than early stopping's 46.9%.
-* key problem shown in Figure 6 is that there is a narrow window where L2 helps at all. Too little regularization and robust overfitting continues. Too much regularization and model becomes over-regularized, hurting both train and test robust performance without fixing gap between them.
+    * **Note:** Found λ inconsistency where in Section 4.1 reports the best ℓ2 regularization result as 55.2% robust test error, but cites the hyperparameter as $\lambda = 5 \times 10^{-2}$ in the main text and $\lambda = 5 \times 10^{-3}$ in the Figure 6 caption. Same result, two different stated λ values which seems like a typo in one of the two spots.
+* Key problem shown in Figure 6 is that there is a narrow window where L2 helps at all. Too little regularization and robust overfitting continues. Too much regularization and model becomes over-regularized, hurting both train and test robust performance without fixing gap between them.
 * L1 regularization shows same pattern and never matches early stopping either.
 * Conclusion: explicit regularization cannot remove detrimental effects of robust overfitting without also causing over-regularization. It does not substitute for early stopping.
 
@@ -214,6 +215,7 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 | Mixup                   | 49.1%           | 46.3%          | 2.8%       |
 | Semi-supervised         | 47.1%           | 40.2%          | 6.9%       |
 
+* **Note:** Paper's own Table 2 prints Diff for L2 regularization as 55.2, but Final (55.2) minus Best (46.4) is actually **8.8**. The table above uses corrected value of 8.8%. Looks like a copy-paste error instead of actual computed gap.
 * Every method except semi-supervised produces a final model that is worse than early stopping's final model of 46.9%.
 * Every method except semi-supervised produces a best checkpoint that is roughly equal to or worse than early stopping's best checkpoint of 46.7%.
 * Semi-supervised learning achieves best checkpoint of any method at 40.2%, but only when early stopping is also applied. Without early stopping, its variance makes it unreliable.

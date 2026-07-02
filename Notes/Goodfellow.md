@@ -64,7 +64,7 @@ $$\tilde{J}(\theta, x, y) = \alpha J(\theta, x, y) + (1 - \alpha) J(\theta, x + 
 
 * On MNIST with a maxout network, this dropped error rate on adversarial examples from **89.4% down to 17.9%**.
 * Caveat: Even at 17.9%, model's average confidence on its wrong answers remained high at **81.4%**, meaning it still fails confidently, just less often.
-* Bonus result: Adversarial training also improved clean accuracy. Using a larger maxout network (1,600 units per layer instead of 240) trained with both dropout and adversarial training, the authors reached a best-reported **0.782% error rate** on permutation-invariant MNIST. This beats the same architecture trained with dropout alone (0.94% error without adversarial training), but it is statistically indistinguishable from the best existing dropout-based result on this benchmark, a fine-tuned DBM at 0.79% error (Goodfellow et al., 2015). So the accurate takeaway is that adversarial training matched the best known regularizer on this task, not that it clearly surpassed it.
+* Bonus result: Adversarial training also improved clean accuracy. Using a larger maxout network (1,600 units per layer instead of 240) trained with both dropout and adversarial training, the authors reached a best-reported **0.782% error rate**. This beats the same architecture trained without adversarial training (1.14% error, where the extra capacity caused mild overfitting), but it is statistically indistinguishable from the best existing dropout-based result on this benchmark, a fine-tuned DBM at 0.79% error.
 
 ---
 
