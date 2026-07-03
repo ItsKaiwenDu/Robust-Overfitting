@@ -14,12 +14,12 @@
 * **Early Stopping**: A training technique where you stop training at point where model performs best on held-out data, rather than letting it run to full convergence.
 * **Fast Gradient Sign Method (FGSM)**: A simpler, one-step attack that computes gradient of loss and nudges each input value in direction that increases model's error (introduced by Goodfellow et al., 2014).
 * **ImageNet**: A very large image dataset with over a million images across 1,000 categories. It is one of most demanding benchmarks in computer vision.
-* **l-infinity (l∞) Perturbation**: A type of attack budget that limits how much any single pixel in image can change. For CIFAR-10, a common budget is ε = 8/255, which is invisible to human eye.
-* **l2 Perturbation**: A type of attack budget that limits total size of all pixel changes combined, measured as Euclidean distance between original and perturbed image.
+* **$\ell_\infty$ Perturbation**: A type of attack budget that limits how much any single pixel in image can change. For CIFAR-10, a common budget is ε = 8/255, which is invisible to human eye.
+* **$\ell_2$ Perturbation**: A type of attack budget that limits total size of all pixel changes combined, measured as Euclidean distance between original and perturbed image.
 * **Learning Rate Decay**: A training schedule trick where learning rate is reduced at certain points during training (for example, at epoch 100 and 150) to help model converge more precisely.
 * **Mixup**: A data augmentation method that trains on blended pairs of images and their labels, encouraging model to behave linearly between training examples.
 * **Projected Gradient Descent (PGD)**: A multi-step attack method that repeatedly takes small gradient steps to find worst-case adversarial perturbation within a allowed budget. It is generally considered a strong baseline attack for evaluating robustness.
-* **Regularization**: A group of techniques that try to prevent a model from memorizing its training data too precisely. Common examples include L1 and L2 weight penalties and Dropout.
+* **Regularization**: A group of techniques that try to prevent a model from memorizing its training data too precisely. Common examples include $L_1$ and $L_2$ weight penalties and Dropout.
 * **Robust Overfitting**: A specific failure mode in adversarial training where model keeps getting better at defending its training data, but gets worse at defending new, unseen test data longer training continues.
 * **Semi-supervised Learning**: A training approach that uses both a small set of labeled examples and a large set of unlabeled examples to improve model generalization.
 * **SVHN**: Street View House Numbers, a real-world image dataset of digits photographed from house numbers in Google Street View, used as a benchmark for image classification.
@@ -32,33 +32,33 @@
 * In standard deep learning, it is widely observed that training very large models for a very long time does not hurt generalization much. This is sometimes called "double descent" phenomenon.
 * This paper shows that adversarial training breaks that pattern. After a certain point, further training keeps reducing training robust loss, but actually increases test robust error.
 * This mismatch between train and test robust performance is what authors call Robust Overfitting.
-* It appears consistently across SVHN, CIFAR-10, CIFAR-100, and ImageNet, and under both l∞ and l2 perturbation budgets.
+* It appears consistently across SVHN, CIFAR-10, CIFAR-100, and ImageNet, and under both $\ell_\infty$ and $\ell_2$ perturbation budgets.
 
 ---
 
 ### Figure 1: Learning Curves
 
-* key chart in this paper shows four curves plotted across 200 training epochs on CIFAR-10.
+* Key chart in this paper shows four curves plotted across 200 training epochs on CIFAR-10.
 * Train robust error (orange) falls smoothly toward 0, meaning model gets nearly perfect at defending its own training data.
 * Test robust error (blue) drops initially, but after first learning rate decay at epoch 100 it spikes sharply upward and keeps rising.
 * At first learning rate decay, model briefly achieves 43.2% test robust error. By end of full training, that number has risen to 51.4%, a significant drop in defense quality.
 * Train standard error (red) also falls toward 0, and test standard error (green) stays relatively flat and well-behaved.
-* key takeaway: overfitting hurts robust test performance badly, while standard test performance is largely unaffected. This shows that robustness is a much more fragile property than standard accuracy.
+* Key takeaway: overfitting hurts robust test performance badly, while standard test performance is largely unaffected. This shows that robustness is a much more fragile property than standard accuracy.
 
 ---
 
 ### Early Stopping as a Fix
 
 * Since best robust test performance occurs right after first learning rate decay, simply saving model at that checkpoint and stopping training is an effective fix.
-* authors show that vanilla PGD-based adversarial training (Madry et al., 2017) with early stopping can achieve 43.2% test robust error on CIFAR-10, which matches 43.4% reported by TRADES, a much more complex method.
-* same pattern holds for l2 adversarial training. Stopping a CIFAR-10 model early can reduce robust test error from 31.1% down to 28.4%.
-* implication is large: many recent algorithmic improvements over PGD-based training may not reflect genuine advances. They may just be recovering performance that was lost to robust overfitting, and early stopping achieves same gains for free.
+* Authors show that vanilla PGD-based adversarial training (Madry et al., 2017) with early stopping can achieve 43.2% test robust error on CIFAR-10, which matches 43.4% reported by TRADES, a much more complex method.
+* Same pattern holds for $\ell_2$ adversarial training. Stopping a CIFAR-10 model early can reduce robust test error from 31.1% down to 28.4%.
+* Implication is large: many recent algorithmic improvements over PGD-based training may not reflect genuine advances. They may just be recovering performance that was lost to robust overfitting, and early stopping achieves same gains for free.
 
 ---
 
 ### Background: Adversarial Training Lineage
 
-* first major adversarial training method used FGSM, a single gradient step, to generate attacks during training (Goodfellow et al., 2014).
+* First major adversarial training method used FGSM, a single gradient step, to generate attacks during training (Goodfellow et al., 2014).
 * FGSM was extended to multiple steps in Basic Iterative Method (Kurakin et al., 2016), and then combined with random restarts to form PGD adversarial training (Madry et al., 2017).
 * Later improvements layered on top of PGD include: adding momentum to adversary (Dong et al., 2018), logit pairing (Mosbach et al., 2018), feature denoising (Xie et al., 2019), and matrix norm estimation (Yang et al., 2019).
 * TRADES (Zhang et al., 2019) is one of most prominent of these, balancing trade-off between standard error and robust error in loss function directly.
@@ -81,8 +81,8 @@
 $$\min_{\theta} \sum_{i} \max_{\delta \in \Delta} \ell(f_{\theta}(x_i + \delta), y_i)$$
 
 * Here, $f_\theta$ is neural network, $(x_i, y_i)$ is a training example, $\ell$ is loss function, and $\Delta$ is set of allowed perturbations.
-* perturbation set $\Delta$ is usually an $\ell_p$-norm ball: $\Delta = \{\delta : ||\delta||_p \leq \epsilon\}$ for some small budget $\epsilon > 0$.
-* inner maximization (finding worst perturbation) is solved approximately using PGD, which iteratively updates perturbation with rule:
+* Perturbation set $\Delta$ is usually an $\ell_p$-norm ball: $\Delta = \{\delta : ||\delta||_p \leq \epsilon\}$ for some small budget $\epsilon > 0$.
+* Inner maximization (finding worst perturbation) is solved approximately using PGD, which iteratively updates perturbation with rule:
 
 $$\tilde{\delta} = \delta^{(t)} + \alpha \cdot \text{sign}(\nabla_x \ell(f(x), y))$$
 $$\delta^{(t+1)} = \max(\min(\tilde{\delta}, \epsilon), -\epsilon)$$
@@ -94,21 +94,21 @@ $$\delta^{(t+1)} = \max(\min(\tilde{\delta}, \epsilon), -\epsilon)$$
 
 ### Table 1: Robust Overfitting Across Datasets
 
-* authors run adversarial training across four datasets and two perturbation norms and record two numbers: best robust test error seen at any checkpoint during training, and final robust test error at end of training.
-* difference between those two numbers is cost of robust overfitting. Key results:
+* Authors run adversarial training across four datasets and two perturbation norms and record two numbers: best robust test error seen at any checkpoint during training, and final robust test error at end of training.
+* Difference between those two numbers is cost of robust overfitting. Key results:
 
-| Dataset    | Norm | Radius  | Best   | Final  | Difference |
-|------------|------|---------|--------|--------|------------|
-| SVHN       | l∞   | 8/255   | 39.0%  | 45.6%  | 6.6%       |
-| SVHN       | l2   | 128/255 | 25.2%  | 26.4%  | 1.2%       |
-| CIFAR-10   | l∞   | 8/255   | 43.2%  | 51.4%  | 8.2%       |
-| CIFAR-10   | l2   | 128/255 | 28.4%  | 31.1%  | 2.7%       |
-| CIFAR-100  | l∞   | 8/255   | 71.9%  | 78.6%  | 6.7%       |
-| CIFAR-100  | l2   | 128/255 | 56.8%  | 62.5%  | 5.7%       |
-| ImageNet   | l∞   | 4/255   | 62.7%  | 85.5%  | 22.8%      |
-| ImageNet   | l2   | 76/255  | 63.0%  | 94.8%  | 31.8%      |
+| Dataset   | Norm           | Radius  | Best  | Final | Difference |
+|-----------|----------------|---------|-------|-------|------------|
+| SVHN      | $\ell_\infty$  | 8/255   | 39.0% | 45.6% | 6.6%       |
+| SVHN      | $\ell_2$       | 128/255 | 25.2% | 26.4% | 1.2%       |
+| CIFAR-10  | $\ell_\infty$  | 8/255   | 43.2% | 51.4% | 8.2%       |
+| CIFAR-10  | $\ell_2$       | 128/255 | 28.4% | 31.1% | 2.7%       |
+| CIFAR-100 | $\ell_\infty$  | 8/255   | 71.9% | 78.6% | 6.7%       |
+| CIFAR-100 | $\ell_2$       | 128/255 | 56.8% | 62.5% | 5.7%       |
+| ImageNet  | $\ell_\infty$  | 4/255   | 62.7% | 85.5% | 22.8%      |
+| ImageNet  | $\ell_2$       | 76/255  | 63.0% | 94.8% | 31.8%      |
 
-* degradation is worst on ImageNet, where full training raises robust error by over 22 percentage points under l∞ attacks. This makes intuitive sense because ImageNet is largest and most complex dataset, giving model most room to overfit.
+* Degradation is worst on ImageNet, where full training raises robust error by over 22 percentage points under $\ell_\infty$ attacks. This makes intuitive sense because ImageNet is largest and most complex dataset, giving model most room to overfit.
 * Robust overfitting is also not specific to PGD-based training. It affects faster training methods like FGSM adversarial training and top-performing methods like TRADES.
 
 ---
@@ -116,8 +116,8 @@ $$\delta^{(t+1)} = \max(\min(\tilde{\delta}, \epsilon), -\epsilon)$$
 ### Learning Rate Schedules and Robust Overfitting (Figure 2)
 
 * Since overfitting seems to start exactly at first learning rate decay, a natural question is whether smoother learning rate schedules could prevent it.
-* authors test five schedules on CIFAR-10: piecewise decay (default), multiple decay steps, linear decay, cyclic, and cosine.
-* Figure 2 shows that none of smoother alternatives can match peak performance of piecewise decay schedule. best robust test error is achieved specifically by having a single large, discrete drop in learning rate.
+* Authors test five schedules on CIFAR-10: piecewise decay (default), multiple decay steps, linear decay, cyclic, and cosine.
+* Figure 2 shows that none of smoother alternatives can match peak performance of piecewise decay schedule. Best robust test error is achieved specifically by having a single large, discrete drop in learning rate.
 * Smoother schedules produce smoother curves, but their best checkpoints are still strictly worse than best checkpoint under piecewise decay.
 * Conclusion: changing learning rate schedule does not eliminate robust overfitting, it just makes curves look less jagged. fundamental problem remains.
 
@@ -126,19 +126,19 @@ $$\delta^{(t+1)} = \max(\min(\tilde{\delta}, \epsilon), -\epsilon)$$
 ### Early Stopping: How It Works in Practice (Section 3.2)
 
 * Early stopping is a classic implicit regularization technique. It works by monitoring performance on a held-out validation set and stopping training when that performance stops improving.
-* authors find it is especially important for adversarially robust training because test robust error does not decrease monotonically during training. It actively gets worse after learning rate drops.
+* Authors find it is especially important for adversarially robust training because test robust error does not decrease monotonically during training. It actively gets worse after learning rate drops.
 * Key result: when early stopping is applied to vanilla PGD-based adversarial training, model reaches 42.3% robust test error on CIFAR-10. This is actually slightly better than best result reported by TRADES (Zhang et al., 2019c).
-* For ImageNet, continuing to train publicly released pretrained models degrades their robust test error from 62.7% to 85.5% under l∞ (ε = 4/255) and from 63.0% to 94.8% under l2 (ε = 128/255). Early stopping recovers nearly all of that lost performance.
-* TRADES itself relies on early stopping to get its headline number. authors confirm that allowing TRADES to train to convergence raises its robust test error from 44.1% to 50.6% on CIFAR-10.
+* For ImageNet, continuing to train publicly released pretrained models degrades their robust test error from 62.7% to 85.5% under $\ell_\infty$ (ε = 4/255) and from 63.0% to 94.8% under $\ell_2$ (ε = 128/255). Early stopping recovers nearly all of that lost performance.
+* TRADES itself relies on early stopping to get its headline number. Authors confirm that allowing TRADES to train to convergence raises its robust test error from 44.1% to 50.6% on CIFAR-10.
 
 ---
 
 ### Validation-Based Early Stopping (Figure 4)
 
 * A concern with early stopping is that it might "look at" test set performance to decide when to stop, which would be cheating.
-* authors address this by using a true hold-out validation set of 1,000 examples withheld from CIFAR-10 training set.
+* Authors address this by using a true hold-out validation set of 1,000 examples withheld from CIFAR-10 training set.
 * Figure 4 shows that validation robust loss curve closely tracks test robust loss curve. Stopping when validation loss stops improving is a reliable proxy for true best test checkpoint.
-* Using this honest, validation-based early stopping, model achieves 46.9% robust test error on a pre-activation ResNet18. best model checkpoint during training (which does look at test labels indirectly by reporting minimum) achieves 46.7%, nearly identical.
+* Using this honest, validation-based early stopping, model achieves 46.9% robust test error on a pre-activation ResNet18. Best model checkpoint during training (which does look at test labels indirectly by reporting minimum) achieves 46.7%, nearly identical.
 * This confirms that early stopping does not require peeking at test data. A small held-out validation set is enough to implement it correctly.
 
 ---
@@ -147,34 +147,34 @@ $$\delta^{(t+1)} = \max(\min(\tilde{\delta}, \epsilon), -\epsilon)$$
 
 * In standard deep learning, a well-known phenomenon called double descent says that increasing model complexity (bigger models, more training) eventually helps test performance even past point of interpolating all training data.
 * At first glance, robust overfitting looks like a contradiction of double descent, since training longer makes test robust performance worse.
-* authors show these are actually two separate effects by varying model width (using Wide ResNets) rather than training time.
+* Authors show these are actually two separate effects by varying model width (using Wide ResNets) rather than training time.
 * Figure 5 shows two separate curves plotted against model width factor: final model checkpoint (blue) and best checkpoint during training (orange).
-* best checkpoint curve keeps improving as width increases, following double descent pattern. Larger models do help robustness when you stop at right time.
-* final model curve, however, is much higher (worse) and shows a different shape. This shows that robust overfitting from training too long is a separate problem from standard bias-variance tradeoff that double descent describes.
+* Best checkpoint curve keeps improving as width increases, following double descent pattern. Larger models do help robustness when you stop at right time.
+* Final model curve, however, is much higher (worse) and shows a different shape. This shows that robust overfitting from training too long is a separate problem from standard bias-variance tradeoff that double descent describes.
 * Practical implication: you cannot explain away robust overfitting by pointing to double descent. They are different phenomena and need separate fixes.
 
 ---
 
 ### Section 4: Alternative Methods to Prevent Robust Overfitting
 
-* authors run a full ablation study asking whether standard tools for preventing overfitting also work against robust overfitting.
-* All experiments use CIFAR-10 with a PreActResNet18 model and a 10-step PGD adversary with l∞ radius 8/255, and each method is tuned to its best hyperparameter before comparing.
-* baseline throughout this section is pure early stopping using a validation set, which achieves 46.9% final robust test error and 46.7% best robust test error (difference of only 0.2%).
+* Authors run a full ablation study asking whether standard tools for preventing overfitting also work against robust overfitting.
+* All experiments use CIFAR-10 with a PreActResNet18 model and a 10-step PGD adversary with $\ell_\infty$ radius 8/255, and each method is tuned to its best hyperparameter before comparing.
+* Baseline throughout this section is pure early stopping using a validation set, which achieves 46.9% final robust test error and 46.7% best robust test error (difference of only 0.2%).
 
 ---
 
 ### Explicit Regularization (Section 4.1, Figure 6)
 
-* standard approach to preventing overfitting in machine learning is to add a penalty term directly to loss function that punishes model complexity. modified loss becomes:
+* A standard approach to preventing overfitting in machine learning is to add a penalty term directly to loss function that punishes model complexity. Modified loss becomes:
 
 $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 
-* Here $\Omega(\theta)$ is regularization penalty (such as sum of squared weights for L2, or sum of absolute weights for L1), and $\lambda$ is a hyperparameter that controls how strongly penalty is applied.
-* L2 regularization (also called weight decay) is most common form used in deep learning. L1 regularization encourages model to set many weights to exactly zero, producing sparser models.
-* Results: even with optimal value of $\lambda = 5 \times 10^{-3}$, best L2 regularization can achieve is 55.2% robust test error at end of training, which is worse than early stopping's 46.9%.
+* Here $\Omega(\theta)$ is regularization penalty (such as sum of squared weights for $L_2$, or sum of absolute weights for $L_1$), and $\lambda$ is a hyperparameter that controls how strongly penalty is applied.
+* $L_2$ regularization (also called weight decay) is most common form used in deep learning. $L_1$ regularization encourages model to set many weights to exactly zero, producing sparser models.
+* Results: even with optimal value of $\lambda = 5 \times 10^{-3}$, best $L_2$ regularization can achieve is 55.2% robust test error at end of training, which is worse than early stopping's 46.9%.
     * **Note:** Found λ inconsistency where in Section 4.1 reports the best ℓ2 regularization result as 55.2% robust test error, but cites the hyperparameter as $\lambda = 5 \times 10^{-2}$ in the main text and $\lambda = 5 \times 10^{-3}$ in the Figure 6 caption. Same result, two different stated λ values which seems like a typo in one of the two spots.
-* Key problem shown in Figure 6 is that there is a narrow window where L2 helps at all. Too little regularization and robust overfitting continues. Too much regularization and model becomes over-regularized, hurting both train and test robust performance without fixing gap between them.
-* L1 regularization shows same pattern and never matches early stopping either.
+* Key problem shown in Figure 6 is that there is a narrow window where $L_2$ helps at all. Too little regularization and robust overfitting continues. Too much regularization and model becomes over-regularized, hurting both train and test robust performance without fixing gap between them.
+* $L_1$ regularization shows same pattern and never matches early stopping either.
 * Conclusion: explicit regularization cannot remove detrimental effects of robust overfitting without also causing over-regularization. It does not substitute for early stopping.
 
 ---
@@ -204,22 +204,22 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 
 ### Table 2: Summary of All Regularization Methods
 
-* full comparison of all methods on CIFAR-10 (PreActResNet18, l∞, radius 8/255):
+* full comparison of all methods on CIFAR-10 (PreActResNet18, $\ell_\infty$, radius 8/255):
 
-| Method                  | Final Test Error | Best Test Error | Difference |
-|-------------------------|-----------------|----------------|------------|
-| Early stopping w/ val   | 46.9%           | 46.7%          | 0.2%       |
-| L1 regularization       | 53.0%           | 48.6%          | 4.4%       |
-| L2 regularization       | 55.2%           | 46.4%          | 8.8%       |
-| Cutout                  | 48.8%           | 46.7%          | 2.1%       |
-| Mixup                   | 49.1%           | 46.3%          | 2.8%       |
-| Semi-supervised         | 47.1%           | 40.2%          | 6.9%       |
+| Method                    | Final Test Error | Best Test Error | Difference |
+|---------------------------|------------------|-----------------|------------|
+| Early stopping w/ val     | 46.9%            | 46.7%           | 0.2%       |
+| $L_1$ regularization      | 53.0%            | 48.6%           | 4.4%       |
+| $L_2$ regularization      | 55.2%            | 46.4%           | 8.8%       |
+| Cutout                    | 48.8%            | 46.7%           | 2.1%       |
+| Mixup                     | 49.1%            | 46.3%           | 2.8%       |
+| Semi-supervised           | 47.1%            | 40.2%           | 6.9%       |
 
-* **Note:** Paper's own Table 2 prints Diff for L2 regularization as 55.2, but Final (55.2) minus Best (46.4) is actually **8.8**. The table above uses corrected value of 8.8%. Looks like a copy-paste error instead of actual computed gap.
+* **Note:** Paper's own Table 2 prints Diff for $L_2$ regularization as 55.2, but Final (55.2) minus Best (46.4) is actually **8.8**. The table above uses corrected value of 8.8%. Looks like a copy-paste error instead of actual computed gap.
 * Every method except semi-supervised produces a final model that is worse than early stopping's final model of 46.9%.
 * Every method except semi-supervised produces a best checkpoint that is roughly equal to or worse than early stopping's best checkpoint of 46.7%.
 * Semi-supervised learning achieves best checkpoint of any method at 40.2%, but only when early stopping is also applied. Without early stopping, its variance makes it unreliable.
-* difference column shows how much robust overfitting each method still suffers. L2 regularization has largest gap at 8.8 points, meaning it actually makes robust overfitting worse on this metric even though it reduces final error somewhat.
+* difference column shows how much robust overfitting each method still suffers. $L_2$ regularization has largest gap at 8.8 points, meaning it actually makes robust overfitting worse on this metric even though it reduces final error somewhat.
 
 ---
 
@@ -243,7 +243,7 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 * Table 1 is critical for our project because it shows that robust overfitting is not a quirk of one dataset. 22.8 percentage point gap on ImageNet is especially striking and shows that problem scales with dataset complexity.
 * distinction between double descent and robust overfitting in Section 3.3 matters for how we frame our research. We cannot dismiss robust overfitting as just a case of model not being big enough. Figure 5 shows that bigger models still overfit robustly; they just overfit from a better starting point.
 * validation-based early stopping result in Figure 4 is practically important. It shows that a research team does not need access to test labels to implement best fix. A 1,000-example validation split is sufficient.
-* Table 2 is key result for our research direction: it shows exactly which tools fail against robust overfitting and by how much. fact that L2 regularization, most common anti-overfitting tool in deep learning, makes best-vs-final gap worse rather than better is a striking result.
+* Table 2 is key result for our research direction: it shows exactly which tools fail against robust overfitting and by how much. fact that $L_2$ regularization, most common anti-overfitting tool in deep learning, makes best-vs-final gap worse rather than better is a striking result.
 * conclusion's call for community to always report validation-based learning curves is directly relevant to how we evaluate our own experiments. We should apply same standard and never report only a final-epoch number without full learning curve context.
 
 ---
