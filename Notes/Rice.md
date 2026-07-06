@@ -1,7 +1,7 @@
 ## Reading Notes: Overfitting in Adversarially Robust Deep Learning
 ### Rice, Wong & Kolter (ICML 2020)
 
-> **Summary:** When we train a deep learning model for a long time, it usually keeps getting better at handling new data, even if it has already memorized training set. This paper shows that this is not true for adversarial training, which is process of training a model to resist small, unnoticeable changes to its inputs that try to fool it. authors show that if we keep training an adversarially trained model for too long, it starts to do worse on new test data, even though it keeps improving on training data. This is Robust Overfitting, and it happens across many different datasets and types of attacks. good news is that simply stopping training early, at right checkpoint, fixes most of problem and can match results of much more complicated training methods. They also test other common fixes for overfitting, like regularization and data augmentation, but none of these work as well as early stopping on their own.
+> **Summary:** When we train a deep learning model for a long time, it usually keeps getting better at handling new data, even if it has already memorized training set. This paper shows that this is not true for adversarial training, which is process of training a model to resist small, unnoticeable changes to its inputs that try to fool it. Authors show that if we keep training an adversarially trained model for too long, it starts to do worse on new test data, even though it keeps improving on training data. This is Robust Overfitting, and it happens across many different datasets and types of attacks. Good news is that simply stopping training early, at right checkpoint, fixes most of problem and can match results of much more complicated training methods. They also test other common fixes for overfitting, like regularization and data augmentation, but none of these work as well as early stopping on their own.
 
 ---
 
@@ -76,7 +76,7 @@
 
 ### Formal Adversarial Training Objective
 
-* Adversarial training is framed as a minimax optimization problem. goal is to find model parameters θ that minimize worst-case loss across all allowed perturbations:
+* Adversarial training is framed as a minimax optimization problem. The goal is to find model parameters θ that minimize worst-case loss across all allowed perturbations:
 
 $$\min_{\theta} \sum_{i} \max_{\delta \in \Delta} \ell(f_{\theta}(x_i + \delta), y_i)$$
 
@@ -88,7 +88,7 @@ $$\tilde{\delta} = \delta^{(t)} + \alpha \cdot \text{sign}(\nabla_x \ell(f(x), y
 $$\delta^{(t+1)} = \max(\min(\tilde{\delta}, \epsilon), -\epsilon)$$
 
 * This inner loop runs for multiple steps with step size $\alpha$, projecting back onto $\ell_\infty$ ball after each step.
-* outer minimization is solved with standard gradient descent on model parameters.
+* Outer minimization is solved with standard gradient descent on model parameters.
 
 ---
 
@@ -119,7 +119,7 @@ $$\delta^{(t+1)} = \max(\min(\tilde{\delta}, \epsilon), -\epsilon)$$
 * Authors test five schedules on CIFAR-10: piecewise decay (default), multiple decay steps, linear decay, cyclic, and cosine.
 * Figure 2 shows that none of smoother alternatives can match peak performance of piecewise decay schedule. Best robust test error is achieved specifically by having a single large, discrete drop in learning rate.
 * Smoother schedules produce smoother curves, but their best checkpoints are still strictly worse than best checkpoint under piecewise decay.
-* Conclusion: changing learning rate schedule does not eliminate robust overfitting, it just makes curves look less jagged. fundamental problem remains.
+* Conclusion: changing learning rate schedule does not eliminate robust overfitting, it just makes curves look less jagged. Fundamental problem remains.
 
 ---
 
@@ -183,8 +183,8 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 
 * Cutout randomly masks out a square patch of input image during training. Mixup trains on blended pairs of images and their corresponding blended labels.
 * Both are popular modern data augmentation strategies that have been shown to reduce overfitting in standard deep learning.
-* authors scan across full range of hyperparameters for both methods.
-* Cutout results: even with optimal patch length of 14, best robust test error at end of training is 48.8%. gap between best and final checkpoint is 2.1 percentage points, meaning robust overfitting still occurs.
+* Authors scan across full range of hyperparameters for both methods.
+* Cutout results: even with optimal patch length of 14, best robust test error at end of training is 48.8%. Gap between best and final checkpoint is 2.1 percentage points, meaning robust overfitting still occurs.
 * Mixup results: achieves 49.1% robust test error at convergence with a best checkpoint of 46.3%, a 2.8 point gap.
 * Neither method closes gap between best and final checkpoint to level that early stopping achieves (0.2 points).
 * Conclusion: cutout and mixup reduce robust overfitting slightly compared to unregularized training, but they do not solve it, and neither reaches performance of simple early stopping.
@@ -194,7 +194,7 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 ### Semi-Supervised Learning (Section 4.2, Figure 8)
 
 * Semi-supervised learning augments training set with a large collection of unlabeled data. A standard classifier is used to assign pseudo-labels to these unlabeled examples, and full augmented dataset is then used for robust training.
-* authors use 500K pseudo-labeled examples from TinyImages, a large dataset of internet images related to CIFAR-10 categories.
+* Authors use 500K pseudo-labeled examples from TinyImages, a large dataset of internet images related to CIFAR-10 categories.
 * Figure 8 shows that semi-supervised training has an unusual learning curve: robust overfitting is much less severe, but robust test error has very high variance at convergence rather than clearly plateauing.
 * Because of this high variance, average final model performance is 47.1%, which is actually similar to pure early stopping (46.9%). On average, semi-supervised learning alone is not clearly better.
 * However, combining early stopping with semi-supervised learning eliminates both robust overfitting and high variance at once, achieving 40.2% robust test error.
@@ -204,7 +204,7 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 
 ### Table 2: Summary of All Regularization Methods
 
-* full comparison of all methods on CIFAR-10 (PreActResNet18, $\ell_\infty$, radius 8/255):
+* Full comparison of all methods on CIFAR-10 (PreActResNet18, $\ell_\infty$, radius 8/255):
 
 | Method                    | Final Test Error | Best Test Error | Difference |
 |---------------------------|------------------|-----------------|------------|
@@ -219,32 +219,32 @@ $$\tilde{\ell}(\theta) = \ell(\theta) + \lambda \Omega(\theta)$$
 * Every method except semi-supervised produces a final model that is worse than early stopping's final model of 46.9%.
 * Every method except semi-supervised produces a best checkpoint that is roughly equal to or worse than early stopping's best checkpoint of 46.7%.
 * Semi-supervised learning achieves best checkpoint of any method at 40.2%, but only when early stopping is also applied. Without early stopping, its variance makes it unreliable.
-* difference column shows how much robust overfitting each method still suffers. $L_2$ regularization has largest gap at 8.8 points, meaning it actually makes robust overfitting worse on this metric even though it reduces final error somewhat.
+* Difference column shows how much robust overfitting each method still suffers. $L_2$ regularization has largest gap at 8.8 points, meaning it actually makes robust overfitting worse on this metric even though it reduces final error somewhat.
 
 ---
 
 ### Conclusion (Section 5)
 
-* central finding is that robust overfitting is a dominant and general property of adversarial training across datasets, architectures, attack types, and training methods.
+* Central finding is that robust overfitting is a dominant and general property of adversarial training across datasets, architectures, attack types, and training methods.
 * Increasing model size helps best achievable robust test performance (consistent with double descent), but it does not reduce effect of robust overfitting. Larger models still suffer same gap between their best and final checkpoints.
-* full suite of tested techniques, including explicit regularization and data augmentation, mostly either over-regularize model or fail to close gap to early stopping.
-* simplest fix, early stopping with a validation set, remains most reliable and consistent remedy across all settings.
-* only method that genuinely beats early stopping alone is combining it with semi-supervised learning, but this requires access to a large pool of unlabeled data.
-* authors make a broader point aimed at research community: because robust overfitting is so prevalent, researchers should always report validation-based learning curves alongside their final numbers. A model with a better final number might still be worse at its best checkpoint. field risks mistaking a better training procedure for a better adversarial defense, when in reality difference comes from where training happened to stop.
+* Full suite of tested techniques, including explicit regularization and data augmentation, mostly either over-regularize model or fail to close gap to early stopping.
+* Simplest fix, early stopping with a validation set, remains most reliable and consistent remedy across all settings.
+* Only method that genuinely beats early stopping alone is combining it with semi-supervised learning, but this requires access to a large pool of unlabeled data.
+* Authors make a broader point aimed at research community: because robust overfitting is so prevalent, researchers should always report validation-based learning curves alongside their final numbers. A model with a better final number might still be worse at its best checkpoint. Field risks mistaking a better training procedure for a better adversarial defense, when in reality difference comes from where training happened to stop.
 
 ---
 
 ### Connection to Our Research
 
-* This paper is direct source of Robust Overfitting problem our project investigates. It names phenomenon, characterizes when it appears, and proposes early stopping as primary remedy.
-* finding that early stopping alone can match TRADES and other complex methods is important for our project because it changes how we should read adversarial robustness leaderboard. Better numbers may not mean better algorithms.
+* This paper is direct source of Robust Overfitting problem our project investigates. It names phenomenon, characterizes when it appears, and proposes early stopping as primary way.
+* Finding that early stopping alone can match TRADES and other complex methods is important for our project because it changes how we should read adversarial robustness leaderboard. Better numbers may not mean better algorithms.
 * FGSM and PGD background in Section 2 connects directly to Goodfellow et al. (2014): FGSM was origin, and PGD is multi-step extension that Rice et al. use as their standard attack throughout experiments.
-* Understanding Figure 1 is foundation for all later analysis in this paper. shape of those four learning curves, especially spike in test robust error at epoch 100, is central empirical fact rest of paper tries to explain and fix.
+* Understanding Figure 1 is foundation for all later analysis in this paper. Shape of those four learning curves, especially spike in test robust error at epoch 100, is central empirical fact rest of paper tries to explain and fix.
 * Table 1 is critical for our project because it shows that robust overfitting is not a quirk of one dataset. 22.8 percentage point gap on ImageNet is especially striking and shows that problem scales with dataset complexity.
-* distinction between double descent and robust overfitting in Section 3.3 matters for how we frame our research. We cannot dismiss robust overfitting as just a case of model not being big enough. Figure 5 shows that bigger models still overfit robustly; they just overfit from a better starting point.
-* validation-based early stopping result in Figure 4 is practically important. It shows that a research team does not need access to test labels to implement best fix. A 1,000-example validation split is sufficient.
-* Table 2 is key result for our research direction: it shows exactly which tools fail against robust overfitting and by how much. fact that $L_2$ regularization, most common anti-overfitting tool in deep learning, makes best-vs-final gap worse rather than better is a striking result.
-* conclusion's call for community to always report validation-based learning curves is directly relevant to how we evaluate our own experiments. We should apply same standard and never report only a final-epoch number without full learning curve context.
+* Distinction between double descent and robust overfitting in Section 3.3 matters for how we frame our research. We cannot dismiss robust overfitting as just a case of model not being big enough. Figure 5 shows that bigger models still overfit robustly; they just overfit from a better starting point.
+* Validation-based early stopping result in Figure 4 is practically important. It shows that a research team does not need access to test labels to implement best fix. A 1,000-example validation split is sufficient.
+* Table 2 is key result for our research direction: it shows exactly which tools fail against robust overfitting and by how much. Fact that $L_2$ regularization, most common anti-overfitting tool in deep learning, makes best-vs-final gap worse rather than better is a striking result.
+* Conclusion's call for community to always report validation-based learning curves is directly relevant to how we evaluate our own experiments. We should apply same standard and never report only a final-epoch number without full learning curve context.
 
 ---
 

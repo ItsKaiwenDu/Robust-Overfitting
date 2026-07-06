@@ -16,7 +16,6 @@ Research Objectives:
 ## Research Team
 * Principal Investigator: Dr. Nicholas Q. Tran (Department of Mathematics and Computer Science)
 * Student Researcher: Kaiwen Du (Computer Science)
-* Graduate Collaborator: Milo Guan (M.S. Computer Science), Fidelity Measurement (Voluntary)
 
 ---
 
