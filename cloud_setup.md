@@ -6,15 +6,15 @@ This guide provides instructions for setting up cloud GPU computing resources on
 
 ## 1. Provisioning a Cloud GPU Instance
 
-For PreActResNet-18 training runs on CIFAR-10, we recommend using an **NVIDIA A10 (24 GB PCIe)** or **NVIDIA A10G** instance on Lambda Labs, which balances compute speed and cost (~$0.75 - $1.30/hour).
+For PreActResNet-18 training runs on CIFAR-10, we recommend using an **NVIDIA A10 (24 GB PCIe)** instance on Lambda Labs, which balances compute speed and cost (~$0.75/hour).
 
 1. Log in or create an account at [Lambda Labs](https://lambdalabs.com/).
 2. Navigate to **SSH Keys** tab and upload your local machine's public SSH key (typically located at `~/.ssh/id_rsa.pub` or `~/.ssh/id_ed25519.pub`).
 3. Click **Launch Instance** in dashboard.
 4. Follow launch instance wizard:
-   * **Instance type:** Select **A10 (24 GB PCIe)** or **A10G** (24 GB VRAM) instance type.
+   * **Instance type:** Select **A10 (24 GB PCIe)** instance type.
    * **Region:** Choose an available region.
-   * **Base image:** Select **Lambda Stack 24.04** or **Lambda Stack 22.04** (comes pre-configured with CUDA and PyTorch).
+   * **Base image:** Select **Lambda Stack 24.04** (comes pre-configured with CUDA and PyTorch).
    * **Filesystem:** Keep default settings (**No filesystem**, as we will use fast local instance storage).
    * **Security:** Select **Global firewall rules** and click **Confirm** (Lambda Labs will automatically associate your uploaded SSH key).
 5. Click final launch button.
