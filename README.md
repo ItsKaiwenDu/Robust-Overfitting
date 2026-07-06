@@ -28,15 +28,40 @@ Research Objectives:
 * **Deliverable:** Reading notes have been written and are available in [`Notes/`](Notes/) directory:
   * [`Notes/Goodfellow.md`](Notes/Goodfellow.md): Covers linearity hypothesis, FGSM, adversarial training results on MNIST, and connections to our research.
   * [`Notes/Rice.md`](Notes/Rice.md): Covers robust overfitting phenomenon, effect of early stopping, comparison of regularization methods, and connections to our research.
-  * [`Notes/Ragankelley.md`](Notes/Ragankelley.md): Summary only (full notes in progress).
-  * [`Notes/Tran.md`](Notes/Tran.md): Summary only (full notes in progress).
+  * [`Notes/Ragankelley.md`](Notes/Ragankelley.md): Covers a digital watermarking method for embedding care labels directly in fabric patterns and analyzes its visual distortion and robustness to fading.
+  * [`Notes/Tran.md`](Notes/Tran.md): Covers an evaluation of Normalized Compression Distance (NCD) for predicting human visual similarity and its limitations in digital watermarking.
 
 ---
 
-## Week 2 (Up Next)
-* **What we are doing:** Setting up the software environment, cloud computing resources, and model implementations.
+## Week 2 (In Progress)
+* **Objective:** Set up the local software environment, configured dependencies, implemented the PreActResNet-18 model architecture, and documented the cloud setup guide.
+* **Deliverables & Setup Files:**
+  * [`.gitignore`](.gitignore): Configured to ignore environment folders, datasets, cache files, and model checkpoints.
+  * [`requirements.txt`](requirements.txt): Lists project dependencies (`torch`, `torchvision`, `numpy`, `matplotlib`, `tensorboard`).
+  * [`Models/preact_resnet.py`](Models/preact_resnet.py): PyTorch implementation of `PreActResNet18` tailored for CIFAR-10 with standard pre-activation blocks, final BatchNorm and ReLU, and correct dimensions.
+  * [`verify_setup.py`](verify_setup.py): Script to verify python imports, system device capabilities (CPU/MPS/CUDA), and run a forward pass sanity check.
+  * [`cloud_setup.md`](cloud_setup.md): Guide for deploying runs to cloud instances (Lambda Labs), ssh configurations, code syncing, `tmux` sessions, and TensorBoard port forwarding.
 
-> Note: Code, setup instructions, and data will be added to this repository once we begin the implementation phase next week.
+### Local Setup Instructions
+
+1. **Create virtual environment**:
+   ```bash
+   python3 -m venv .venv
+   ```
+2. **Activate & install dependencies**:
+   ```bash
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+3. **Verify setup**:
+   ```bash
+   python verify_setup.py
+   ```
+
+---
+
+## Week 3 (Up Next)
+* **Objective:** Implement PGD-based adversarial training pipeline and verify on a small test run.
 
 ---
 

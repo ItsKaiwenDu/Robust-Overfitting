@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+cifar-data/
+cifar_model/
+runs/
+*.pth
+*.log
