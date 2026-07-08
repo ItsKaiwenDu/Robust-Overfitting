@@ -19,7 +19,7 @@ Research Objectives:
 
 ---
 
-## Week 1 (Current)
+## Week 1 (Completed)
 * **What we did:** Read and analyzed four papers for this project:
   1. "Explaining and Harnessing Adversarial Examples" by Goodfellow, Shlens, and Szegedy
   2. "Overfitting in Adversarially Robust Deep Learning" by Rice, Wong, and Kolter
@@ -33,7 +33,7 @@ Research Objectives:
 
 ---
 
-## Week 2 (In Progress)
+## Week 2 (Current)
 * **Objective:** Set up the local software environment, configured dependencies, implemented the PreActResNet-18 model architecture, and documented the cloud setup guide.
 * **Deliverables & Setup Files:**
   * [`.gitignore`](.gitignore): Configured to ignore environment folders, datasets, cache files, and model checkpoints.
@@ -62,6 +62,31 @@ Research Objectives:
 
 ## Week 3 (Up Next)
 * **Objective:** Implement PGD-based adversarial training pipeline and verify on a small test run.
+
+---
+
+## Week 4
+* **Objective:** Run full baseline adversarial training on CIFAR-10, verify overfitting is reproducible.
+
+---
+
+## Week 5
+* **Objective:** Track training and test robust accuracy across epochs to identify the overfitting point.
+
+---
+
+## Week 6
+* **Objective:** Run additional training runs with different random seeds to verify overfitting point consistency.
+
+---
+
+## Week 7
+* **Objective:** Analyze results, produce learning curve visualizations, and draft findings.
+
+---
+
+## Week 8
+* **Objective:** Complete the final report and prepare for publication and poster presentation.
 
 ---
 
