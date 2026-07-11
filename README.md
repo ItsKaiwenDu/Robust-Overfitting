@@ -21,28 +21,34 @@ Research Objectives:
 ---
 
 ## Week 1 (Completed)
-* **Progress Report:** During week 1, I focused on digesting the readings for our research project. The first paper I read is called “Explaining and Harnessing Adversarial Examples” by Goodfellow et al., and I learned about the Fast Gradient Sign Method (FGSM), which is a technique that tricks AI models into incorrectly and confidently seeing something else by adding tiny mathematical noise to an image input that is unnoticeable to human eyes. The second paper I read is called “Overfitting in Adversarially Robust Deep Learning” by Rice et al., and I learned about robust overfitting, which means a model's defense against attacks starts getting worse on test data even though it keeps improving on the training data. I also learned about many techniques for reducing robust overfitting, including Early Stopping, which is a method that stops the training process at the exact point where the model's test performance starts to drop, and this one happened to be the best and simplest method for preventing this overfitting problem. During the Friday meeting with my professor Dr. Tran, he suggested that I should condense my notes, which were way too detailed and long, down into presentation slides, and suggested I add some examples for better understanding, and to only focus on the Early Stopping method for training the model due to research time constraints.
+* **Objective:** Review and summarize foundational literature on adversarial training and robust overfitting.
 
-* **Deliverables:** Reading notes have been written and are available in [`Notes/`](Notes/) directory:
-  * [`Notes/Goodfellow.md`](Notes/Goodfellow.md): Covers linearity hypothesis, FGSM, adversarial training results on MNIST, and connections to our research.
-  * [`Notes/Rice.md`](Notes/Rice.md): Covers robust overfitting phenomenon, effect of early stopping, comparison of regularization methods, and connections to our research.
+  1. Read and digest "Explaining and Harnessing Adversarial Examples" by Goodfellow et al. (2014). Learn definitions of adversarial examples/attacks, how they are generated via Fast Gradient Sign Method (FGSM), analyzing adversarial examples, and learn about how to defend these adversarial attacks.
+  2. Read and digest "Overfitting in Adversarially Robust Deep Learning" by Rice et al. (2020). Learn about robust overfitting during adversarial training, and learn what are some methods to stop/reduce robust overfitting.
+  3. Compile detailed reading notes for ourselves, which will be saved to the [`Notes`](Notes) folder.
+
+* **Expectations:** A solid theoretical understanding of adversarial examples and early stopping.
+
+* **Progress Report & Deliverables:** Documented in [`Notes/Progress_report.md`](Notes/Progress_report.md#week-1-completed).
 
 ---
 
-## Week 2 (Current)
-* **Progress Report:** This week, I focused on setting up the development environment and organizing the repository files. I successfully configured a Lambda Labs cloud account accessing NVIDIA A10 GPU for training the AI model in the upcoming weeks. I also listed the required Python package dependencies in [`requirements.txt`](requirements.txt) and created a script in [`verify_setup.py`](verify_setup.py) to verify that the everything works properly: version, imports, and system device capabilities. Finally, I downloaded and integrated the PreAct ResNet-18 model architecture (a standard neural network architecture used in adversarial training for its improved training stability and performance) from the Rice et al. paper into the project models folder for replicating robust overfitting experiments. During my meeting with Dr. Tran on Friday, he reviewed my presentation slides and provided feedback for major revisions. He noted that the current slides lack a logical flow and look like a mix of random ideas. He suggested adding a specific visual example of an adversarial attack, such as showing how an image of a bear turns into a truck when noise is added. He also asked me to include a clear math example for the adversarial formula and to properly define robust overfitting before discussing it. Finally, he requested that I send him a plan this weekend for next week, where my goal will be to implement the Projected Gradient Descent (PGD) adversarial training pipeline and run a small test on the cloud.
+## Week 2 (Completed)
+* **Objective:** Configure the local development environment, set up cloud compute resources, integrate the PreActResNet-18 model architecture, verify the setup with a verification script, and create the presentation slides based on feedback.
 
-* **Deliverables:**
-  * [`.gitignore`](.gitignore): Configured to ignore environment folders, datasets, cache files, and model checkpoints.
-  * [`requirements.txt`](requirements.txt): Lists project dependencies (`torch`, `torchvision`, `numpy`, `matplotlib`, `tensorboard`).
-  * [`Models/preact_resnet.py`](Models/preact_resnet.py): PyTorch implementation of `PreActResNet18` tailored for CIFAR-10 with standard pre-activation blocks, final BatchNorm and ReLU, and correct dimensions.
-  * [`verify_setup.py`](verify_setup.py): Script to verify python imports, system device capabilities (CPU/MPS/CUDA), and run a forward pass sanity check.
-  * [`cloud_setup.md`](cloud_setup.md): Guide for deploying runs to cloud instances (Lambda Labs), ssh configurations, code syncing, `tmux` sessions, and TensorBoard port forwarding.
-  * [`Notes/Presentation.pdf`](Notes/Presentation.pdf): Slides summarizing notes and examples focusing on early stopping.
+  1. Configure required Python virtual environment, set up gitignore, and specify dependencies in `requirements.txt`.
+  2. Create a Lambda Labs cloud account, set up billing information and payment methods, and gain familiarity with the cloud platform for accessing high-performance GPU resources (such as NVIDIA A10G instances) needed to train deep learning models.
+  3. Integrate the PreActResNet-18 model architecture in PyTorch (`Models/preact_resnet.py`), which will be downloaded from standard implementations (as adopted in the Rice et al. 2020 codebase) for the purpose of ensuring exact experimental replication.
+  4. Write a setup verification script (`verify_setup.py`) to verify package imports, check hardware/device availability (such as CUDA/MPS/CPU), and run a forward pass sanity check with the model to ensure the training environment is ready to go.
+  5. Create presentation slides summarizing the literature review with visual and mathematical explanations of adversarial attacks. These slides communicate our foundational understanding to the PI and will be reviewed and refined during the Friday meeting with Dr. Tran.
+
+* **Expectations:** A fully operational local and cloud training environment, model implementation complete, and a completed presentation (with placeholders reserved for our own research findings) with a clear and logical flow.
+
+* **Progress Report & Deliverables:** Documented in [`Notes/Progress_report.md`](Notes/Progress_report.md#week-2-completed).
 
 ### Required Local Setup Instructions
 
-1. **Create virtual environment**:
+1. **Create virtual environment** *(an isolated Python workspace that keeps this project's dependencies separate from other Python projects on your system)*:
    ```bash
    python3 -m venv .venv
    ```
@@ -58,61 +64,69 @@ Research Objectives:
 
 ---
 
-## Week 3 (Up Next)
-* **Objective:** Implement the Projected Gradient Descent (PGD) adversarial training pipeline, which is a training process where we generate slightly modified images (adversarial examples) designed to fool the neural network, and then train the model directly on them so it learns to ignore these perturbations. After that, we will verify its correctness on a diagnostic test run. This diagnostic run ensures our training script is bug-free and runs efficiently on the GPU before we launch the long, full-scale training process.
+## Week 3 (Current)
+* **Objective:** Implement the Projected Gradient Descent (PGD)-based adversarial training pipeline and verify its correctness on a diagnostic test run. Lambda Labs will not be used yet this week; all local.
 
-  1. Create a training script `train.py` containing a custom PyTorch training loop that generates adversarial perturbations via a 10-step PGD attack with a random initialization start ($\epsilon = 8/255$) using the [`Models/preact_resnet.py`](Models/preact_resnet.py) architecture.
-  2. Implement checkpoint saving functionality in `train.py` to write model weights periodically (every 5 epochs) to a new `Checkpoints/` directory.
-  3. Execute `train.py` for a diagnostic test run (1 epoch on 10% of CIFAR-10) to verify that loss decreases, gradients update without numerical issues, and GPU VRAM usage remains within limits.
+  1. Create a training script `train.py` with a custom PyTorch training loop that generates adversarial examples via a 10-step PGD attack (where $\epsilon = 8/255$ caps the maximum per-pixel perturbation to keep changes imperceptible, $\alpha = 2/255$ sets the step size per iteration, and the attack initializes from a random point within the $\epsilon$-ball around each clean image) using the [`Models/preact_resnet.py`](Models/preact_resnet.py) architecture. This is the core training procedure we will replicate from Rice et al. (2020) and must match their setup exactly for our results to be comparable.
+  2. Implement checkpoint saving in `train.py` to write model weights every 5 epochs to a new `Checkpoints/` directory. Periodic checkpoints let us reconstruct the model's robustness trajectory across training and are required for the epoch-level analysis in Weeks 5 and 6.
+  3. Execute `train.py` for a short diagnostic run (1 epoch on 10% of CIFAR-10) to confirm that loss decreases, gradients update without numerical issues, and GPU VRAM usage stays under 8 GB. This smoke test catches implementation bugs before we commit to an expensive full training run on the cloud.
 
-* **Expectations:** A fully functional and verified training script (`train.py`) that successfully runs a short test training cycle and writes checkpoints, confirming the pipeline is ready for the full baseline training.
+* **Expectations:** A fully functional and verified training script (`train.py`) that completes a short test cycle and writes checkpoints correctly, confirming the pipeline is ready for full baseline training.
 
 ---
 
 ## Week 4
-* **Objective:** Run the full baseline adversarial training on CIFAR-10 (a standard image dataset consisting of 60,000 everyday images across 10 categories) to replicate the robust overfitting baseline. This full run is necessary to observe and document the robust overfitting behavior where the model's defense starts decaying on test data later in training.
+* **Objective:** Run the full baseline adversarial training on CIFAR-10 using the Lambda Labs cloud instance and collect model checkpoints across all 100 epochs.
 
-  1. Configure `train.py` and execute the full 100-epoch training schedule on the complete CIFAR-10 dataset using the Lambda Labs cloud instance.
-  2. Ensure training parameters employ standard hyperparameters (SGD with momentum, weight decay, and a multi-step learning rate schedule). This means using standard mathematical optimization controls (e.g., speed of learning, penalizing extreme weight values, and slowing down learning at specific epochs) to ensure the network trains stably and achieves high accuracy.
-  3. Save model weights every 5 epochs to the `Checkpoints/` directory to allow post-hoc analysis of the model's robustness progression.
+  1. Launch the full 100-epoch PGD adversarial training run on the complete CIFAR-10 dataset on the Lambda Labs cloud instance. This is the primary replication run that will generate the learning curves needed to observe and document robust overfitting as reported by Rice et al.
+  2. Confirm that training hyperparameters match the standard setup from Rice et al.: Stochastic Gradient Descent (SGD) with momentum, weight decay, and a piecewise learning rate schedule with drops at epochs 100 and 150. Matching these exactly is necessary for our results to be directly comparable to the paper.
+  3. Save model weights every 5 epochs to the `Checkpoints/` directory throughout training. These checkpoints allow us to reconstruct the model's full robustness trajectory and are required for the epoch-level evaluation in Week 5.
 
-* **Expectations:** A complete set of 20 model checkpoints saved in the `Checkpoints/` directory, representing the model's transition from clean accuracy to peak robustness and eventual robust overfitting.
+* **Expectations:** A complete set of 20 model checkpoints in the `Checkpoints/` directory covering the full 100-epoch run, ready for evaluation.
 
 ---
 
 ## Week 5
 * **Objective:** Evaluate training and test robust accuracy across all saved checkpoints to identify the robust overfitting point.
 
-  1. Create a new evaluation script `evaluate.py` to run the saved model checkpoints from the `Checkpoints/` directory against both PGD-20 and FGSM attacks on the CIFAR-10 test set.
-  2. Record the clean accuracy, robust accuracy, and training/test loss for each checkpoint in a CSV file or logs.
-  3. Log evaluation metrics to a TensorBoard logging directory `runs/` to identify the exact epoch where test robust accuracy peaks and begins to decline.
+  1. Create a new evaluation script `evaluate.py` to run each checkpoint from the `Checkpoints/` directory against both PGD-20 and FGSM attacks on the CIFAR-10 test set. Using two different attacks gives a more complete picture of robustness and checks whether our findings hold beyond the attack used during training.
+  2. Record the clean accuracy, robust accuracy, and training/test loss for each checkpoint in a structured CSV file. Storing results in a structured format makes it easy to load and analyze across sessions without re-running evaluation.
+  3. Log all evaluation metrics to a TensorBoard logging directory `runs/` and visualize the learning curves to identify the exact epoch where test robust accuracy peaks and begins to decline. This epoch is the overfitting point, the central empirical finding of our replication.
+
+* **Expectations:** A completed `evaluate.py`, a populated results CSV, and TensorBoard logs with a clearly identified epoch where test robust accuracy peaks and begins to decline.
 
 ---
 
 ## Week 6
 * **Objective:** Execute verification runs with different random seeds to confirm the consistency of the identified overfitting point.
 
-  1. Modify `train.py` to accept random seed arguments and run 3 additional training runs from scratch using different random seeds.
-  2. Save and collect the training/test statistics at each epoch for each run under the TensorBoard `runs/` directory.
-  3. Compare the peak robust accuracy epochs across seed runs to verify that the overfitting threshold is statistically consistent.
+  1. Modify `train.py` to accept a random seed argument and run 3 additional full training runs from scratch using different random seeds. Repeating training with different seeds rules out the possibility that the overfitting point identified in Week 5 was a statistical artifact of one particular initialization.
+  2. Save training and test robust accuracy at each epoch for each run to the TensorBoard `runs/` directory. Keeping all runs in one place makes it straightforward to aggregate and compare them side by side.
+  3. Compare the peak robust accuracy epochs across all seed runs to verify that the overfitting point is statistically consistent. Consistency across seeds strengthens the claim that the identified epoch is a reliable diagnostic marker rather than noise.
+
+* **Expectations:** Four total training runs (original plus 3 seed runs) with full epoch-level accuracy logs, and a confirmed consistent overfitting point across all runs.
 
 ---
 
 ## Week 7
-* **Objective:** Analyze experimental data, generate publication-quality visualizations, and document findings.
+* **Objective:** Analyze all experimental results, produce publication-quality visualizations, and draft the findings section of the paper.
 
-  1. Aggregate the training and evaluation metrics (mean and standard deviation of peak robust accuracy) from all seed runs in the `runs/` directory.
-  2. Create a new plotting script `plot_results.py` to generate dual-axis line charts showing clean vs. robust accuracy and training vs. test loss over epochs.
-  3. Draft the results section of the paper using the generated charts.
+  1. Aggregate training and evaluation metrics across all seed runs in the `runs/` directory, computing mean and standard deviation of peak robust accuracy. Aggregating across seeds gives us statistically grounded numbers to report rather than a single-run result.
+  2. Create a plotting script `plot_results.py` to generate dual-axis line charts showing clean vs. robust accuracy and training vs. test loss over epochs for all runs. These charts are the primary visual evidence for our findings and will appear in the final report.
+  3. Draft the results section of the final report using the generated charts and aggregated statistics. Writing the results section while the data is fresh ensures our analysis stays grounded in what we actually observed.
+
+* **Expectations:** A completed `plot_results.py` with publication-ready charts and a drafted results section ready for PI review.
 
 ---
 
 ## Week 8
-* **Objective:** Complete the final report, compile presentation materials, and prepare deliverables.
+* **Objective:** Complete the final report, update presentation materials with our results, and prepare the repository for publication.
 
-  1. Document the overall research findings by writing the final report `Report.md`.
-  2. Populate the [`Notes/Presentation.pdf`](Notes/Presentation.pdf) with slides summarizing the literature, the PreAct ResNet-18 architecture, and empirical results.
-  3. Refactor the repository scripts (`train.py`, `evaluate.py`, `plot_results.py`), clean up documentation, and ensure code reproducibility.
+  1. Write the final report `Report.md` documenting the full research methodology, experimental setup, results, and conclusions. This is the primary written deliverable of the project and the basis for the conference submission.
+  2. Update [`Notes/Presentation.pdf`](Notes/Presentation.pdf) to incorporate the empirical results and findings from our experiments. Adding our own experimental results to the existing literature slides completes the presentation for the symposium and any conference submission.
+  3. Refactor the repository scripts (`train.py`, `evaluate.py`, `plot_results.py`), clean up documentation, and verify full end-to-end reproducibility by running the pipeline on a clean environment. A clean, reproducible codebase is required for our GitHub publication commitment and for any external replication.
+
+* **Expectations:** A submitted final report, an updated presentation with empirical results, and a fully reproducible public GitHub repository.
 
 ---
 
