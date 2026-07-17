@@ -8,3 +8,4 @@ cifar_model/
 runs/
 *.pth
 *.log
+data/
