@@ -38,6 +38,30 @@ Research Objectives:
 
 ---
 
+## Project Directory Structure
+
+```text
+Robust-Overfitting/
+├── Checkpoints/             # Saved model checkpoints during training
+│   └── diagnostic/          # Local diagnostic run checkpoints (e.g., epoch_1.pt)
+├── Models/                  # Model architecture definitions
+│   └── preact_resnet.py     # PreActResNet-18 model architecture in PyTorch
+├── Notes/                   # Reading notes and progress reports
+│   ├── Goodfellow.md        # Literature notes on FGSM and adversarial training
+│   ├── Rice.md              # Literature notes on robust overfitting
+│   └── Progress_report.md   # Weekly progress reports
+├── data/                    # [Ignored] CIFAR-10 dataset files (downloaded automatically)
+├── runs/                    # [Ignored] TensorBoard logging directories
+├── .gitignore               # Files and folders ignored by Git
+├── Proposal.md              # Project proposal document
+├── README.md                # Project documentation and setup
+├── requirements.txt         # Python package dependencies
+├── train.py                 # Core adversarial PGD training script
+└── verify_setup.py          # Setup verification script
+```
+
+---
+
 ## Week 1 (Completed)
 * **Objective:** Review and summarize foundational literature on adversarial training and robust overfitting.
 

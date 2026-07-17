@@ -47,6 +47,7 @@
 * **Deliverables:**
   * [`train.py`](../train.py): PyTorch training script with a custom PGD training loop, learning rate scheduling, evaluation loop, TensorBoard integration, checkpoint saving, and diagnostic test support. In other words: This is our main code file. Its purpose is to run entire training process, generate adversarial images, slow down learning speed at specific epochs, save checkpoints, and log progress stats.
   * [`Checkpoints/diagnostic/epoch_1.pt`](../Checkpoints/diagnostic/epoch_1.pt): Saved checkpoint file from local diagnostic smoke test. In other words: This is a saved file containing model's weights (its learned patterns) after running our 1-epoch quick test. Its purpose is to prove that weight saving works properly and can be reloaded later.
+  * [`.gitignore`](../.gitignore): Updated to ignore the `data/` directory to prevent large dataset archives (like `cifar-10-python.tar.gz` which is ~170MB and exceeds GitHub's 100MB limit) from being tracked, ensuring clean commits while relying on `train.py`'s automatic download feature.
 
 ---
 
