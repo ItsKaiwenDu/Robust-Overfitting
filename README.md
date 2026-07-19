@@ -93,11 +93,11 @@ Robust-Overfitting/
 ## Week 3 (Completed)
 * **Objective:** Implement the Projected Gradient Descent (PGD)-based adversarial training pipeline and verify its correctness on a diagnostic test run. Lambda Labs will not be used yet this week; all local.
 
-  1. Create a training script `train.py` with a custom PyTorch training loop that generates adversarial examples via a 10-step PGD attack (where $\epsilon = 8/255$ caps the maximum per-pixel perturbation to keep changes imperceptible, $\alpha = 2/255$ sets the step size per iteration, and the attack initializes from a random point within the $\epsilon$-ball around each clean image) using the [`Models/preact_resnet.py`](Models/preact_resnet.py) architecture. This is the core training procedure we will replicate from Rice et al. (2020) and must match their setup exactly for our results to be comparable.
-  2. Implement checkpoint saving in `train.py` to write model weights every 5 epochs to a new `Checkpoints/` directory. Periodic checkpoints let us reconstruct the model's robustness trajectory across training and are required for the epoch-level analysis in Weeks 5 and 6.
-  3. Execute `train.py` for a short diagnostic run (1 epoch on 10% of CIFAR-10) to confirm that loss decreases, gradients update without numerical issues, and GPU VRAM usage stays under 8 GB. This smoke test catches implementation bugs before we commit to an expensive full training run on the cloud.
+  1. Write the training script [`train.py`](train.py) using the [`PreActResNet18`](Models/preact_resnet.py#L153) architecture. Script should dynamically generate adversarial images using a 10-step PGD attack, which starts with random noise and makes pixel adjustments within a safety range (the $\epsilon$-ball of $8/255$) so the edits remain invisible to human eyes. All of these should match exactly as in Rice et al. paper.
+  2. Configure and confirm that [`train.py`](train.py) saves model weights every 5 epochs to `Checkpoints/` folder. This allows us to analyze model's performance at different stages of training and pinpoint exactly where robust overfitting begins.
+  3. Configure and run a diagnostic test locally (for 1 epoch on 10% of CIFAR-10 data) to ensure the training loop, PGD attack, weight updates, checkpoints, and logging all work together without any memory crashes before moving to Lambda Labs.
 
-* **Expectations:** A fully functional and verified training script (`train.py`) that completes a short test cycle and writes checkpoints correctly, confirming the pipeline is ready for full baseline training.
+* **Expectations:** A fully functional and verified training script (`train.py`), ready for full training runs on Lambda Labs next week.
 
 * **Progress Report & Deliverables:** Documented in [`Notes/Progress_report.md`](Notes/Progress_report.md#week-3-completed).
 
@@ -107,8 +107,7 @@ Robust-Overfitting/
 * **Objective:** Run the full baseline adversarial training on CIFAR-10 using the Lambda Labs cloud instance and collect model checkpoints across all 200 epochs.
 
   1. Launch the full 200-epoch PGD adversarial training run on the complete CIFAR-10 dataset on the Lambda Labs cloud instance. This is the primary replication run that will generate the learning curves needed to observe and document robust overfitting as reported by Rice et al.
-  2. Confirm that training hyperparameters match the standard setup from Rice et al.: Stochastic Gradient Descent (SGD) with momentum, weight decay, and a piecewise learning rate schedule with drops at epochs 100 and 150. Matching these exactly is necessary for our results to be directly comparable to the paper.
-  3. Save model weights every 5 epochs to the `Checkpoints/` directory throughout training. These checkpoints allow us to reconstruct the model's full robustness trajectory and are required for the epoch-level evaluation in Week 5.
+  2. [`train.py`](train.py) will automatically save model weights every 5 epochs to the `Checkpoints/` directory throughout training, allowing us to see how the model's accuracy changes over time and find the exact point where overfitting begins.
 
 * **Expectations:** A complete set of 40 model checkpoints in the `Checkpoints/` directory covering the full 200-epoch run (saved every 5 epochs), ready for evaluation.
 
