@@ -23,36 +23,33 @@
 ---
 
 ## Week 3 (Completed)
-* **Progress Report:** This week, I focused on building, debugging, and locally verifying core Projected Gradient Descent (PGD)-based adversarial training pipeline. The work was divided into following days:
-  * **Monday:** I started by implementing PGD adversarial perturbation generator. I wrote a PyTorch function to generate adversarial examples using a 10-step PGD attack with random initialization within $L_\infty$ $\epsilon$-ball (where $\epsilon = 8/255$ and $\alpha = 2/255$ are standard bounds). In other words: I wrote code to automatically generate adversarial images to test model. It takes a clean image, adds a tiny bit of random noise to start, and then makes 10 small, calculated adjustments to pixels to try and trick model. We cap total pixel change at 8/255 so edits remain invisible to human eyes, as in Rice et al. paper.
-  * **Tuesday:** I integrated `PreActResNet18` model from our models folder and constructed core training loop. I implemented a custom `Normalizer` layer to normalize image batches *after* PGD perturbation is added, ensuring attack constraints are applied correctly to raw $[0, 1]$ pixels. In other words: I set up actual training loop where our PreActResNet-18 neural network is trained on these adversarial images so it learns to handle them. I made sure we generate adversarial edits on raw images first before adjusting contrast/brightness for network, ensuring size of our edits matches paper's math exactly.
-  * **Wednesday:** I added key pipeline features to `train.py`: a MultiStepLR scheduler (with decays at epochs 100 and 150 to match 200-epoch schedule), automatic checkpoint saving to `Checkpoints/` directory every 5 epochs, and TensorBoard (a graphing tool for visualizing training progress) logging via `SummaryWriter` to track clean and robust train/test statistics. In other words: I added utility features to keep training organized. I set up a schedule to slow down model's learning speed at epochs 100 and 150 to help it fine-tune. I also set it to save model weights every 5 epochs so we can analyze them later, and hooked up TensorBoard to graph model's accuracy and defense strength in real-time.
-  * **Thursday:** I finalized command-line argument configuration and implemented a `--diagnostic` mode to allow for quick testing. I ran this diagnostic run locally on my MacBook Pro using Apple Silicon (MPS acceleration) for 1 epoch on 10% of CIFAR-10 data. The smoke test verified that training loss decreases, weights update correctly, and checkpoints/TensorBoard logs are saved successfully without any memory errors. In other words: I made it easy to run different training setups and created a "quick test" mode. Since a full training run takes hours on a cloud GPU, I ran a tiny version of it locally on my MacBook's GPU. The test completed successfully, proving training loop, checkpoint saving, and logging all work together without crashing.
-    * **Diagnostic Output Log:**
-      ```
-      Mode: Diagnostic
-      Diagnostic training subset size: 5000
-      Diagnostic test subset size: 1000
-      Starting training pipeline: 1 epochs.
-      Hyperparameters: LR=0.1, Decay Epochs=[100, 150], Weight Decay=0.0005, Momentum=0.9
-      PGD Attack config: epsilon=0.0314, alpha=0.0078, steps=10
-      Epoch 001 | Train Loss: 2.2761 | Train Clean Acc: 20.46% | Train Robust Acc: 16.24% | Time: 41.66s
-      --> Evaluation: Test Clean Acc: 16.50% | Test Robust Acc: 10.70% | Time: 28.94s
-      Checkpoint saved: Checkpoints/diagnostic/epoch_1.pt
-      Training pipeline finished.
-      ```
+* **Progress Report:** This week, I built the training script [`train.py`](../train.py) based on Rice et al., which contains a PGD adversarial image generator (takes a clean image, adds a small random noise, then runs 10 rounds of edits that change pixels in the direction that makes the model output a wrong label with high confidence), a training loop that runs those adversarial images through PreActResNet-18, slows the learning rate down at epochs 100 and 150 (with `MultiStepLR`) so the model fine-tunes gradually, and saves a full snapshot of the model weights every 5 epochs. We also added a `Normalizer` step that rescales pixel brightness values to a consistent range before every forward pass, since Rice et al.'s original code hardcoded this to run only on GPU, which would have broken on a MacBook. Finally, we added a diagnostic mode (`--diagnostic`) that runs 1 epoch on 10% of the data locally to verify that the full pipeline works before starting a full training run on Lambda Labs.
+
+* **Diagnostic Output Log:**
+  ```
+  Mode: Diagnostic
+  Diagnostic training subset size: 5000
+  Diagnostic test subset size: 1000
+  Starting training pipeline: 1 epochs.
+  Hyperparameters: LR=0.1, Decay Epochs=[100, 150], Weight Decay=0.0005, Momentum=0.9
+  PGD Attack config: epsilon=0.0314, alpha=0.0078, steps=10
+  Epoch 001 | Train Loss: 2.2761 | Train Clean Acc: 20.46% | Train Robust Acc: 16.24% | Time: 41.66s
+  --> Evaluation: Test Clean Acc: 16.50% | Test Robust Acc: 10.70% | Time: 28.94s
+  Checkpoint saved: Checkpoints/diagnostic/epoch_1.pt
+  Training pipeline finished.
+  ```
 
 * **Note on FGSM vs. PGD:** While Goodfellow et al. introduced Fast Gradient Sign Method (FGSM), it is a simple **single-step** attack that causes models to learn to become robust only to that specific one-step direction while failing against stronger attacks. Projected Gradient Descent (PGD) is a **multi-step** version of FGSM that takes multiple small steps to find a much stronger, worst-case adversarial perturbation. Replicating Rice et al. requires PGD training because it builds actual robustness, and robust overfitting problem is most clearly documented and visible under PGD-trained networks.
 
 * **Deliverables:**
-  * [`train.py`](../train.py): PyTorch training script with a custom PGD training loop, learning rate scheduling, evaluation loop, TensorBoard integration, checkpoint saving, and diagnostic test support. In other words: This is our main code file. Its purpose is to run entire training process, generate adversarial images, slow down learning speed at specific epochs, save checkpoints, and log progress stats.
-  * [`Checkpoints/diagnostic/epoch_1.pt`](../Checkpoints/diagnostic/epoch_1.pt): Saved checkpoint file from local diagnostic smoke test. In other words: This is a saved file containing model's weights (its learned patterns) after running our 1-epoch quick test. Its purpose is to prove that weight saving works properly and can be reloaded later.
-  * [`.gitignore`](../.gitignore): Updated to ignore the `data/` directory to prevent large dataset archives (like `cifar-10-python.tar.gz` which is ~170MB and exceeds GitHub's 100MB limit) from being tracked, ensuring clean commits while relying on `train.py`'s automatic download feature.
+  * [`train.py`](../train.py): Main PyTorch training script implementing the PGD attack, training loop, scheduler, and diagnostic setup.
+  * [`Checkpoints/diagnostic/epoch_1.pt`](../Checkpoints/diagnostic/epoch_1.pt): Model checkpoint saved from the local diagnostic test to verify weight saving.
+  * [`.gitignore`](../.gitignore): Configured to ignore the raw dataset folder to keep GitHub commits clean.
 
 ---
 
 ## Week 4 (In Progress)
-* **Progress Report:** 
+* **Progress Report:** This week, I focused on better understanding the Week 3 work with [`train.py`](../train.py), and then I reworked the progress report into a single, concise paragraph. I also digested information and tips on "How To Give Strong Technical Presentations" and also watched popular YouTube videos on public speaking to prepare for presentation. Based on that, I reworked and polished the presentation slides, shifting from slides that were mostly teleprompters into slides that use figures and key talking points, and details are instead spoken out loud from speaking notes I made. Finally, I also adjusted my upcoming weekly schedules in [README.md](../README.md). This Friday, after one-on-one meeting with Dr. Tran, I plan to start full training on Lambda Labs to stay on schedule and avoid time pressure at the end. The run is expected to take 7-10 hours and requires minimal human work: deploying `train.py`, monitoring for any unexpected timeouts or crashes, and downloading all model checkpoints once training completes.
 
 * **Deliverables:**
-
+  * [`Presentation.pdf`](Presentation.pdf): Polished presentation slides using figures and key talking points, with details spoken out loud from speaking notes.

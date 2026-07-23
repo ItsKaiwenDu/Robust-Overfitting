@@ -103,57 +103,60 @@ Robust-Overfitting/
 
 ---
 
-## Week 4 (Upcoming)
-* **Objective:** Run the full baseline adversarial training on CIFAR-10 using the Lambda Labs cloud instance and collect model checkpoints across all 200 epochs.
+## Week 4 (Current)
+* **Objective:** Review and consolidate understanding of the Week 3 training pipeline, improve presentation skills and polish presentation slides, and run full training on Lambda Labs on Friday.
 
-  1. Launch the full 200-epoch PGD adversarial training run on the complete CIFAR-10 dataset on the Lambda Labs cloud instance. This is the primary replication run that will generate the learning curves needed to observe and document robust overfitting as reported by Rice et al.
-  2. [`train.py`](train.py) will automatically save model weights every 5 epochs to the `Checkpoints/` directory throughout training, allowing us to see how the model's accuracy changes over time and find the exact point where overfitting begins.
+  1. Review [`train.py`](train.py) alongside the Week 3 progress report to make sure the full pipeline is understood and can be clearly explained.
+  2. Read "How To Give Strong Technical Presentations" provided by Dr. Tran and watch public speaking YouTube videos to improve delivery for upcoming presentations.
+  3. Polish presentation slides, from teleprompter to figures and key talking points, with details spoken out loud from speaking notes.
+  4. Adjust upcoming weekly schedules.
+  5. Deploy `train.py` to Lambda Labs and start the full 200-epoch PGD adversarial training run, monitor for any unexpected timeouts or crashes, and download all model checkpoints once training completes (expected run time: 7-10 hours).
 
 * **Expectations:** A complete set of 40 model checkpoints in the `Checkpoints/` directory covering the full 200-epoch run (saved every 5 epochs), ready for evaluation.
 
 ---
 
-## Week 5
-* **Objective:** Evaluate training and test robust accuracy across all saved checkpoints to identify the robust overfitting point.
+## Week 5 (Upcoming)
+* **Objective:** Evaluate model robustness across all saved checkpoints to identify the robust overfitting point.
 
-  1. Create a new evaluation script `evaluate.py` to run each checkpoint from the `Checkpoints/` directory against both PGD-20 and FGSM attacks on the CIFAR-10 test set. Using two different attacks gives a more complete picture of robustness and checks whether our findings hold beyond the attack used during training.
-  2. Record the clean accuracy, robust accuracy, and training/test loss for each checkpoint in a structured CSV file. Storing results in a structured format makes it easy to load and analyze across sessions without re-running evaluation.
-  3. Log all evaluation metrics to a TensorBoard logging directory `runs/` and visualize the learning curves to identify the exact epoch where test robust accuracy peaks and begins to decline. This epoch is the overfitting point, the central empirical finding of our replication.
+  1. Create an evaluation script `evaluate.py` that loads each of the 40 checkpoints produced by the Week 4 training run and tests them using PGD-20 on the CIFAR-10 test set. PGD-20 uses 20 attack steps instead of 10 used during training, making it a stronger test that gives a more rigorous and honest measure of how well each checkpoint actually holds up against adversarial images.
+  2. Record the clean accuracy, robust accuracy, and loss for each checkpoint in a CSV file so results can be reviewed conveniently.
+  3. Plot the training and test robust accuracy curves across all 200 epochs using `matplotlib` to identify the exact epoch where test robust accuracy peaks and begins to decline.
 
-* **Expectations:** A completed `evaluate.py`, a populated results CSV, and TensorBoard logs with a clearly identified epoch where test robust accuracy peaks and begins to decline.
-
----
-
-## Week 6
-* **Objective:** Execute verification runs with different random seeds to confirm the consistency of the identified overfitting point.
-
-  1. Modify `train.py` to accept a random seed argument and run 3 additional full training runs from scratch using different random seeds. Repeating training with different seeds rules out the possibility that the overfitting point identified in Week 5 was a statistical artifact of one particular initialization.
-  2. Save training and test robust accuracy at each epoch for each run to the TensorBoard `runs/` directory. Keeping all runs in one place makes it straightforward to aggregate and compare them side by side.
-  3. Compare the peak robust accuracy epochs across all seed runs to verify that the overfitting point is statistically consistent. Consistency across seeds strengthens the claim that the identified epoch is a reliable diagnostic marker rather than noise.
-
-* **Expectations:** Four total training runs (original plus 3 seed runs) with full epoch-level accuracy logs, and a confirmed consistent overfitting point across all runs.
+* **Expectations:** A completed `evaluate.py`, a populated results CSV, and a clear plot identifying the epoch where test robust accuracy peaks and begins to decline.
 
 ---
 
-## Week 7
-* **Objective:** Analyze all experimental results, produce publication-quality visualizations, and draft the findings section of the paper.
+## Week 6 (Upcoming)
+* **Objective:** Run 3 additional training runs with different random seeds to confirm that the overfitting point identified in Week 5 is consistent and not a one-time result.
 
-  1. Aggregate training and evaluation metrics across all seed runs in the `runs/` directory, computing mean and standard deviation of peak robust accuracy. Aggregating across seeds gives us statistically grounded numbers to report rather than a single-run result.
-  2. Create a plotting script `plot_results.py` to generate dual-axis line charts showing clean vs. robust accuracy and training vs. test loss over epochs for all runs. These charts are the primary visual evidence for our findings and will appear in the final report.
-  3. Draft the results section of the final report using the generated charts and aggregated statistics. Writing the results section while the data is fresh ensures our analysis stays grounded in what we actually observed.
+  1. Run `train.py` 3 more times from scratch using different `--seed` values. Using different starting points rules out the possibility that the overfitting point found in Week 5 was a coincidence of one particular run.
+  2. `train.py` automatically saves TensorBoard logs for each run to the `runs/` directory, so accuracy and loss curves for all runs are captured without any extra setup.
+  3. Compare the peak robust accuracy epochs across all 4 runs (original plus 3 new) using `matplotlib` to confirm the overfitting point appears consistently.
 
-* **Expectations:** A completed `plot_results.py` with publication-ready charts and a drafted results section ready for PI review.
+* **Expectations:** Four total training runs (original plus 3 seed runs) with a confirmed consistent overfitting point across all runs.
 
 ---
 
-## Week 8
-* **Objective:** Complete the final report, update presentation materials with our results, and prepare the repository for publication.
+## Week 7 (Upcoming)
+* **Objective:** Analyze results from all runs, generate final plots, and draft the findings section of the report.
 
-  1. Write the final report `Report.md` documenting the full research methodology, experimental setup, results, and conclusions. This is the primary written deliverable of the project and the basis for the conference submission.
-  2. Update [`Notes/Presentation.pdf`](Notes/Presentation.pdf) to incorporate the empirical results and findings from our experiments. Adding our own experimental results to the existing literature slides completes the presentation for the symposium and any conference submission.
-  3. Refactor the repository scripts (`train.py`, `evaluate.py`, `plot_results.py`), clean up documentation, and verify full end-to-end reproducibility by running the pipeline on a clean environment. A clean, reproducible codebase is required for our GitHub publication commitment and for any external replication.
+  1. Aggregate the accuracy and loss metrics from all 4 training runs to compute the average and spread of the peak robust accuracy epoch across seeds.
+  2. Create a plotting script `plot_results.py` that generates line charts showing clean vs. robust accuracy and training vs. test loss across all epochs and runs.
+  3. Draft the results section of the final report using the generated charts and aggregated numbers.
 
-* **Expectations:** A submitted final report, an updated presentation with empirical results, and a fully reproducible public GitHub repository.
+* **Expectations:** A completed `plot_results.py` with final charts and a drafted results section.
+
+---
+
+## Week 8 (Upcoming)
+* **Objective:** Write the final report, update the presentation with our results, and clean up the repository.
+
+  1. Write the final report `Report.md` covering the research methodology, experimental setup, results, and conclusions.
+  2. Update [`Notes/Presentation.pdf`](Notes/Presentation.pdf) to include our experimental results and findings alongside the existing literature slides.
+  3. Clean up and add comments to `train.py`, `evaluate.py`, and `plot_results.py` so the code is easy to follow, and make sure `README.md` and `requirements.txt` are easy to follow for anyone else to run the project and replicate our behavior findings.
+
+* **Expectations:** A submitted final report, an updated presentation with our results, and a clean public GitHub repository.
 
 ---
 
