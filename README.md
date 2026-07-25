@@ -103,7 +103,7 @@ Robust-Overfitting/
 
 ---
 
-## Week 4 (Current)
+## Week 4 (Completed)
 * **Objective:** Review and consolidate understanding of the Week 3 training pipeline, improve presentation skills and polish presentation slides, and run full training on Lambda Labs on Friday.
 
   1. Review [`train.py`](train.py) alongside the Week 3 progress report to make sure the full pipeline is understood and can be clearly explained.
@@ -114,9 +114,11 @@ Robust-Overfitting/
 
 * **Expectations:** A complete set of 40 model checkpoints in the `Checkpoints/` directory covering the full 200-epoch run (saved every 5 epochs), ready for evaluation.
 
+* **Progress Report & Deliverables:** Documented in [`Notes/Progress_report.md`](Notes/Progress_report.md#week-4-completed).
+
 ---
 
-## Week 5 (Upcoming)
+## Week 5 (Current)
 * **Objective:** Evaluate model robustness across all saved checkpoints to identify the robust overfitting point.
 
   1. Create an evaluation script `evaluate.py` that loads each of the 40 checkpoints produced by the Week 4 training run and tests them using PGD-20 on the CIFAR-10 test set. PGD-20 uses 20 attack steps instead of 10 used during training, making it a stronger test that gives a more rigorous and honest measure of how well each checkpoint actually holds up against adversarial images.

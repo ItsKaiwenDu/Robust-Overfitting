@@ -48,8 +48,17 @@
 
 ---
 
-## Week 4 (In Progress)
+## Week 4 (Completed)
 * **Progress Report:** This week, I focused on better understanding the Week 3 work with [`train.py`](../train.py), and then I reworked the progress report into a single, concise paragraph. I also digested information and tips on "How To Give Strong Technical Presentations" and also watched popular YouTube videos on public speaking to prepare for presentation. Based on that, I reworked and polished the presentation slides, shifting from slides that were mostly teleprompters into slides that use figures and key talking points, and details are instead spoken out loud from speaking notes I made. Finally, I also adjusted my upcoming weekly schedules in [README.md](../README.md). This Friday, after one-on-one meeting with Dr. Tran, I plan to start full training on Lambda Labs to stay on schedule and avoid time pressure at the end. The run is expected to take 7-10 hours and requires minimal human work: deploying `train.py`, monitoring for any unexpected timeouts or crashes, and downloading all model checkpoints once training completes.
 
 * **Deliverables:**
   * [`Presentation.pdf`](Presentation.pdf): Polished presentation slides using figures and key talking points, with details spoken out loud from speaking notes.
+
+---
+
+## Week 5 (In Progress)
+* **Progress Report:** On Friday, I set up SSH authentication, launched an NVIDIA A10 GPU instance on Lambda Labs, verified environment dependencies and GPU capabilities with [`verify_setup.py`](../verify_setup.py), and ran a 1-epoch diagnostic smoke test to confirm checkpoint writing. I then launched the full 200-epoch PGD-10 adversarial training job inside a persistent `tmux` session on Lambda Labs (~2.3 mins per epoch, total run time ~8 hours). The training run successfully completed all 200 epochs, and we observed clear robust overfitting: test robust accuracy peaked at **47.85%** at Epoch 105 (right after the first learning rate decay) before declining to **41.26%** by Epoch 200, while train robust accuracy reached **89.71%**. All 40 model weight checkpoints (`epoch_5.pt` through `epoch_200.pt`, totaling ~3.57 GB) and TensorBoard log files were successfully downloaded to our local workspace. To prevent exceeding GitHub size limits, we updated [`.gitignore`](../.gitignore) to exclude `Checkpoints/` and `*.pt` files from version control while keeping all checkpoints stored locally for evaluation.
+
+* **Deliverables:**
+  * [`cloud_setup.md`](../cloud_setup.md): Guide for Lambda Labs deployment, SSH setup, tmux, and TensorBoard port forwarding.
+  * [`.gitignore`](../.gitignore): Updated to ignore raw datasets, logs, and model checkpoint files.

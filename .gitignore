@@ -6,6 +6,8 @@ __pycache__/
 cifar-data/
 cifar_model/
 runs/
+Checkpoints/
 *.pth
+*.pt
 *.log
 data/
