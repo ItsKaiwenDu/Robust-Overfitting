@@ -1,135 +1,135 @@
 ## Reading Notes: Explaining and Harnessing Adversarial Examples
 ### Goodfellow, Shlens & Szegedy (ICLR 2015)
 
-> **Summary:** Adversarial examples can be thought of as optical illusions, but for AI. This academic paper from Google challenges common belief that neural networks are tricked by adversarial examples because they are too complex or over-focused on details. Instead, Goodfellow et al. explain that opposite is true: modern networks are designed to act linearly to make training easier, but in spaces with multiple dimensions, this straightness creates a massive blind spot. Because of this, tiny changes to every pixel can add up like thousands of small nudges to form a giant push, easily forcing model to make a wrong prediction with high confidence. The authors show this with Fast Gradient Sign Method (FGSM), a quick, one-step method to generate these tricky inputs using model's own feedback math. They demonstrate that training models on these tricky examples helps them resist attacks and even makes them more accurate on normal images, setting a new record on MNIST dataset. Finally, they show that common defense ideas (like combining different models) fail, and that these tricky examples can fool multiple models because different networks learn similar boundaries.
+> **Summary:** Adversarial examples can be thought of as optical illusions designed specifically for AI. This landmark paper from Google challenges the common belief that neural networks are tricked by adversarial examples because they are overly complex or excessively focused on fine details. Instead, Goodfellow et al. explain that the opposite is true: modern neural networks are intentionally designed to behave linearly to make training easier. However, in spaces with thousands of input dimensions, this linear behavior creates a massive vulnerability. Tiny, invisible adjustments across many pixels add up like thousands of small nudges to create a massive shift, forcing the model to make incorrect predictions with high confidence. The authors demonstrate this vulnerability using the Fast Gradient Sign Method (FGSM), a fast, one-step technique to generate adversarial inputs using the model's own gradient calculations. They show that training models directly on these adversarial examples helps them resist attacks and even improves accuracy on clean images, setting a new benchmark on the MNIST dataset. Finally, they show that standard defense ideas (such as model ensembling) fail, and that adversarial examples transfer across different network architectures because different models learn similar decision boundaries.
 
 ---
 
 ### Definitions
 
-* **Backpropagation**: The method a neural network uses to figure out how much each of its internal settings contributed to a mistake, then adjust them to do better. It works backward through the network's layers, which is where the name comes from. FGSM reuses this same backward calculation, but instead of using it to learn, it uses it to find the direction that hurts the model most.
-* **Dropout**: A training trick where the network randomly turns off a portion of its neurons at each training step. This stops the model from leaning too heavily on any single neuron and tends to help it perform better on new, unseen data.
-* **Fast Gradient Sign Method (FGSM)**: A fast, one-step attack that tricks a neural network by making small changes to the input based on the model's error gradient, causing it to misclassify the data.
-* **Linear**: Model's output changes predictably and proportionally to its input (eg. volume knob).
-* **Long Short-Term Memory (LSTMs)**: Special type of AI layer designed to handle data that comes in a specific order, like words in a sentence or notes in music. It decides what information to remember for a long time, what to use right now, and what to forget.
-* **Maxout Networks**: A neural network design that uses multiple linear functions and keeps only the largest output. This gives the model more flexibility to learn complex patterns while remaining efficient to compute.
-* **Model Averaging**: Combining the predictions of several different models, often called an "ensemble," instead of relying on just one. The hope is that the models' individual mistakes cancel each other out.
-* **Modified National Institute of Standards and Technology (MNIST)**: A widely used dataset of handwritten digits (0-9) that serves as a benchmark for training and testing machine learning and computer vision models.
-* **Non-Linear**: Model's output does not change in a simple proportional way and can respond differently depending on the input (e.g., a light switch).
-* **Pretraining**: Training a model on a separate, often larger or simpler task first, then reusing those learned settings as a starting point before training it on the real target task.
-* **Radial Basis Function (RBF) Network**: A type of model that only makes confident predictions for inputs that closely resemble its training data. Far away from that data, it defaults to low confidence instead of guessing.
-* **Rectified Linear Units (ReLUs)**: An activation function that acts like a filter in a neural network. If the input is positive, it passes through unchanged. If the input is negative, it becomes zero. This simple approach helps neural networks learn complex patterns efficiently.
-* **Softmax**: A function placed at the end of a classifier that turns the model's raw output scores into probabilities for each possible class, with all the probabilities adding up to 100%.
-* **Weight Decay (L¹ Regularization)**: A training penalty that pushes a model's internal weights toward smaller values. The goal is to keep the model simpler so it is less likely to overfit to the training data.
+* **Backpropagation**: The standard algorithm a neural network uses to calculate how much each internal setting contributed to an error, and then adjust those settings to improve performance. It works backward through the network's layers. FGSM reuses this same backward calculation, but instead of updating model settings, it uses the gradient to find the input direction that hurts the model most.
+* **Dropout**: A regularization technique where the network randomly deactivates a fraction of its neurons during each training step. This prevents the model from depending too heavily on any single neuron and improves generalization on new, unseen data.
+* **Fast Gradient Sign Method (FGSM)**: A fast, one-step attack that tricks a neural network by making small changes to the input based on the direction of the model's loss gradient, causing it to misclassify the input.
+* **Linear**: A system where the output changes predictably and proportionally to its input (e.g., turning a volume knob up increases sound volume at a constant rate).
+* **Long Short-Term Memory (LSTM)**: A specialized neural network layer designed to process sequential data, such as words in a sentence or audio signals over time. It dynamically chooses what information to store, maintain, or discard.
+* **Maxout Networks**: A neural network layer design that evaluates multiple linear functions and outputs only the maximum value. This gives the model flexibility to learn complex patterns while keeping computation efficient.
+* **Model Averaging**: Combining the predictions of several distinct models (an "ensemble") rather than relying on a single model, with the expectation that individual model errors will cancel out.
+* **Modified National Institute of Standards and Technology (MNIST)**: A standard benchmark dataset of 70,000 handwritten digits (0–9) widely used to evaluate machine learning and computer vision algorithms.
+* **Non-Linear**: A system where the output does not change in a simple, proportional manner and can respond abruptly depending on the input (e.g., a light switch).
+* **Pretraining**: Training a model on an initial dataset or task before fine-tuning its learned parameters on the target task.
+* **Radial Basis Function (RBF) Network**: A neural network model that makes confident predictions only for inputs that closely resemble its training data. When presented with unfamiliar data far from its training distribution, it defaults to low confidence rather than making an overconfident guess.
+* **Rectified Linear Unit (ReLU)**: An activation function defined as $f(x) = \max(0, x)$. It passes positive values through unchanged and sets negative values to zero, allowing networks to learn complex functions efficiently while maintaining near-linear gradient flow.
+* **Softmax**: A function applied at the final layer of a classifier that converts raw numerical scores (logits) into a normalized probability distribution across classes, ensuring all class probabilities sum to 100%.
+* **Weight Decay / Regularization ($L_1$ Penalty)**: A training penalty that encourages internal model weights toward smaller or zero values, keeping the model simpler to prevent overfitting. Goodfellow et al. specifically analyze $L_1$ penalty constraints in comparison with adversarial training.
 
 ---
 
-### Linearity Problem in AI
+### The Linearity Problem in AI
 
-* Scientists originally thought adversarial examples were caused by deep networks being too complex and nonlinear.
-* This paper argues that adversarial examples happen mainly because modern AI models behave too linearly in high-dimensional spaces.
-* Many modern neural network components, including *ReLUs*, *LSTMs*, and *Maxout Networks*, are designed to be more linear since linear behavior makes training easier. The authors argue that this design choice makes models vulnerable to small adversarial perturbations.
+* Researchers originally hypothesized that adversarial examples resulted from deep neural networks being overly complex, highly non-linear, and prone to overfitting.
+* Goodfellow et al. demonstrate that adversarial examples primarily occur because modern neural networks behave too linearly in high-dimensional spaces.
+* Common architectural building blocks—including *ReLUs*, *LSTMs*, and *Maxout Networks*—are explicitly designed to act linearly because linearity makes optimization faster and easier. The authors argue that this deliberate design choice creates vulnerability to small, coordinated input perturbations.
 
 ---
 
-### High Dimensions Fragility
+### Fragility in High-Dimensional Spaces
 
-* Images are made of many pixels. Even a small 100×100 RGB image contains 30,000 input values, meaning the model operates in a 30,000-dimensional space.
-* An attacker can change every input value by a tiny, nearly invisible amount.
-* In high-dimensional spaces, these tiny changes add up. They can create a large shift in the model's output together and ultimately cause a confident misclassification.
-* It is hard for us as humans to imagine this phenomenon since we live in 3D space.
+* Digital images consist of many individual pixels. Even a small 100×100 pixel RGB image contains 30,000 input values, placing the classifier in a 30,000-dimensional input space.
+* An attacker can alter every pixel value by a tiny amount $\epsilon$ that is imperceptible to human eyes.
+* In high-dimensional spaces, these tiny individual changes accumulate across all dimensions. Combined, they generate a large dot-product shift in the model's activation, driving the output across a decision boundary into a confident misclassification.
+* Because human intuition is bounded by three-dimensional space, high-dimensional linear aggregation is counterintuitive.
 
 ---
 
 ### Fast Gradient Sign Method (FGSM)
 
-* The authors created a fast way to generate adversarial examples using model's own internal math: **Backpropagation**.
-* The formula computes a perturbation in direction that most increases model's loss:
+* The authors introduced a fast method to compute adversarial perturbations in a single step using the model's backpropagation gradients.
+* The perturbation vector $\eta$ is calculated in the direction that maximizes the model's loss $J$:
 
 $$\eta = \epsilon \operatorname{sign}(\nabla_x J(\theta, x, y))$$
 
-* Note: For neural networks this is an *approximation* based on linearizing cost function; it is only exact worst-case perturbation for simpler models like logistic regression.
-* Adding a tiny fraction ($\epsilon = 0.007$) of this calculated noise turns a picture of a panda into a gibbon (Goodfellow et al., 2015, Fig. 1).
-* Result: AI is **99.3%** confident that it sees a gibbon, despite image clearly shows a panda to human eye.
+* **Note:** For deep neural networks, this formula represents a linear approximation of the loss surface; it is an exact worst-case perturbation only for linear models such as logistic regression.
+* Adding a tiny perturbation fraction ($\epsilon = 0.007$) of this noise vector to an image of a panda causes the model to classify it as a gibbon (Goodfellow et al., 2015, Fig. 1).
+* Result: The neural network is **99.3%** confident that the image is a gibbon, even though the image remains clearly recognizable as a panda to a human observer.
 
 ---
 
-### Adversarial Training: Methods & Results
+### Adversarial Training: Formulation & Results
 
-* Traditional regularization safeguards such as *Dropout*, *Pretraining*, and *Model Averaging* are relatively **ineffective** in reducing vulnerability to these attacks.
-* Authors propose mixing adversarial examples directly into training data alongside clean examples, continually regenerating them against current version of model.
-* Training objective becomes a blend, with $\alpha = 0.5$:
+* Traditional regularization techniques such as *Dropout*, *Pretraining*, and *Model Averaging* provide relatively **ineffective** protection against targeted adversarial perturbations.
+* The authors propose *adversarial training*: injecting adversarial examples directly into the training batch alongside clean examples, continuously generating fresh perturbations against the current parameter state.
+* The modified training objective combines clean and adversarial loss with weight factor $\alpha = 0.5$:
 
 $$\tilde{J}(\theta, x, y) = \alpha J(\theta, x, y) + (1 - \alpha) J(\theta, x + \epsilon \operatorname{sign}(\nabla_x J(\theta, x, y)))$$
 
-* On MNIST with a maxout network, this dropped error rate on adversarial examples from **89.4% down to 17.9%**.
-* Caveat: Even at 17.9%, model's average confidence on its wrong answers remained high at **81.4%**, meaning it still fails confidently, just less often.
-* Bonus result: Adversarial training also improved clean accuracy. Using a larger maxout network (1,600 units per layer instead of 240) trained with both dropout and adversarial training, the authors reached a best-reported **0.782% error rate**. This beats the same architecture trained without adversarial training (1.14% error, where the extra capacity caused mild overfitting), but it is statistically indistinguishable from the best existing dropout-based result on this benchmark, a fine-tuned DBM at 0.79% error.
+* On the MNIST dataset using a Maxout network, adversarial training reduced the error rate on adversarial inputs from **89.4% down to 17.9%**.
+* **Caveat:** Even at 17.9% adversarial error, the model's average confidence on incorrect predictions remained high at **81.4%**, indicating that the model still makes overconfident mistakes, albeit less frequently.
+* **Generalization Gains:** Adversarial training also improved clean test accuracy. Using an expanded Maxout network (1,600 units per layer instead of 240) trained with both dropout and adversarial examples, the authors achieved a benchmark error rate of **0.782%**. This outperformed the same architecture trained without adversarial examples (1.14% error, where extra capacity caused mild overfitting), matching top-performing dropout baselines on MNIST.
 
 ---
 
-### Adversarial Training vs. Weight Decay
+### Adversarial Training vs. $L_1$ Weight Decay
 
-* Adversarial training looks superficially similar to L¹ regularization, but they differ in an important way.
-* In adversarial training, penalty term can *disappear* once model becomes confident enough, meaning that it is self-regulating.
-* L¹ weight decay is more pessimistic: It keeps applying penalty even in cases where model already has good margin, overestimating damage an adversary can actually do.
-* For practical training on MNIST, an L¹ coefficient that would seem reasonable (0.0025) was already too large and caused over 5% training error.
-
----
-
-### How Training Cleans Up Model Weights
-
-* Before adversarial training, a naively trained model has messy, diffuse weight filters that respond to apparently random parts of an image (Goodfellow et al., 2015, Fig. 3, left panel).
-* After adversarial training, model's filters become noticeably more localized and interpretable, meaning that they respond to specific features rather than noise (Goodfellow et al., 2015, Fig. 3, right panel).
-* Forcing model to handle worst-case inputs pushes it to learn genuinely meaningful features for recognition.
+* Adversarial training shares mathematical similarities with $L_1$ weight decay, but the two methods function differently during optimization.
+* In adversarial training, the effective perturbation penalty *disappears* once the model becomes sufficiently confident and assigns large margin boundaries to correct labels, making adversarial training self-regulating.
+* $L_1$ weight decay applies a constant penalty regardless of margin size, overestimating the required regularization and degrading clean accuracy.
+* For practical MNIST experiments, a standard $L_1$ weight decay coefficient ($\lambda = 0.0025$) proved too severe, causing training error to exceed 5%.
 
 ---
 
-### Different Models & Confidence: RBF Tradeoff
+### Weight Visualization After Adversarial Training
 
-* Humans have poor instincts for high-dimensional spaces because we only live in three dimensions.
-* Radial Basis Function (RBF) networks are naturally resistant to adversarial examples: they only predict confidently near their training data, so when fooled they drop confidence to just **1.2%**, meaning that model correctly "knows what it doesn't know."
-* However, RBF networks cannot generalize well because they are not invariant to significant transformations of their input, meaning that high precision comes at cost of recall.
-* The paper frames this as a fundamental precision-recall tradeoff: linear models have high recall (respond to everything in right direction) but low precision (overconfident in unfamiliar regions); RBF models are reverse.
-
----
-
-### Adversarial Examples Transfer Between Models
-
-* An adversarial example built to fool one AI model will usually fool a completely different model too, even one with a different architecture trained on different data.
-* Adversarial examples do not exist in tiny isolated pockets; they occupy wide, continuous regions of input space.
-* Because different models trained on same task learn similar linear decision boundaries, they share same blind spots.
-* Evidence: when adversarial examples from a maxout network were tested on a softmax classifier, it agreed with maxout network's wrong label **84.6%** of time on shared mistakes.
+* Prior to adversarial training, standard neural network weight filters display diffuse, noisy patterns that respond to seemingly random pixel configurations (Goodfellow et al., 2015, Fig. 3, left panel).
+* Following adversarial training, the learned weight filters become visibly localized and structured, responding to coherent edge and shape features rather than high-frequency noise (Goodfellow et al., 2015, Fig. 3, right panel).
+* Forcing the network to resist worst-case perturbations encourages it to rely on robust, semantically meaningful feature representations.
 
 ---
 
-### Defenses That Don't Work (Section 9)
+### Model Confidence & The RBF Tradeoff
 
-* **Generative training:** An MP-DBM generative model still achieved a **97.5% error rate** on adversarial examples, meaning that being generative alone is not sufficient.
-* **Ensembling:** An ensemble of 12 maxout networks still got a **91.1% error rate** on adversarial examples targeted at whole ensemble (87.9% when targeted at a single member). Averaging over many models provides only marginal resistance.
+* Radial Basis Function (RBF) networks evaluate inputs based on distance to stored prototypes, making them naturally resistant to adversarial examples: they predict with high confidence only when inputs lie near training data points.
+* When fooled by out-of-distribution inputs, an RBF network's prediction confidence drops to **1.2%**, meaning the model accurately reflects uncertainty ("knows what it doesn't know").
+* However, RBF networks struggle to generalize because they lack invariance to standard transformations, creating a fundamental precision-recall trade-off:
+  - Linear models exhibit high recall (generalize well) but low precision (overconfident in unfamiliar regions).
+  - RBF models exhibit high precision (low overconfidence) but low recall (poor generalization).
+
+---
+
+### Transferability of Adversarial Examples
+
+* An adversarial example generated to fool one neural network model frequently fools another model, even if the second model uses a different architecture or was trained on a separate dataset.
+* Adversarial perturbations do not rely on narrow, isolated points in input space; rather, they inhabit wide, continuous regions of misclassification.
+* Because different classifiers trained on the same task learn similar linear decision boundaries, they share common high-dimensional blind spots.
+* **Empirical Evidence:** Adversarial examples generated against a Maxout network transferred to a Softmax classifier, which agreed with the Maxout model's incorrect class label **84.6%** of the time on shared misclassifications.
+
+---
+
+### Failed Defense Strategies (Section 9)
+
+* **Generative Pretraining:** A Deep Boltzmann Machine (MP-DBM) generative model still suffered a **97.5% error rate** under adversarial attack, demonstrating that generative training alone does not confer robustness.
+* **Model Ensembling:** An ensemble of 12 Maxout networks still yielded a **91.1% error rate** when evaluated against adversarial examples targeted at the ensemble average (and 87.9% when targeted at individual ensemble members). Simple model averaging offers limited defense.
 
 ---
 
 ### Rubbish Class Examples
 
-* AI models can be tricked by inputs that contain no real objects at all, which are pure noise.
-* In basic demonstration, authors fed 10,000 samples of random Gaussian noise directly into classifiers with no modification. A naively trained maxout network classified **98.35%** of these as real objects, with **92.8%** average confidence.
-* In a targeted variant, authors took a Gaussian noise sample and applied a single gradient step toward a specific category (e.g., "airplane"). To a human image still looks like colorful static, but network classifies it as an airplane with over **50%** confidence.
-* RBF networks are immune to this: they achieve **0% error** on rubbish examples because they cannot confidently predict any class far from their training data.
+* Neural networks can be manipulated into making highly confident classifications on inputs containing no recognizable object features (pure noise).
+* **Unmodified Noise:** Feeding 10,000 unperturbed Gaussian noise samples to a standard Maxout network resulted in **98.35%** of samples being classified as real digit classes with an average confidence of **92.8%**.
+* **Targeted Noise Perturbation:** Taking a Gaussian noise sample and applying a single gradient step toward a target class (e.g., "airplane") causes the network to output that label with over **50%** confidence, even though the image remains visual static to a human.
+* RBF networks achieve **0% error** on rubbish class examples because out-of-distribution inputs produce low confidence scores across all categories.
 
 ---
 
-### Connection to Our Research
+### Connection to Our Project
 
-* This paper invented adversarial training, the exact defense our project investigates. Without Goodfellow et al., there is no adversarial training pipeline for Rice et al. to later discover robust overfitting in.
-* FGSM is conceptual predecessor to PGD, which is a stronger attack our project uses. Understanding one-step logic of FGSM is necessary background before PGD's multi-step version makes sense.
-* The paper's own caveat points directly to our research question: even after adversarial training, model still failed with high average confidence on wrong answers. Robust overfitting is a deeper version of this same problem.
-* Early hint of the phenomenon itself: when the authors scaled up their maxout network, they noticed clean validation error stayed flat over training while adversarial validation error did not, so they had to switch to early stopping based on the adversarial validation error specifically. This is a direct, early sighting of clean and robust performance decoupling during training, which is the same gap Rice et al. later names and studies as robust overfitting.
-* The linearity explanation gives us a lens for interpreting our results. If models memorize perturbation directions instead of learning truly robust boundaries, that is exactly what paper predicts linear models are biased to do.
-* The paper frames robustness and trainability as a fundamental tension: "models that are easy to optimize are easy to perturb." Our overfitting point is exact epoch where that tension breaks down.
+* **Foundational Framework:** Goodfellow et al. introduced the adversarial training paradigm that forms the core subject of our research into robust overfitting.
+* **Methodological Lineage:** The Fast Gradient Sign Method (FGSM) is the single-step precursor to Projected Gradient Descent (PGD), the multi-step attack used across our experimental benchmarks.
+* **Persistent Overconfidence:** The authors' initial observation—that adversarially trained models still exhibit high confidence on residual errors—foreshadows the generalization breakdown studied in robust overfitting.
+* **Early Sighting of Robust Generalization Gap:** When scaling up network capacity, Goodfellow et al. noted that clean validation error stabilized while adversarial validation error diverged, requiring early stopping tuned to adversarial validation loss. This represents an early observation of the decoupling between clean and robust validation metrics later detailed by Rice et al.
+* **Theoretical Context:** The linearity hypothesis provides an analytical framework for interpreting robust overfitting: if models learn linear decision boundaries that memorize perturbation directions rather than true data geometry, robustness degrades during extended training.
 
 ---
 
 ### Works Cited
 
-* Goodfellow, Ian J., et al. "Explaining and Harnessing Adversarial Examples." *International Conference on Learning Representations*, 2015. arXiv, https://arxiv.org/abs/1412.6572.
+* Goodfellow, Ian J., Jonathon Shlens, and Christian Szegedy. "Explaining and Harnessing Adversarial Examples." *International Conference on Learning Representations*, 2015. arXiv: https://arxiv.org/abs/1412.6572.
