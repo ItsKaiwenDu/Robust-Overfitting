@@ -2,11 +2,35 @@
 
 This guide provides instructions for setting up cloud GPU computing resources on **Lambda Labs** to run our robust overfitting experiments.
 
+*Last updated: July 27, 2026.*
+
+---
+
+## Prerequisites: Generate an SSH Key
+
+Before launching an instance, you need an SSH key pair on your local machine. To check if you already have one:
+
+```bash
+ls ~/.ssh/id_ed25519.pub
+```
+
+If the file exists, you are good to go. Skip to Step 1. If not, follow instruction below:
+
+```bash
+ssh-keygen -t ed25519
+```
+
+Press **Enter** to accept default file location and optionally set a passphrase. Then copy the public key to paste into Lambda Labs later:
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
 ---
 
 ## 1. Provisioning a Cloud GPU Instance
 
-For PreActResNet-18 training runs on CIFAR-10, we recommend using an **NVIDIA A10 (24 GB PCIe)** instance on Lambda Labs, which balances compute speed and cost (~$0.75/hour).
+For PreActResNet-18 training runs on CIFAR-10, we use **NVIDIA A10 (24 GB PCIe)** instance on Lambda Labs, which balances compute speed and cost ($1.29/hour).
 
 1. Log in or create an account at [Lambda Labs](https://lambdalabs.com/).
 2. Navigate to **SSH Keys** tab and upload your local machine's public SSH key (typically located at `~/.ssh/id_rsa.pub` or `~/.ssh/id_ed25519.pub`).
@@ -15,9 +39,9 @@ For PreActResNet-18 training runs on CIFAR-10, we recommend using an **NVIDIA A1
    * **Instance type:** Select **A10 (24 GB PCIe)** instance type.
    * **Region:** Choose an available region.
    * **Base image:** Select **Lambda Stack 24.04** (comes pre-configured with CUDA and PyTorch).
-   * **Filesystem:** Keep default settings (**No filesystem**, as we will use fast local instance storage).
+   * **Filesystem:** Select **Don't attach a filesystem**, as we will use fast local instance storage.
    * **Security:** Select **Global firewall rules** and click **Confirm** (Lambda Labs will automatically associate your uploaded SSH key).
-5. Click final launch button.
+5. Click **Confirm** to launch the instance.
 6. Once status shows `Running`, note instance IP address (`<INSTANCE_IP>`).
 
 ---
@@ -61,7 +85,7 @@ rsync -avz --exclude '.venv' --exclude '__pycache__' --exclude 'cifar-data' --ex
 On your cloud instance, clone public repository:
 
 ```bash
-git clone https://github.com/<USERNAME>/Robust-Overfitting.git
+git clone https://github.com/ItsKaiwenDu/Robust-Overfitting.git
 cd Robust-Overfitting
 ```
 
@@ -95,10 +119,10 @@ Since adversarial training runs can take several hours, SSH connection drops wil
    ```bash
    tmux new -s training
    ```
-2. Activate your virtual environment and start training (example script to be created in Week 3):
+2. Activate your virtual environment and start training:
    ```bash
    source .venv/bin/activate
-   python train_cifar.py --fname runs/baseline_run
+   python scripts/train.py
    ```
 3. Detach from session by pressing `Ctrl + B`, then `D`.
 4. You can now close your terminal or disconnect.
@@ -113,11 +137,12 @@ Since adversarial training runs can take several hours, SSH connection drops wil
 
 To monitor training curves (like train/test robust loss and accuracy) in real-time, you can use SSH port forwarding.
 
-1. Start TensorBoard on cloud instance pointing to logs directory:
+1. On the cloud instance, open a new tmux session and start TensorBoard:
    ```bash
+   tmux new -s tensorboard
    tensorboard --logdir=runs/ --port=6006
    ```
-2. On your local machine, open a terminal and run forwarding command:
+2. On your local machine, open a new terminal and run the port forwarding command:
    ```bash
    ssh -N -L 6006:localhost:6006 lambda-overfit
    ```
@@ -125,15 +150,59 @@ To monitor training curves (like train/test robust loss and accuracy) in real-ti
 
 ---
 
-## 7. Terminating Instance to Stop Billing
+## 7. Checking Training Progress
+
+After detaching from the tmux session, you can check on the training run at any time.
+
+**Option A: Re-attach to tmux** to see live terminal output (epoch logs, loss values):
+```bash
+ssh lambda-overfit
+tmux attach -t training
+```
+Detach again with `Ctrl + B`, then `D`.
+
+**Option B: Check GPU utilization** to confirm training is actively using the GPU:
+```bash
+nvidia-smi
+```
+If training is running, you should see near-100% GPU utilization and high memory usage.
+
+**Option C: Count saved checkpoints** to estimate how far along training is (one checkpoint saved every 5 epochs):
+```bash
+ls -l ~/Robust-Overfitting/Checkpoints/
+```
+For example, 20 files means epoch 100 has been reached out of 200.
+
+**Option D: View TensorBoard** — see Section 8 for real-time accuracy and loss curves in your browser.
+
+---
+
+## 9. Downloading Results from Instance
+
+Run the following commands **from your local machine** to download results before terminating the instance:
+
+```bash
+# Download model checkpoints
+rsync -avz lambda-overfit:~/Robust-Overfitting/Checkpoints/ ./Checkpoints/
+
+# Download evaluation results and plots
+rsync -avz lambda-overfit:~/Robust-Overfitting/Report/ ./Report/
+
+# Download TensorBoard logs
+rsync -avz lambda-overfit:~/Robust-Overfitting/runs/ ./runs/
+```
+
+---
+
+## 10. Terminating Instance to Stop Billing
 
 > [!CAUTION]
 > Lambda Labs instances are billed continuously while they are in **Booting** or **Running** state. Shutting down OS from within terminal (e.g., `sudo shutdown`) **does not** stop billing.
 
-To stop incurring charges, you must terminate instance through dashboard:
+To stop incurring charges, follow instructions below:
 1. Go to Lambda Labs dashboard under **Instances** tab.
 2. Select checkbox next to your running instance.
 3. Click **Terminate** button in top-right corner of dashboard.
 
 > [!WARNING]
-> Terminating an instance deletes all files and data stored on its local storage. Be sure to pull/synchronize any training logs, model checkpoints, or results to your local machine (using `rsync` or Git) **before** terminating.
+> Terminating an instance deletes all files and data stored on its local storage. Be sure to download any training logs, model checkpoints, or results to your local machine (using `rsync`) **before** terminating.
