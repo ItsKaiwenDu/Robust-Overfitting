@@ -22,7 +22,7 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 
   1. Configure required Python virtual environment, set up gitignore, and specify dependencies in `requirements.txt`.
   2. Create a Lambda Labs cloud account and set up billing to access NVIDIA A10G GPU instances for the Week 4 training run.
-  3. Download PreActResNet-18 model architecture in PyTorch (`Models/preact_resnet.py`) from Rice et al. 2020 codebase to ensure exact experimental replication.
+  3. Download PreActResNet-18 model architecture in PyTorch (`Models/preact_resnet.py`) from the Rice et al. 2020 codebase so our training setup matches theirs.
   4. Write a setup verification script (`scripts/verify_setup.py`) to verify package imports, check hardware/device availability (such as CUDA/MPS/CPU), and run a forward pass sanity check with the model to ensure the training environment is ready to go.
   5. Create presentation slides summarizing the literature review with visual and mathematical explanations of adversarial attacks. These slides communicate our foundational understanding to the PI and will be reviewed and refined during the Friday meeting with Dr. Tran.
 
