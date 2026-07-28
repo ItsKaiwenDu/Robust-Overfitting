@@ -57,14 +57,21 @@
 ---
 
 ## Week 5 (Completed)
-* **Progress Report:** On Friday, I set up SSH authentication, launched an NVIDIA A10 GPU instance on Lambda Labs, verified environment dependencies and GPU capabilities with [`scripts/verify_setup.py`](../scripts/verify_setup.py), and ran a 1-epoch diagnostic smoke test to confirm checkpoint writing. I then launched the full 200-epoch PGD-10 adversarial training job inside a persistent `tmux` session on Lambda Labs (~2.3 mins per epoch, total run time ~8 hours). The training run successfully completed all 200 epochs, and we observed clear robust overfitting: test robust accuracy peaked at **47.85%** at Epoch 105 (right after the first learning rate decay) before declining to **41.26%** by Epoch 200, while train robust accuracy reached **89.71%**. All 40 model weight checkpoints (`epoch_5.pt` through `epoch_200.pt`, totaling ~3.57 GB) and TensorBoard log files were successfully downloaded to our local workspace. To prevent exceeding GitHub size limits, we updated [`.gitignore`](../.gitignore) to exclude `Checkpoints/` and `*.pt` files from version control while keeping all checkpoints stored locally for evaluation.
+* **Progress Report:** Last Friday, I launched the full 200-epoch PGD-10 adversarial training run on a 1x NVIDIA A10 GPU instance on Lambda Labs inside a persistent `tmux` session (~2.3 mins per epoch, ~8 hours total), preceded by a brief SSH setup and 1-epoch diagnostic smoke test. The run completed all 200 epochs with clear robust overfitting observed. All 40 checkpoints (~3.57 GB) were downloaded locally, excluded from version control via `.gitignore`, and uploaded to HuggingFace for public access. This week, I created [`scripts/evaluate.py`](../scripts/evaluate.py) to run PGD-20 adversarial evaluation across all 40 checkpoints on the CIFAR-10 test set and launched it on Lambda Labs, confirming robust overfitting as described by Rice et al. (2020). Metrics were saved to [`evaluation_results.csv`](evaluation_results.csv) and visualized in [`robust_overfitting_curves.png`](robust_overfitting_curves.png) using [`scripts/plot_results.py`](../scripts/plot_results.py).
 
-  Today, I created [`scripts/evaluate.py`](../scripts/evaluate.py) to run PGD-20 adversarial evaluation across all 40 model checkpoints (`epoch_5.pt` through `epoch_200.pt`) on the CIFAR-10 test set. After verifying [`scripts/evaluate.py`](../scripts/evaluate.py) locally with `--diagnostic`, we launched the full evaluation run on a 1x NVIDIA A10 GPU instance on Lambda Labs. The evaluation results clearly confirm the robust overfitting phenomenon described by Rice et al. (2020): test robust accuracy under PGD-20 reached its peak at **45.91%** at Epoch 105 (with clean test accuracy of **81.94%** and robust loss of **1.4761**), before steadily degrading to **36.18%** by Epoch 200 (a drop of **9.73 percentage points**), while robust loss exploded to **3.7487**. Metrics were logged to [`evaluation_results.csv`](evaluation_results.csv) and visualized using [`scripts/plot_results.py`](../scripts/plot_results.py), generating [`robust_overfitting_curves.png`](robust_overfitting_curves.png) to clearly highlight the early stopping candidate point at Epoch 105.
+  **Training results (PGD-10):**
+  * Test robust accuracy: peaked at **47.85%** at Epoch 105, declined to **41.26%** by Epoch 200
+  * Train robust accuracy: **89.71%** at Epoch 200
+
+  **Evaluation results (PGD-20):**
+  * Test robust accuracy: peaked at **45.91%** at Epoch 105, dropped to **36.18%** by Epoch 200 (−**9.73 percentage points**)
+  * Clean accuracy at Epoch 105: **81.94%**
+  * Robust loss: **1.4761** at Epoch 105 → **3.7487** at Epoch 200
 
 * **Deliverables:**
-  * [`setup_lambda_labs.md`](../setup_lambda_labs.md): Guide for Lambda Labs deployment, SSH setup, tmux, and TensorBoard port forwarding.
-  * [`.gitignore`](../.gitignore): Updated to ignore raw datasets, logs, and model checkpoint files.
-  * [`scripts/evaluate.py`](../scripts/evaluate.py): PyTorch evaluation script running PGD-20 attacks across checkpoints.
-  * [`evaluation_results.csv`](evaluation_results.csv): Raw evaluation metrics (clean loss, clean accuracy, robust loss, robust accuracy, evaluation runtime) for all 40 checkpoints.
-  * [`scripts/plot_results.py`](../scripts/plot_results.py): Matplotlib visualization script for generating performance curves.
-  * [`robust_overfitting_curves.png`](robust_overfitting_curves.png): Chart showing clean vs. robust accuracy and loss curves highlighting the peak robust accuracy at Epoch 105.
+  * [`.gitignore`](../.gitignore): Excludes large files (datasets, checkpoints) from version control.
+  * [Model checkpoints](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints/tree/main): All 40 checkpoints (~3.57 GB) hosted on HuggingFace.
+  * [`scripts/evaluate.py`](../scripts/evaluate.py): Evaluates all 40 checkpoints using PGD-20.
+  * [`evaluation_results.csv`](evaluation_results.csv): Accuracy and loss metrics for all 40 checkpoints.
+  * [`scripts/plot_results.py`](../scripts/plot_results.py): Plots clean and robust accuracy curves.
+  * [`robust_overfitting_curves.png`](robust_overfitting_curves.png): Chart showing robust overfitting with peak at Epoch 105.
