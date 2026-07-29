@@ -36,6 +36,8 @@ Research Objectives:
    python3 scripts/verify_setup.py
    ```
 
+> **Note:** The **CIFAR-10** dataset (~170 MB) will be downloaded automatically to `data/` on the first training run. No manual download is required.
+
 ---
 
 ## Project Directory Structure
