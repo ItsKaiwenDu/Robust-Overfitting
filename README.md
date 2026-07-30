@@ -12,6 +12,8 @@ Research Objectives:
 * Replicate adversarial training results from Rice et al. (2020) paper using a PreActResNet-18 model on CIFAR-10.
 * Find exact point where model stops learning real robustness and starts memorizing specific perturbation patterns.
 
+![Training Results Curves](Report/training_results_curves.png)
+
 ---
 
 ## Research Team
@@ -54,7 +56,8 @@ Robust-Overfitting/
 ├── Report/                            # Presentations and evaluation outputs
 │   ├── presentation.pdf               # Research presentation slides
 │   ├── evaluation_results.csv         # Raw evaluation metrics across checkpoints
-│   └── robust_overfitting_curves.png  # Robust overfitting accuracy/loss plot
+│   ├── robust_overfitting_curves.png  # Robust overfitting accuracy/loss plot
+│   └── training_results_curves.png    # Training & evaluation performance curves
 ├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
 │   ├── evaluate.py                    # Checkpoint evaluation script (PGD-20)
 │   ├── plot_results.py                # Plotting script for accuracy and loss curves

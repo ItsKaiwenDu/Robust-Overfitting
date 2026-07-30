@@ -74,4 +74,5 @@
   * [`scripts/evaluate.py`](../scripts/evaluate.py): Evaluates all 40 checkpoints using PGD-20.
   * [`evaluation_results.csv`](evaluation_results.csv): Accuracy and loss metrics for all 40 checkpoints.
   * [`scripts/plot_results.py`](../scripts/plot_results.py): Plots clean and robust accuracy curves.
-  * [`robust_overfitting_curves.png`](robust_overfitting_curves.png): Chart showing robust overfitting with peak at Epoch 105.
+  * [`robust_overfitting_curves.png`](Report/robust_overfitting_curves.png): Chart showing robust overfitting with peak at Epoch 105.
+  * [`training_results_curves.png`](Report/training_results_curves.png): Detailed training and evaluation accuracy/loss curves.
