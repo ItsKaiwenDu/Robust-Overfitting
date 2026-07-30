@@ -13,7 +13,7 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 
 * **Expectations:** A solid theoretical understanding of adversarial examples and early stopping.
 
-* **Progress Report & Deliverables:** Documented in [`Report/progress.md`](Report/progress.md#week-1-completed).
+* **Progress Report & Deliverables:** Documented in [`progress.md`](progress.md#week-1-completed).
 
 ---
 
@@ -28,7 +28,7 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 
 * **Expectations:** A fully operational local and cloud training environment, model implementation complete, and a completed presentation (with placeholders reserved for our own research findings) with a clear and logical flow.
 
-* **Progress Report & Deliverables:** Documented in [`Report/progress.md`](Report/progress.md#week-2-completed).
+* **Progress Report & Deliverables:** Documented in [`progress.md`](progress.md#week-2-completed).
 
 ---
 
@@ -41,7 +41,7 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 
 * **Expectations:** A fully functional and verified training script (`scripts/train.py`), ready for full training runs on Lambda Labs next week.
 
-* **Progress Report & Deliverables:** Documented in [`Report/progress.md`](Report/progress.md#week-3-completed).
+* **Progress Report & Deliverables:** Documented in [`progress.md`](progress.md#week-3-completed).
 
 ---
 
@@ -56,7 +56,7 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 
 * **Expectations:** A complete set of 40 model checkpoints in the `Checkpoints/` directory covering the full 200-epoch run (saved every 5 epochs), ready for evaluation.
 
-* **Progress Report & Deliverables:** Documented in [`Report/progress.md`](Report/progress.md#week-4-completed).
+* **Progress Report & Deliverables:** Documented in [`progress.md`](progress.md#week-4-completed).
 
 ---
 
@@ -69,7 +69,7 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 
 * **Expectations:** A completed test evaluation, a populated results CSV, and a clear plot showing peak robust accuracy epoch.
 
-* **Progress Report & Deliverables:** Documented in [`Report/progress.md`](Report/progress.md#week-5-completed).
+* **Progress Report & Deliverables:** Documented in [`progress.md`](progress.md#week-5-completed).
 
 ---
 

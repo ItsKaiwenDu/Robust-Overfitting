@@ -51,9 +51,8 @@ Robust-Overfitting/
 ├── Notes/                             # Reading literature notes
 │   ├── goodfellow.md                  # Literature notes on FGSM and adversarial training
 │   └── rice.md                        # Literature notes on robust overfitting
-├── Report/                            # Progress reports, presentations, and evaluation outputs
+├── Report/                            # Presentations and evaluation outputs
 │   ├── presentation.pdf               # Research presentation slides
-│   ├── progress.md                    # Weekly progress reports
 │   ├── evaluation_results.csv         # Raw evaluation metrics across checkpoints
 │   └── robust_overfitting_curves.png  # Robust overfitting accuracy/loss plot
 ├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
@@ -65,6 +64,7 @@ Robust-Overfitting/
 ├── runs/                              # [Ignored] TensorBoard logging directories
 ├── .gitignore                         # Files and folders ignored by Git
 ├── goals.md                           # Weekly goals, objectives, and progress tracking
+├── progress.md                        # Weekly progress reports
 ├── proposal.md                        # Project proposal document
 ├── README.md                          # Project documentation and setup
 ├── setup_lambda_labs.md               # Cloud GPU setup guide for Lambda Labs
@@ -77,7 +77,7 @@ Robust-Overfitting/
 
 Weekly research objectives, detailed action items, expectations, and deliverables are tracked in [`goals.md`](goals.md).
 
-For weekly execution logs and detailed progress notes, see [`Report/progress.md`](Report/progress.md).
+For weekly execution logs and detailed progress notes, see [`progress.md`](progress.md).
 
 ---
 
