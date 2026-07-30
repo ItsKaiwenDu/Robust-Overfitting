@@ -1,14 +1,19 @@
-'''
-Title: PreActResNet-18 Checkpoint Evaluation Script (PGD-20)
-Purpose:
-    This script iterates through saved model checkpoints from the adversarial 
-    training run, evaluating each checkpoint on the CIFAR-10 test set under 
-    both clean (unperturbed) conditions and PGD-20 adversarial attacks. 
-    Metrics are saved to a CSV file for tracking robust overfitting curves.
-References:
-    - Rice, Wong & Kolter (2020) "Overfitting in adversarially robust deep learning"
-    - Goodfellow et al. (2014) "Explaining and Harnessing Adversarial Examples"
-'''
+# File Name: evaluate.py
+# Last Updated: July 29, 2026
+# Description:
+#   This script measures how well a trained model is doing at each saved
+#   checkpoint. For every checkpoint, it checks accuracy on normal
+#   (clean) test images, and it also checks accuracy after attacking
+#   those images with PGD-20, a standard adversarial attack. This lets us
+#   see how the model's real-world robustness changes over the course of
+#   training, which is what we need to find robust overfitting. Results
+#   for every checkpoint get written out to a CSV file.
+# References:
+#   * Rice, L., Wong, E., and Kolter, J. Z. (2020). Overfitting in
+#     adversarially robust deep learning. ICML.
+#   * Madry, A., Makelov, A., Schmidt, L., Tsipras, D., and Vladu, A.
+#     (2018). Towards Deep Learning Models Resistant to Adversarial
+#     Attacks. ICLR. (defines the PGD attack used here)
 
 import argparse
 import csv
@@ -28,14 +33,18 @@ from torchvision import datasets, transforms
 
 from Models.preact_resnet import PreActResNet18
 
-# Ignore SSL errors for CIFAR-10 downloading if needed
+# Skips SSL certificate checks so the CIFAR-10 download doesn't fail on
+# machines with outdated or misconfigured certificates.
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
 class Normalizer(nn.Module):
-    """
-    Channel-wise normalization layer operating inside the PyTorch forward pass.
-    Allows raw [0, 1] tensor inputs for both clean images and adversarial perturbing loops.
+    """Rescales images using CIFAR-10's known mean and standard deviation.
+
+    Models train and evaluate better on normalized data. This is kept as
+    its own step (instead of baking it into the dataset transform) so the
+    raw, unnormalized image can still be used directly when generating
+    the adversarial attack.
     """
     def __init__(self, mean, std):
         super().__init__()
@@ -47,15 +56,24 @@ class Normalizer(nn.Module):
 
 
 def generate_pgd_adversarial(model, normalizer, X, y, epsilon, alpha, num_steps, device):
-    """
-    Generates PGD adversarial perturbation for input images X.
-    Uses random initialization within the epsilon-ball, clamped to valid image range [0, 1].
+    """Creates adversarial (attacked) versions of a batch of images.
+
+    This is the PGD attack, and it's the standard method for testing
+    adversarial robustness. How it works:
+    1. Start from the original image plus a small random change.
+    2. Run the image through the model and see how wrong it is (the loss).
+    3. Change the pixels a bit further in the direction that makes the model
+       even more wrong.
+    4. Keep the change small and repeat this for a set number of steps.
+
+    The result still looks like the original image but is designed to
+    fool the model.
     """
     model.eval()
     
-    # Uniform random start within [-epsilon, epsilon] ball
+    # Start from a small random perturbation instead of zero. This helps
+    # avoid a weaker, less realistic attack and is standard practice for PGD.
     delta = torch.zeros_like(X).uniform_(-epsilon, epsilon).to(device)
-    # Ensure initial point is inside valid image bounds [0, 1]
     delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
     
     for _ in range(num_steps):
@@ -69,20 +87,26 @@ def generate_pgd_adversarial(model, normalizer, X, y, epsilon, alpha, num_steps,
         
         grad = delta.grad.detach()
         
-        # Gradient ascent step
+        # Step 3: move in the direction that increases the loss (the sign
+        # of the gradient).
         delta = delta.detach() + alpha * grad.sign()
-        # Project back into epsilon-ball
+        # Step 4: keep the change within the allowed budget and make sure
+        # the image stays a valid pixel value.
         delta = torch.clamp(delta, min=-epsilon, max=epsilon)
-        # Keep total image within valid range [0, 1]
         delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
         
     return (X + delta).detach()
 
 
 def evaluate_checkpoint(model, normalizer, dataloader, device, epsilon, alpha, num_steps):
-    """
-    Evaluates a single model state on the dataloader under both clean and PGD conditions.
-    Returns: (clean_loss, clean_acc, robust_loss, robust_acc)
+    """Measures a model's accuracy and loss on clean and attacked images.
+
+    Runs through the test data in two passes:
+    1. Evaluate on the original ("clean") images.
+    2. Generate an adversarial attack for each batch, then evaluate on that.
+
+    Returns the average loss and accuracy for both passes, which together
+    show how much the model's performance drops under attack.
     """
     model.eval()
     clean_loss = 0.0
@@ -91,7 +115,7 @@ def evaluate_checkpoint(model, normalizer, dataloader, device, epsilon, alpha, n
     robust_correct = 0
     total = 0
     
-    # 1. Clean evaluation pass (no gradient tracking needed)
+    # Step 1: evaluate on the original, unmodified images.
     with torch.no_grad():
         for X, y in dataloader:
             X, y = X.to(device), y.to(device)
@@ -104,7 +128,9 @@ def evaluate_checkpoint(model, normalizer, dataloader, device, epsilon, alpha, n
             clean_pred = clean_outputs.argmax(dim=1)
             clean_correct += clean_pred.eq(y).sum().item()
             
-    # 2. Robust evaluation pass (PGD-20 attack requiring gradients)
+    # Step 2: generate an attack for each batch, then evaluate on that.
+    # Gradients need to be enabled here since generating the attack requires
+    # them, even though the model itself isn't being trained.
     for X, y in dataloader:
         X, y = X.to(device), y.to(device)
         with torch.enable_grad():
@@ -132,14 +158,26 @@ def evaluate_checkpoint(model, normalizer, dataloader, device, epsilon, alpha, n
 
 
 def extract_epoch_number(filename):
-    """
-    Extracts numerical epoch index from filename (e.g. 'epoch_105.pt' -> 105).
+    """Pulls the epoch number out of a checkpoint filename (e.g. epoch_12.pt -> 12).
+
+    Used to sort checkpoints in the right order and to label results in
+    the output CSV.
     """
     match = re.search(r'\d+', filename)
     return int(match.group()) if match else -1
 
 
 def main():
+    """Runs evaluation on every checkpoint in a directory and saves results to CSV.
+
+    Overall flow:
+    1. Parse settings and set up the device (GPU or CPU) and random seed.
+    2. Find and sort all checkpoint files in the given directory.
+    3. Load the test dataset.
+    4. For each checkpoint, in order: load its weights, evaluate on clean
+       and adversarial (PGD-20) images, print a summary line, and write
+       the result to the output CSV.
+    """
     parser = argparse.ArgumentParser(description='Evaluate PreActResNet-18 Checkpoints with PGD-20')
     parser.add_argument('--checkpoint-dir', default='Checkpoints', type=str, help='Directory containing saved .pt checkpoints')
     parser.add_argument('--output-csv', default='Report/evaluation_results.csv', type=str, help='Path to output CSV file')
@@ -148,11 +186,13 @@ def main():
     parser.add_argument('--epsilon', default=8.0/255.0, type=float, help='Adversarial perturbation magnitude epsilon')
     parser.add_argument('--alpha', default=2.0/255.0, type=float, help='PGD step size alpha')
     parser.add_argument('--attack-steps', default=20, type=int, help='Number of PGD attack steps (default: 20 for PGD-20)')
-    parser.add_argument('--diagnostic', action='store_true', help='Diagnostic mode: evaluate on 10%% of test set')
+    parser.add_argument('--diagnostic', action='store_true', help='Diagnostic mode: evaluate on 10% of test set')
     parser.add_argument('--seed', default=42, type=int, help='Random seed for reproducibility')
     args = parser.parse_args()
 
-    # 1. Set reproducible seeds
+    # Step 1: set up device and reproducibility.
+    # Fix all random seeds so the evaluation (e.g. random PGD start point)
+    # is reproducible between runs.
     if args.seed is not None:
         random.seed(args.seed)
         np.random.seed(args.seed)
@@ -160,7 +200,7 @@ def main():
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(args.seed)
 
-    # 2. Hardware device selection
+    # Prefer GPU acceleration when available, falling back to CPU.
     if torch.cuda.is_available():
         device = torch.device("cuda")
         print("Using Device: CUDA")
@@ -171,15 +211,16 @@ def main():
         device = torch.device("cpu")
         print("Using Device: CPU")
 
-    # 3. Locate checkpoints
     if not os.path.exists(args.checkpoint_dir):
         raise FileNotFoundError(f"Checkpoint directory '{args.checkpoint_dir}' does not exist.")
 
+    # Step 2: find and sort all checkpoint files.
     ckpt_files = [f for f in os.listdir(args.checkpoint_dir) if f.endswith('.pt') or f.endswith('.pth')]
     if not ckpt_files:
         raise FileNotFoundError(f"No .pt or .pth checkpoint files found in '{args.checkpoint_dir}'.")
 
-    # Sort files numerically by epoch
+    # Sort by epoch number rather than filename, so results are evaluated
+    # and logged in training order.
     ckpt_files.sort(key=extract_epoch_number)
 
     print(f"Found {len(ckpt_files)} checkpoints in '{args.checkpoint_dir}'.")
@@ -187,12 +228,16 @@ def main():
     if args.diagnostic:
         print("Running in Diagnostic Mode (10% test dataset).")
 
-    # 4. Prepare CIFAR-10 Test Dataset
+    # Step 3: load the test dataset.
+    # No normalization here; that happens separately via the Normalizer
+    # module so the raw image is still available for generating attacks.
     test_transform = transforms.Compose([
         transforms.ToTensor(),
     ])
     test_dataset = datasets.CIFAR10(root=args.data_dir, train=False, download=True, transform=test_transform)
 
+    # Diagnostic mode uses a small slice of the test set for a quick sanity
+    # check, instead of a full (slower) evaluation.
     if args.diagnostic:
         test_indices = list(range(len(test_dataset)))[:int(0.1 * len(test_dataset))]
         test_dataset = Subset(test_dataset, test_indices)
@@ -200,17 +245,16 @@ def main():
 
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2, pin_memory=True)
 
-    # 5. Initialize Normalizer and Model
     cifar10_mean = (0.4914, 0.4822, 0.4465)
     cifar10_std = (0.2471, 0.2435, 0.2616)
     normalizer = Normalizer(mean=cifar10_mean, std=cifar10_std).to(device)
 
+    # Model is created once and its weights get overwritten for each
+    # checkpoint in the loop below, instead of rebuilding it every time.
     model = PreActResNet18(num_classes=10).to(device)
 
-    # 6. Initialize CSV File
     fieldnames = ['epoch', 'clean_loss', 'clean_acc', 'robust_loss', 'robust_acc', 'eval_time_sec']
     
-    # If output directory doesn't exist, create it
     out_dir = os.path.dirname(args.output_csv)
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
@@ -225,10 +269,13 @@ def main():
         print("=" * 85)
 
         for ckpt_name in ckpt_files:
+            # Step 4: load this checkpoint's weights, then evaluate it.
             epoch = extract_epoch_number(ckpt_name)
             ckpt_path = os.path.join(args.checkpoint_dir, ckpt_name)
 
-            # Load weights into model
+            # Checkpoints may be saved either as a plain state dict or
+            # wrapped in a dict with extra info (e.g. optimizer state), so
+            # this handles both formats.
             checkpoint = torch.load(ckpt_path, map_location=device)
             if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
                 model.load_state_dict(checkpoint['model_state_dict'])
@@ -253,7 +300,9 @@ def main():
 
             print(f"{epoch:^8d} | {clean_acc * 100:^11.2f}% | {robust_acc * 100:^11.2f}% | {clean_loss:^12.4f} | {robust_loss:^12.4f} | {eval_duration:^8.2f}")
 
-            # Write row to CSV
+            # Write results after every checkpoint (not just at the end) so
+            # progress isn't lost if a later checkpoint fails or the run
+            # gets interrupted.
             writer.writerow({
                 'epoch': epoch,
                 'clean_loss': f"{clean_loss:.6f}",

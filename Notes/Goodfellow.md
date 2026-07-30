@@ -1,7 +1,7 @@
 ## Reading Notes: Explaining and Harnessing Adversarial Examples
 ### Goodfellow, Shlens & Szegedy (ICLR 2015)
 
-> **Summary:** Adversarial examples can be thought of as optical illusions designed specifically for AI. This landmark paper from Google challenges the common belief that neural networks are tricked by adversarial examples because they are overly complex or excessively focused on fine details. Instead, Goodfellow et al. explain that the opposite is true: modern neural networks are intentionally designed to behave linearly to make training easier. However, in spaces with thousands of input dimensions, this linear behavior creates a massive vulnerability. Tiny, invisible adjustments across many pixels add up like thousands of small nudges to create a massive shift, forcing the model to make incorrect predictions with high confidence. The authors demonstrate this vulnerability using the Fast Gradient Sign Method (FGSM), a fast, one-step technique to generate adversarial inputs using the model's own gradient calculations. They show that training models directly on these adversarial examples helps them resist attacks and even improves accuracy on clean images, setting a new benchmark on the MNIST dataset. Finally, they show that standard defense ideas (such as model ensembling) fail, and that adversarial examples transfer across different network architectures because different models learn similar decision boundaries.
+> **Summary:** Adversarial examples can be thought of as optical illusions designed specifically for AI. This landmark paper from Google challenges the common belief that neural networks are tricked by adversarial examples because they are overly complex or excessively focused on fine details. Instead, Goodfellow et al. explain that the opposite is true: modern neural networks are intentionally designed to behave linearly to make training easier. However, in spaces with thousands of input dimensions, this linear behavior creates a massive vulnerability. Tiny, invisible adjustments across many pixels add up like thousands of small changes to create a massive shift, forcing the model to make incorrect predictions with high confidence. The authors demonstrate this vulnerability using the Fast Gradient Sign Method (FGSM), a fast, one-step technique to generate adversarial inputs using the model's own gradient calculations. They show that training models directly on these adversarial examples helps them resist attacks and even improves accuracy on clean images, setting a new benchmark on the MNIST dataset. Finally, they show that standard defense ideas (such as model ensembling) fail, and that adversarial examples transfer across different network architectures because different models learn similar decision boundaries.
 
 ---
 
@@ -35,8 +35,8 @@
 ### Fragility in High-Dimensional Spaces
 
 * Digital images consist of many individual pixels. Even a small 100×100 pixel RGB image contains 30,000 input values, placing the classifier in a 30,000-dimensional input space.
-* An attacker can alter every pixel value by a tiny amount $\epsilon$ that is imperceptible to human eyes.
-* In high-dimensional spaces, these tiny individual changes accumulate across all dimensions. Combined, they generate a large dot-product shift in the model's activation, driving the output across a decision boundary into a confident misclassification.
+* An attacker can alter every pixel value by a small amount $\epsilon$ that is imperceptible to human eyes.
+* In high-dimensional spaces, these small individual changes accumulate across all dimensions. Combined, they generate a large dot-product shift in the model's activation, driving the output across a decision boundary into a confident misclassification.
 * Because human intuition is bounded by three-dimensional space, high-dimensional linear aggregation is counterintuitive.
 
 ---
@@ -49,7 +49,7 @@
 $$\eta = \epsilon \operatorname{sign}(\nabla_x J(\theta, x, y))$$
 
 * **Note:** For deep neural networks, this formula represents a linear approximation of the loss surface; it is an exact worst-case perturbation only for linear models such as logistic regression.
-* Adding a tiny perturbation fraction ($\epsilon = 0.007$) of this noise vector to an image of a panda causes the model to classify it as a gibbon (Goodfellow et al., 2015, Fig. 1).
+* Adding a small perturbation fraction ($\epsilon = 0.007$) of this noise vector to an image of a panda causes the model to classify it as a gibbon (Goodfellow et al., 2015, Fig. 1).
 * Result: The neural network is **99.3%** confident that the image is a gibbon, even though the image remains clearly recognizable as a panda to a human observer.
 
 ---
