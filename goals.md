@@ -87,22 +87,57 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 ---
 
 ## Week 7 (Upcoming)
-* **Objective:** Analyze results from all runs, generate final plots, and draft the findings section of the report.
+* **Objective:** Build the background and research plan for studying robust overfitting under frequency-restricted adversarial perturbations.
 
-  1. Collect accuracy and loss metrics from all 4 training runs and compute the average and range of the peak robust accuracy epoch across seeds.
-  2. Create a plotting script `scripts/plot_results.py` that generates line charts showing clean vs. robust accuracy and training vs. test loss across all epochs and runs.
-  3. Draft the results section of the final report using the charts and numbers from steps 1 and 2.
+  1. Learn the basics of the Discrete Cosine Transform (DCT), Fast Fourier Transform (FFT), image-frequency bands, and JPEG compression. Distinguish between spatial-domain perturbations, which change pixel values directly, and frequency-domain perturbations, which change frequency coefficients.
+  2. Find and study research papers on frequency-domain adversarial attacks and adversarial training. Create reading notes that identify what each paper has already studied and how it relates to our project.
+  3. Determine whether prior work has studied robust overfitting separately for low-, middle-, and high-frequency perturbations. Use this review to define the project's exact research gap, revise the research question and hypothesis, and choose an appropriate transform for implementation.
 
-* **Expectations:** A completed `scripts/plot_results.py` with final charts and a drafted results section.
+* **Expectations:** A clearly defined and properly cited research direction, including a revised question and hypothesis, a documented research gap, and a decision about the frequency-domain representation to use.
 
 ---
 
 ## Week 8 (Upcoming)
-* **Objective:** Write the final report, update the presentation with our results, and clean up the repository.
+* **Objective:** Implement frequency-restricted adversarial training and verify that the new pipeline works correctly before full experiments.
 
-  1. Write the final report in LaTeX on Overleaf covering methodology, experimental setup, results, and conclusions, and export the compiled PDF to `Report/report.pdf`.
-  2. Update [`Report/presentation.pdf`](Report/presentation.pdf) to include our experimental results and findings alongside the existing literature slides.
-  3. Add comments to `scripts/train.py`, `scripts/evaluate.py`, and `scripts/plot_results.py` and remove any leftover debug code so the scripts are easy to follow.
-  4. Update `README.md` with step-by-step instructions for running each script, and verify `requirements.txt` lists all packages used, so anyone can reproduce our results.
+  1. Modify the training and evaluation scripts so that the adversarial attack changes only selected frequency coefficients instead of directly changing pixel values. Support separate low-, middle-, and high-frequency bands.
+  2. Define a reproducible experimental configuration for each band, including the frequency-band masks, perturbation budget, random seed, number of training epochs, saved checkpoints, and evaluation settings. Keep the existing pixel-space PGD result as the baseline for comparison.
+  3. Run a short local diagnostic to verify the forward and inverse transforms, confirm that only the intended frequency band is changed, and ensure that training and evaluation finish without errors.
+  4. Run a short diagnostic experiment on Lambda Labs to check runtime, GPU behavior, checkpoint saving, and result logging before starting the full experiments.
 
-* **Expectations:** A compiled PDF report (`Report/report.pdf`), an updated presentation with our results, and a clean public GitHub repository.
+* **Expectations:** Verified frequency-domain training and evaluation scripts, documented experiment settings, and successful local and Lambda Labs diagnostic runs.
+
+---
+
+## Week 9 (Upcoming)
+* **Objective:** Run the full frequency-band experiments and organize the resulting data for analysis.
+
+  1. Run full adversarial-training experiments on Lambda Labs using low-, middle-, and high-frequency perturbations, following the configuration established in Week 8.
+  2. Monitor each run for errors or unexpected behavior, and save checkpoints, training logs, evaluation CSV files, and plots in organized locations.
+  3. Evaluate all saved checkpoints using the matching frequency-restricted attack so robust accuracy can be compared consistently across training epochs and frequency bands.
+
+* **Expectations:** A complete, organized set of experimental results for the low-, middle-, and high-frequency conditions, ready for analysis.
+
+---
+
+## Week 10 (Upcoming)
+* **Objective:** Analyze whether robust overfitting differs by frequency band and begin communicating the findings.
+
+  1. Compare clean and robust accuracy curves across the pixel-space baseline and the low-, middle-, and high-frequency experiments. Identify each condition's peak robust accuracy and determine whether robustness declines with further training.
+  2. Investigate unclear, inconsistent, or unexpected results. Refine frequency-band definitions or rerun selected experiments only when needed to support a reliable conclusion.
+  3. Begin drafting the final report and consortium presentation slides, including the research question, experimental method, results, and the project's relationship to prior work.
+
+* **Expectations:** A defensible interpretation of the results, supported by plots and metrics, plus initial drafts of the report and consortium slides.
+
+---
+
+## Week 11 (Upcoming)
+* **Objective:** Complete and verify the final report and consortium presentation.
+
+  1. Finish the final report, clearly describing the motivation, related work, frequency-domain methodology, experimental results, limitations, and conclusions.
+  2. Complete the consortium presentation slides, making sure they communicate the research gap, method, results, and contribution in a clear sequence.
+  3. Review the report, code, figures, and slides for accuracy and reproducibility. Incorporate feedback and rehearse the presentation.
+
+* **Expectations:** A polished, verified final report, reproducible supporting materials, and presentation-ready consortium slides.
+
+*Note: Because the research schedule has been extended through November, providing roughly two additional months for the project, three weeks are intentionally left as buffer time in case an experiment needs to be rerun, unexpected problems arise, or additional time is needed to complete the work.*

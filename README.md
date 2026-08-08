@@ -7,12 +7,13 @@ This is GitHub repository for research on robust overfitting in adversarial trai
 ## Project Overview
 Deep neural networks can be easily fooled by adversarial attacks, which are small, hidden changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
 
-Research Objectives:
+The project first reproduced robust overfitting with pixel-space PGD adversarial training. Its next phase investigates whether robust overfitting changes when adversarial perturbations are restricted to different image-frequency bands.
 
-* Replicate adversarial training results from Rice et al. (2020) paper using a PreActResNet-18 model on CIFAR-10.
-* Find exact point where model stops learning real robustness and starts memorizing specific perturbation patterns.
+Current Research Objectives:
 
-![Training Results Curves](Report/training_results_curves.png)
+* Maintain the pixel-space PGD result as a baseline for robust overfitting using a PreActResNet-18 model on CIFAR-10.
+* Investigate whether robust overfitting differs when adversarial perturbations are restricted to low-, middle-, or high-frequency image components.
+* Compare the frequency-band results with the pixel-space baseline to identify how the selected frequency band affects robust accuracy over training.
 
 ---
 
@@ -54,7 +55,7 @@ Robust-Overfitting/
 │   ├── goodfellow.md                  # Literature notes on FGSM and adversarial training
 │   └── rice.md                        # Literature notes on robust overfitting
 ├── Report/                            # Presentations and evaluation outputs
-│   ├── presentation.pdf               # Research presentation slides
+│   ├── slides.pdf                     # Research presentation slides
 │   ├── evaluation_results.csv         # Raw evaluation metrics across checkpoints
 │   ├── robust_overfitting_curves.png  # Robust overfitting accuracy/loss plot
 │   └── training_results_curves.png    # Training & evaluation performance curves
@@ -66,7 +67,7 @@ Robust-Overfitting/
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
 ├── runs/                              # [Ignored] TensorBoard logging directories
 ├── .gitignore                         # Files and folders ignored by Git
-├── goals.md                           # Weekly goals, objectives, and progress tracking
+├── goals.md                           # Weekly goals, objectives, and expectations
 ├── progress.md                        # Weekly progress reports
 ├── proposal.md                        # Project proposal document
 ├── README.md                          # Project documentation and setup
