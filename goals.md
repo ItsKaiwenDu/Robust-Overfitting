@@ -73,16 +73,16 @@ This document tracks the weekly goals, objectives, expectations, and deliverable
 
 ---
 
-## Week 6 (Upcoming)
-* **Objective:** Run 3 additional training runs with different random seeds to confirm that the overfitting point identified in Week 5 is consistent and not a one-time result.
+## Week 6 (Completed)
+* **Objective:** Assess promising directions for the project by studying Cross-Epoch Transfer Matrices, reviewing the novelty of our research question, and considering a possible case-study approach.
 
-  1. Run `scripts/train.py` 3 more times from scratch using different `--seed` values. Using different starting points rules out the possibility that the overfitting point found in Week 5 was a coincidence of one particular run.
-  2. Run `scripts/evaluate.py` on each of the 3 new checkpoint sets to record clean and robust accuracy across all epochs, just as done in Week 5.
-  3. Compare the peak robust accuracy epochs across all 4 runs (original plus 3 new) using `matplotlib` to confirm the overfitting point appears consistently.
+  1. Learn how a Cross-Epoch Transfer Matrix can compare adversarial perturbations across model checkpoints, and identify what this analysis can and cannot explain about robust overfitting.
+  2. Revisit our research question and hypothesis, then review related published work to determine whether the main question has already been answered and whether our proposed contribution is sufficiently specific and novel.
+  3. Explore Dr. Tran's proposal to recast the project as a case study on the benefits and limitations of using AI tools to conduct research about AI.
 
-Note: A seed is a number that controls all randomness in a training run (such as weight initialization and data shuffling), so different seeds produce different random starting conditions.
+* **Expectations:** A clearer understanding of the limits of Cross-Epoch Transfer Matrix analysis, an informed assessment of the project's research novelty, and a set of discussion points for selecting the next direction with Dr. Tran.
 
-* **Expectations:** Four total training runs (original plus 3 seed runs) with a confirmed consistent overfitting point across all runs.
+* **Progress Report & Deliverables:** Documented in [`progress.md`](progress.md#week-6-completed).
 
 ---
 

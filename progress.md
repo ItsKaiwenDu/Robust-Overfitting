@@ -76,3 +76,11 @@
   * [`scripts/plot_results.py`](../scripts/plot_results.py): Plots clean and robust accuracy curves.
   * [`robust_overfitting_curves.png`](Report/robust_overfitting_curves.png): Chart showing robust overfitting with peak at Epoch 105.
   * [`training_results_curves.png`](Report/training_results_curves.png): Detailed training and evaluation accuracy/loss curves.
+
+---
+
+## Week 6 (Completed)
+* **Progress Report:** This week, I learned more about Cross-Epoch Transfer Matrices and found that they can show whether neural networks retain or transfer adversarial perturbations between training checkpoints. However, this technique would mainly demonstrate that the network memorizes perturbations at different points in training; it would not directly explain why this memorization occurs. I also revisited our research question and hypothesis and found that the central ideas have already been addressed in several published papers, including Dong et al. (ICLR 2022), Yu et al. (ICML 2022), and Liu et al. (JMLR 2024). This suggests that our current question may be too broad and that a direct replication would not be sufficiently novel. Finally, I considered Dr. Tran's proposal to turn the project into a case study on the advantages and limitations of using AI tools to conduct research about AI, and I prepared key points to discuss during Friday's meeting so we can decide on the project's next direction.
+
+* **Deliverables:**
+  * Discuss the project's next steps with Dr. Tran during Friday's meeting.
