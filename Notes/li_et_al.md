@@ -1,6 +1,6 @@
 # Notes: "DAT: Improving Adversarial Robustness via Generative Amplitude Mix-up in Frequency Domain" (Li et al., 2024)
 
-> **Scope reminder:** This is optional background on frequency-domain robustness, not a core paper for our low/middle/high-band robust-overfitting experiment.
+> **Note:** This is optional background on frequency-domain robustness, not a core paper for our low/middle/high-band robust-overfitting experiment.
 
 ## Main Idea
 
