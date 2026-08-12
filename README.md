@@ -15,6 +15,12 @@ Current Research Objectives:
 * Investigate whether robust overfitting differs when adversarial perturbations are restricted to low-, middle-, or high-frequency image components.
 * Compare the frequency-band results with the pixel-space baseline to identify how the selected frequency band affects robust accuracy over training.
 
+## Research Question and Hypothesis
+
+**Research question:** How does restricting adversarial perturbations to low-, middle-, or high-frequency image bands affect the timing and severity of robust overfitting during PGD adversarial training of PreActResNet-18 on CIFAR-10?
+
+**Hypothesis:** With the training and evaluation setup held constant, restricting perturbations to different frequency bands will produce different robust-accuracy curves, including differences in the peak robust-accuracy epoch and the amount of post-peak decline.
+
 ---
 
 ## Research Team
