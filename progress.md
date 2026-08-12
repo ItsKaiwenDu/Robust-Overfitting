@@ -84,3 +84,17 @@
 
 * **Deliverables:**
   * Discuss the project's next steps with Dr. Tran during Friday's meeting.
+
+---
+
+## Week 7 (Completed)
+* **Progress Report:** This week, I established the background and research direction for studying robust overfitting under frequency-restricted adversarial perturbations. I reviewed and wrote notes on six relevant papers, covering frequency-domain attacks, frequency-aware adversarial training, frequency bias, and mechanisms proposed for robust overfitting; together, these works show that frequency affects adversarial robustness but do not directly compare robust-overfitting trajectories under controlled low-, middle-, and high-frequency perturbation bands. Based on this review, I refined the project’s research question and hypothesis to focus on whether the selected perturbation band changes the peak epoch and post-peak decline of robust accuracy during PGD adversarial training on CIFAR-10. Next week, I plan to implement a frequency-restricted PGD pipeline using frequency masks for the three bands, define reproducible experimental settings, and run local and cloud diagnostics before beginning the full experiments.
+
+* **Deliverables:**
+  * [`README.md`](README.md): Updated research question and hypothesis for frequency-band study.
+  * [`chen_et_al.md`](Notes/chen_et_al.md): Frequency-masked PGD perturbations and frequency contributions to predictions.
+  * [`guo_et_al.md`](Notes/guo_et_al.md): Low-frequency DCT perturbations; basis for frequency-restricted attacks.
+  * [`yu_et_al.md`](Notes/yu_et_al.md): Small-loss adversarial examples as a possible cause of robust overfitting.
+  * [`bu_et_al.md`](Notes/bu_et_al.md) *(background info)*: Low-frequency feature bias for adversarial robustness.
+  * [`kim_et_al.md`](Notes/kim_et_al.md) *(background info)*: Frequency principle and learning behavior in adversarial training.
+  * [`li_et_al.md`](Notes/li_et_al.md) *(background info)*: Fourier amplitude and phase in adversarial robustness.
