@@ -40,7 +40,7 @@ This does not prove that nonlinearity never matters. It shows that nonlinearity 
 FGSM creates an adversarial example with
 
 $$
-x_{\mathrm{adv}} = x + \epsilon\,\operatorname{sign}\!\left(\nabla_x J(\theta, x, y)\right),
+x_{\mathrm{adv}} = x + \epsilon\,\mathrm{sign}\!\left(\nabla_x J(\theta, x, y)\right),
 $$
 
 where $J$ is the loss, $x$ is the clean image, $y$ is its label, and $\theta$ is the model. The sign operation makes every pixel move by the largest allowed amount in the loss-increasing direction.
