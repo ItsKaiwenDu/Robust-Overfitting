@@ -88,10 +88,11 @@
 ---
 
 ## Week 7 (Completed)
-* **Progress Report:** This week, I studied Discrete Cosine Transform (DCT) for image processing. I then found 6 relevant existing research papers on frequency-restricted adversarial perturbations. I reviewed each of them and wrote notes in `Notes/`, covering frequency-domain attacks, frequency-aware adversarial training, frequency bias, and mechanisms proposed for robust overfitting. These works show that frequency affects adversarial robustness but do not directly compare robust-overfitting trajectories under controlled low-, middle-, and high-frequency perturbation bands. Based on this review, I refined the project’s research question and hypothesis to focus on whether the selected perturbation band changes the peak epoch and post-peak decline of robust accuracy during PGD adversarial training on CIFAR-10.
+* **Progress Report:** This week, I studied the Discrete Cosine Transform (DCT). Then I found and reviewed six relevant research papers on frequency-domain adversarial attacks and training, and wrote notes in [`Notes/`](Notes/) covering frequency-domain attacks, frequency-aware adversarial training, frequency bias, and proposed mechanisms for robust overfitting. Three papers were more directly useful for our project: Chen et al. support frequency-masked PGD perturbations, Guo et al. provide the DCT transform-mask-inverse-transform pattern, and Yu et al. offer a possible explanation for robust overfitting. The other three provide supporting background on how frequency can affect robust learning. After that, I refined the project’s research question and hypothesis to test whether the selected perturbation band changes the timing (peak robust-accuracy epoch) and severity (post-peak decline) of robust overfitting during PGD adversarial training on CIFAR-10. Lastly, [`goals.md`](goals.md) was updated to align with this refined direction.
 
 * **Deliverables:**
   * [`README.md`](README.md): Updated research question and hypothesis for frequency-band study.
+  * [`goals.md`](goals.md): Updated upcoming weekly goals.
   * [`chen_et_al.md`](Notes/chen_et_al.md): Frequency-masked PGD perturbations and frequency contributions to predictions.
   * [`guo_et_al.md`](Notes/guo_et_al.md): Low-frequency DCT perturbations; basis for frequency-restricted attacks.
   * [`yu_et_al.md`](Notes/yu_et_al.md): Small-loss adversarial examples as a possible cause of robust overfitting.

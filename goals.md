@@ -86,7 +86,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 7 (Upcoming)
+## Week 7 (Completed)
 * **Objective:** Build background and research plan for studying robust overfitting under frequency-restricted adversarial perturbations.
 
   1. Learn basics of Discrete Cosine Transform (DCT), Fast Fourier Transform (FFT), image-frequency bands, and JPEG compression. Distinguish between spatial-domain perturbations, which change pixel values directly, and frequency-domain perturbations, which change frequency coefficients.
