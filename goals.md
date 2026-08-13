@@ -116,7 +116,8 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
   2. Monitor run for errors and unexpected behaviors.
   3. When complete: save checkpoints, training logs, evaluation CSV files, and plots in `Report/` folder.
   4. Evaluate all saved checkpoints using matching low-frequency-restricted attack so robust accuracy can be compared consistently across training epochs.
-  5. Analyze clean and robust accuracy curves for low-frequency condition. Identify peak robust accuracy epoch and determine whether robust overfitting occurs. Document findings and note any unexpected behavior.
+  5. Check if there exists any unclear, inconsistent, or unexpected results for low-frequency condition.
+  6. Analyze clean and robust accuracy curves for low-frequency condition. Identify peak robust accuracy epoch and determine whether robust overfitting occurs. Document findings.
 
 * **Expectations:** A complete, evaluated, and analyzed low-frequency experiment, with documented findings ready to inform next frequency-band run.
 
@@ -129,7 +130,8 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
   2. Monitor run for errors and unexpected behaviors.
   3. When complete: save checkpoints, training logs, evaluation CSV files, and plots in `Report/` folder.
   4. Evaluate all saved checkpoints using matching mid-frequency-restricted attack.
-  5. Analyze clean and robust accuracy curves for mid-frequency condition. Compare findings against low-frequency results from Week 9 and document any similarities or differences in overfitting behavior.
+  5. Check if there exists any unclear, inconsistent, or unexpected results for mid-frequency condition.
+  6. Analyze clean and robust accuracy curves for mid-frequency condition. Compare findings against low-frequency results from Week 9 and document any similarities or differences in overfitting behavior.
 
 * **Expectations:** A complete, evaluated, and analyzed mid-frequency experiment, with a preliminary comparison against low-frequency results.
 
@@ -142,7 +144,8 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
   2. Monitor run for errors and unexpected behaviors.
   3. When complete: save checkpoints, training logs, evaluation CSV files, and plots in `Report/` folder.
   4. Evaluate all saved checkpoints using matching high-frequency-restricted attack.
-  5. Analyze clean and robust accuracy curves for high-frequency condition. Document findings and compare against low- and mid-frequency results.
+  5. Check if there exists any unclear, inconsistent, or unexpected results for high-frequency condition.
+  6. Analyze clean and robust accuracy curves for high-frequency condition. Document findings and make a preliminary comparison with completed low- and mid-frequency results.
 
 * **Expectations:** A complete, evaluated, and analyzed high-frequency experiment, completing full set of per-band results.
 
@@ -152,7 +155,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 * **Objective:** Synthesize all frequency-band findings and set up final report skeleton.
 
   1. Compare clean and robust accuracy curves across pixel-space baseline and all three frequency-band conditions (low, mid, high). Identify each condition's peak robust accuracy and assess overall pattern across bands.
-  2. Investigate unclear, inconsistent, or unexpected results. Refine frequency-band definitions or rerun selected experiments only when needed to support a reliable conclusion.
+  2. Investigate unclear, inconsistent, or unexpected cross-band results. Refine frequency-band definitions or rerun selected experiments only when needed to support a reliable overall conclusion.
   3. Create final report file with a skeleton structure.
 
 * **Expectations:** A defensible, cross-band interpretation of results supported by plots and metrics, and a final report file with skeleton structure ready for writing.
