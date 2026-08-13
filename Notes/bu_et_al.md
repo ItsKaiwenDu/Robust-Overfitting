@@ -1,6 +1,6 @@
 # Notes: "Towards Building More Robust Models with Frequency Bias" (Bu, Huang & Cui, 2023)
 
-> **Note:** This is a strong supporting paper for why frequency may affect robust learning, but not a direct test of low-, middle-, and high-band perturbations under a fixed setup.
+> **Note:** This is supporting background on why frequency may affect robust learning, but not a direct test of low-, middle-, and high-band perturbations under a fixed setup.
 
 ## Main Idea
 

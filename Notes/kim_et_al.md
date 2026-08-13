@@ -1,5 +1,7 @@
 # Notes: "Phase-shifted Adversarial Training" (Kim, Kim, Seo & Shin, 2023)
 
+> **Note:** This is optional background on how frequency affects learning during adversarial training, not a core paper for our low/middle/high-band robust-overfitting experiment.
+
 ## Main Idea
 
 Kim et al. study adversarial training (AT) through the frequency principle: neural networks tend to learn lower-frequency parts of a target function before higher-frequency parts. They show, under mathematical assumptions, that this principle also holds during adversarial training.
