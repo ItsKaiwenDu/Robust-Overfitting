@@ -2,7 +2,7 @@
 
 ## Main Idea
 
-Chen et al. use the discrete Fourier transform (DFT) and Shapley values to ask a detailed question: how much does each frequency coefficient of one image help or hurt a Convolutional Neural Network's (CNN) score for the correct class?
+Chen et al. use the discrete Fourier transform (DFT) and Shapley values to see how much does each frequency coefficient of one image help or hurt a Convolutional Neural Network's (CNN) score for the correct class?
 
 They find that frequency contribution is not determined only by whether a coefficient is low or high frequency. A coefficient can help the correct prediction or hurt it, and this can vary across images and classes. This helps explain why attacks restricted to either low or high frequencies can still be effective.
 
