@@ -94,3 +94,12 @@ For weekly execution logs and detailed progress notes, see [`progress.md`](progr
 ## References
 * Goodfellow, I. J., Shlens, J., and Szegedy, C. (2014). *Explaining and Harnessing Adversarial Examples.* ICLR.
 * Rice, L., Wong, E., and Kolter, J. Z. (2020). *Overfitting in adversarially robust deep learning.* ICML.
+* Chen, Y., Ren, Q., and Yan, J. (2022). *Rethinking and Improving Robustness of Convolutional Neural Networks: A Shapley Value-based Approach in Frequency Domain.* NeurIPS 35.
+* Guo, C., Frank, J. S., and Weinberger, K. Q. (2019). *Low Frequency Adversarial Perturbation.* UAI 2019.
+* Yu, C., Han, B., Shen, L., Yu, J., Gong, C., Gong, M., and Liu, T. (2022). *Understanding Robust Overfitting of Adversarial Training and Beyond.* ICML 2022, PMLR 162.
+* Bu, Q., Huang, D., and Cui, H. (2023). *Towards Building More Robust Models with Frequency Bias.* ICCV 2023.
+* Kim, Y., Kim, S., Seo, I., and Shin, B. (2023). *Phase-shifted Adversarial Training.* UAI 2023, PMLR 216.
+* Li, F., Li, K., Wu, H., Tian, J., and Zhou, J. (2024). *DAT: Improving Adversarial Robustness via Generative Amplitude Mix-up in Frequency Domain.* NeurIPS 2024.
+* Tramèr, F., and Boneh, D. (2019). *Adversarial Training and Robustness for Multiple Perturbations.* NeurIPS 32, pp. 5866-5876. arXiv:1904.13000.
+* Maini, P., Wong, E., and Kolter, J. Z. (2020). *Adversarial Robustness Against the Union of Multiple Perturbation Models.* ICML 2020, PMLR 119, pp. 6640-6650. arXiv:1909.04068.
+* Xie, M., He, Y., and Fang, M. (2026). *TaFD: Threat-Aware Frequency Decoupling for Adversarial Robustness against Heterogeneous Attacks.* arXiv:2606.17540.
