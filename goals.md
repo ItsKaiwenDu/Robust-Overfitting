@@ -98,71 +98,76 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ---
 
 ## Week 8 (Upcoming)
-* **Objective:** Implement frequency-restricted adversarial training and verify that new pipeline works correctly before full experiments.
+* **Objective:** Study the multi-perturbation literature and implement the low-frequency DCT-PGD attack.
 
-  1. Modify training and evaluation scripts so that adversarial attack changes only selected frequency coefficients instead of directly changing pixel values. Support separate low-, middle-, and high-frequency bands.
-  2. Define a reproducible experimental configuration for each band, including frequency-band masks, perturbation budget, random seed, number of training epochs, saved checkpoints, and evaluation settings. Keep existing pixel-space PGD result as baseline for comparison.
-  3. Run a short local diagnostic to verify forward and inverse transforms, confirm that only intended frequency band is changed, and ensure that training and evaluation finish without errors.
-  4. Run a short diagnostic experiment on Lambda Labs to check runtime, GPU behavior, checkpoint saving, and result logging before starting full experiments.
+  1. Read and digest Tramèr and Boneh (2019), Maini, Wong, and Kolter (2020), and Xie, He, and Fang (2026). Create notes that explain their methods, results, and relevance to this project.
+  2. Distinguish the project's randomized epoch-level attack schedule from the AVG, MAX, MSD, and TaFD methods in the literature.
+  3. Finalize and document the research question, hypothesis, training conditions, checkpoint evaluation protocol, and reproducibility requirements for the pixel-only, low-frequency-only, and mixed-domain conditions.
+  4. Implement the low-frequency DCT-constrained PGD attack, including the forward transform, low-frequency mask, inverse transform, and image-space perturbation constraint.
 
-* **Expectations:** Verified frequency-domain training and evaluation scripts, documented experiment settings, and successful local and Lambda Labs diagnostic runs.
+* **Expectations:** Complete literature notes and citations, a clear experimental specification, and a working low-frequency DCT-PGD attack ready to integrate into the training pipeline.
 
 ---
 
 ## Week 9 (Upcoming)
-* **Objective:** Run **low-frequency** experiment end-to-end and analyze results.
+* **Objective:** Integrate the DCT-PGD attack into the pipeline and validate the revised mixed-domain setup.
 
-  1. Run full adversarial-training experiment on Lambda Labs using low-frequency perturbations only, following configuration established in Week 8.
-  2. Monitor run for errors and unexpected behaviors.
-  3. When complete: save checkpoints, training logs, evaluation CSV files, and plots in `Report/` folder.
-  4. Evaluate all saved checkpoints using matching low-frequency-restricted attack so robust accuracy can be compared consistently across training epochs.
-  5. Check if there exists any unclear, inconsistent, or unexpected results for low-frequency condition.
-  6. Analyze clean and robust accuracy curves for low-frequency condition. Identify peak robust accuracy epoch and determine whether robust overfitting occurs. Document findings.
+  1. Add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency PGD once at the start of each epoch using a seeded fair random choice.
+  2. Extend checkpoint evaluation to report clean accuracy, pixel-PGD robust accuracy, low-frequency-PGD robust accuracy, and a per-example worst-case union summary.
+  3. Run short local and Lambda Labs diagnostics to verify the DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, GPU behavior, and result logging.
 
-* **Expectations:** A complete, evaluated, and analyzed low-frequency experiment, with documented findings ready to inform next frequency-band run.
+* **Expectations:** Verified training and evaluation scripts, documented run configuration, and successful local and cloud diagnostics.
 
 ---
 
 ## Week 10 (Upcoming)
-* **Objective:** Run **mid-frequency** experiment end-to-end and analyze results.
+* **Objective:** Run and analyze the low-frequency-only baseline.
 
-  1. Run full adversarial-training experiment on Lambda Labs using mid-frequency perturbations; same configuration structure.
-  2. Monitor run for errors and unexpected behaviors.
-  3. When complete: save checkpoints, training logs, evaluation CSV files, and plots in `Report/` folder.
-  4. Evaluate all saved checkpoints using matching mid-frequency-restricted attack.
-  5. Check if there exists any unclear, inconsistent, or unexpected results for mid-frequency condition.
-  6. Analyze clean and robust accuracy curves for mid-frequency condition. Compare findings against low-frequency results from Week 9 and document any similarities or differences in overfitting behavior.
+  1. Run the full low-frequency-only adversarial-training experiment on Lambda Labs using the Week 9 configuration.
+  2. Save checkpoints, training logs, evaluation CSV files, attack-domain schedule metadata, and plots in `Report/`.
+  3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
+  4. Identify the peak epoch and peak-to-final decline for every robust metric. Compare the low-frequency-only curves with the completed pixel-only baseline.
 
-* **Expectations:** A complete, evaluated, and analyzed mid-frequency experiment, with a preliminary comparison against low-frequency results.
+* **Expectations:** A complete low-frequency-only baseline with paired evaluation curves and a documented comparison against pixel-only training.
 
 ---
 
 ## Week 11 (Upcoming)
-* **Objective:** Run **high-frequency** experiment end-to-end and analyze results.
+* **Objective:** Run and analyze the mixed-domain experiment.
 
-  1. Run full adversarial-training experiment on Lambda Labs using high-frequency perturbations; same configuration structure.
-  2. Monitor run for errors and unexpected behaviors.
-  3. When complete: save checkpoints, training logs, evaluation CSV files, and plots in `Report/` folder.
-  4. Evaluate all saved checkpoints using matching high-frequency-restricted attack.
-  5. Check if there exists any unclear, inconsistent, or unexpected results for high-frequency condition.
-  6. Analyze clean and robust accuracy curves for high-frequency condition. Document findings and make a preliminary comparison with completed low- and mid-frequency results.
+  1. Run the full mixed-domain adversarial-training experiment on Lambda Labs using the seeded epoch-level attack schedule.
+  2. Save checkpoints, training logs, evaluation CSV files, the chosen attack domain for every epoch, and plots in `Report/`.
+  3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
+  4. Compare the mixed-domain curves with the pixel-only and low-frequency-only baselines. Determine whether robust-accuracy peaks shift, flatten, or decline differently.
 
-* **Expectations:** A complete, evaluated, and analyzed high-frequency experiment, completing full set of per-band results.
+* **Expectations:** A complete mixed-domain result with reproducible attack scheduling and a cross-condition robust-overfitting comparison.
 
 ---
 
 ## Week 12 (Upcoming)
-* **Objective:** Synthesize all frequency-band findings and set up final report skeleton.
+* **Objective:** Verify and interpret the multi-threat results.
 
-  1. Compare clean and robust accuracy curves across pixel-space baseline and all three frequency-band conditions (low, mid, high). Identify each condition's peak robust accuracy and assess overall pattern across bands.
-  2. Investigate unclear, inconsistent, or unexpected cross-band results. Refine frequency-band definitions or rerun selected experiments only when needed to support a reliable overall conclusion.
-  3. Create final report file with a skeleton structure.
+  1. Check that the two attack evaluations are sufficiently strong and that the union calculation uses the worst result for each test image.
+  2. Rerun selected diagnostics or full conditions only if a configuration, evaluation, or reproducibility problem is identified.
+  3. Analyze trade-offs between pixel and low-frequency robustness, clean accuracy, peak epoch, and post-peak decline.
+  4. Consider adversarial training-loss distributions by attack domain if the robust-overfitting curves differ substantially.
 
-* **Expectations:** A defensible, cross-band interpretation of results supported by plots and metrics, and a final report file with skeleton structure ready for writing.
+* **Expectations:** Verified result quality and a defensible explanation of the observed robust-overfitting behavior.
 
 ---
 
 ## Week 13 (Upcoming)
+* **Objective:** Synthesize the pixel-only, low-frequency-only, and mixed-domain findings and set up the final report skeleton.
+
+  1. Compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three training conditions.
+  2. Summarize each condition's peak epoch, peak accuracy, and peak-to-final decline. Identify whether mixed-domain training shifted, flattened, or removed any robust-overfitting peak.
+  3. Create the final report skeleton, including motivation, related work, methodology, results, limitations, and conclusions.
+
+* **Expectations:** A defensible interpretation of the mixed-domain robust-overfitting study and a report structure ready for writing.
+
+---
+
+## Week 14 (Upcoming)
 * **Objective:** Make progress on final report and consortium slides in parallel.
 
   1. Write sections of final report (motivation, related work, methodology, results, limitations, conclusions) and incorporate figures, tables, and citations.
@@ -172,7 +177,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 14 (Upcoming)
+## Week 15 (Upcoming)
 * **Objective:** Continue and complete final report and consortium slides in parallel.
 
   1. Continue writing and finishing remaining sections of final report.
@@ -182,7 +187,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 15 (Upcoming)
+## Week 16 (Upcoming)
 * **Objective:** Verify all materials and prepare for submission.
 
   1. Review repository and final report for accuracy and clarity. Fix any typos, unclear phrasing, or inconsistencies.

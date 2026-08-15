@@ -7,19 +7,49 @@ This is GitHub repository for research on robust overfitting in adversarial trai
 ## Project Overview
 Deep neural networks can be easily fooled by adversarial attacks, which are small, hidden changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
 
-The project first reproduced robust overfitting with pixel-space PGD adversarial training. Its next phase investigates whether robust overfitting changes when adversarial perturbations are restricted to different image-frequency bands.
+The project first reproduced robust overfitting with pixel-space PGD adversarial training. Its next phase tests whether robust overfitting changes when the adversarial-training attack domain is randomized across epochs: standard pixel-space PGD or low-frequency DCT-constrained PGD.
 
 Current Research Objectives:
 
-* Maintain the pixel-space PGD result as a baseline for robust overfitting using a PreActResNet-18 model on CIFAR-10.
-* Investigate whether robust overfitting differs when adversarial perturbations are restricted to low-, middle-, or high-frequency image components.
-* Compare the frequency-band results with the pixel-space baseline to identify how the selected frequency band affects robust accuracy over training.
+* Maintain the existing pixel-space PGD result as the robust-overfitting baseline using PreActResNet-18 on CIFAR-10.
+* Establish a low-frequency-only DCT-constrained PGD baseline using the same model and training schedule.
+* Train a mixed-domain model that randomly selects pixel-space or low-frequency PGD once per epoch.
+* Compare robust-overfitting curves under both component attack domains and their per-example worst case.
 
 ## Research Question and Hypothesis
 
-**Research question:** How does restricting adversarial perturbations to low-, middle-, or high-frequency image bands affect the timing and severity of robust overfitting during PGD adversarial training of PreActResNet-18 on CIFAR-10?
+**Research question:** During PGD adversarial training of PreActResNet-18 on CIFAR-10, how does randomly alternating pixel-space PGD and low-frequency DCT-constrained PGD across epochs affect the timing and severity of robust overfitting, compared with pixel-only and low-frequency-only training?
 
-**Hypothesis:** With the training and evaluation setup held constant, restricting perturbations to different frequency bands will produce different robust-accuracy curves, including differences in the peak robust-accuracy epoch and the amount of post-peak decline.
+**Hypothesis:** With the architecture, dataset, training schedule, perturbation budget, and evaluation schedule held constant, mixed-domain training will produce robust-accuracy curves that differ from the single-domain baselines. The peak epoch may shift, the peak may flatten, or the post-peak decline may change under one or both evaluation attacks.
+
+---
+
+## Planned Experiment Design
+
+### Training conditions
+
+All conditions use the same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, number of epochs, training PGD step count, and random seed policy.
+
+1. **Pixel-only baseline:** Train with standard pixel-space PGD in every epoch. This is the completed Rice et al. replication.
+2. **Low-frequency-only baseline:** Train with DCT-constrained PGD in every epoch. The adversarial perturbation is restricted by a predefined low-frequency mask before being transformed back to image space.
+3. **Mixed-domain condition:** At the start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-constrained PGD. Every batch in that epoch uses the selected attack domain.
+
+The low-frequency mask and the attack budget will be saved with each run configuration. The frequency attack will use the same image-space L-infinity budget and the same number of PGD steps as the pixel-space attack unless a documented diagnostic shows that an adjustment is necessary.
+
+### Evaluation protocol
+
+At every saved checkpoint, evaluate each model on:
+
+1. clean CIFAR-10 test images;
+2. test images attacked with pixel-space PGD;
+3. test images attacked with low-frequency DCT-constrained PGD; and
+4. a union summary that records whether either attack succeeds on each test image.
+
+The primary robust-overfitting measurements are the peak robust-accuracy epoch and the peak-to-final robust-accuracy drop for the pixel, low-frequency, and union evaluations. Reporting all three avoids mistaking improved robustness to one attack for an overall improvement.
+
+### Scope
+
+This is a controlled robust-overfitting study, not an attempt to reproduce Multi Steepest Descent or TaFD. The model architecture remains unchanged. The only planned training intervention is the adversarial attack domain used during each epoch.
 
 ---
 
