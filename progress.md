@@ -99,3 +99,11 @@
   * [`bu_et_al.md`](Notes/bu_et_al.md) *(background info)*: Low-frequency feature bias for adversarial robustness.
   * [`kim_et_al.md`](Notes/kim_et_al.md) *(background info)*: Frequency principle and learning behavior in adversarial training.
   * [`li_et_al.md`](Notes/li_et_al.md) *(background info)*: Fourier amplitude and phase in adversarial robustness.
+
+---
+
+## Week 8 (In Progress)
+* **Progress Report:** I finalized the pre-implementation experimental specification for the pixel-only, low-frequency-only, and mixed-domain adversarial-training conditions. The protocol fixes the model, CIFAR-10 setup, optimizer, schedule, pixel-space budget, checkpoint cadence, random seeds, and per-example union evaluation. It defines low-frequency DCT-masked PGD using an orthonormal 2D DCT-II with a fixed 8x8 low-frequency mask per RGB channel, and it explicitly records post-clipping spectral leakage rather than treating pixel clipping as a strict frequency-subspace projection. The remaining Week 8 work is to implement and validate this attack.
+
+* **Deliverables:**
+  * [`experimental_specification.md`](experimental_specification.md): Complete, reproducible experimental protocol and diagnostic acceptance criteria.

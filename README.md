@@ -26,6 +26,11 @@ Current Research Objectives:
 
 ## Planned Experiment Design
 
+The pre-implementation specification—including the fixed DCT mask, attack
+update, randomized schedule, checkpoint evaluation, run artifacts, and
+diagnostic acceptance criteria—is in
+[`experimental_specification.md`](experimental_specification.md).
+
 ### Training conditions
 
 All conditions use the same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, number of epochs, training PGD step count, and random seed policy.
@@ -103,6 +108,7 @@ Robust-Overfitting/
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
 ├── runs/                              # [Ignored] TensorBoard logging directories
 ├── .gitignore                         # Files and folders ignored by Git
+├── experimental_specification.md       # Fixed mixed-domain experiment protocol
 ├── goals.md                           # Weekly goals, objectives, and expectations
 ├── progress.md                        # Weekly progress reports
 ├── proposal.md                        # Project proposal document
