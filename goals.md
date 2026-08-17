@@ -102,8 +102,8 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
   1. Read and digest Tramèr and Boneh (2019), Maini, Wong, and Kolter (2020), and Xie, He, and Fang (2026). Create notes that explain their methods, results, and relevance to this project.
   2. Distinguish the project's randomized epoch-level attack schedule from the AVG, MAX, MSD, and TaFD methods in the literature.
-  3. Finalize and document the research question, hypothesis, training conditions, checkpoint evaluation protocol, and reproducibility requirements for the pixel-only, low-frequency-only, and mixed-domain conditions. **(Completed; see [`experimental_specification.md`](experimental_specification.md).)**
-  4. Implement the low-frequency DCT-constrained PGD attack, including the forward transform, low-frequency mask, inverse transform, and image-space perturbation constraint.
+  3. Finalize and document the research question, hypothesis, training conditions, checkpoint evaluation protocol, and reproducibility requirements for the pixel-only, low-frequency-only, and mixed-domain conditions.
+  4. Implement the low-frequency DCT-constrained PGD attack, including the forward transform, low-frequency mask, inverse transform, and image-space perturbation constraint. 
 
 * **Expectations:** Complete literature notes and citations, a clear experimental specification, and a working low-frequency DCT-PGD attack ready to integrate into the training pipeline.
 

@@ -101,6 +101,7 @@ Robust-Overfitting/
 │   ├── robust_overfitting_curves.png  # Robust overfitting accuracy/loss plot
 │   └── training_results_curves.png    # Training & evaluation performance curves
 ├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
+│   ├── dct_pgd.py                     # Low-frequency DCT-masked PGD implementation
 │   ├── evaluate.py                    # Checkpoint evaluation script (PGD-20)
 │   ├── plot_results.py                # Plotting script for accuracy and loss curves
 │   ├── train.py                       # Core adversarial PGD training script

@@ -103,7 +103,8 @@
 ---
 
 ## Week 8 (In Progress)
-* **Progress Report:** I finalized the pre-implementation experimental specification for the pixel-only, low-frequency-only, and mixed-domain adversarial-training conditions. The protocol fixes the model, CIFAR-10 setup, optimizer, schedule, pixel-space budget, checkpoint cadence, random seeds, and per-example union evaluation. It defines low-frequency DCT-masked PGD using an orthonormal 2D DCT-II with a fixed 8x8 low-frequency mask per RGB channel, and it explicitly records post-clipping spectral leakage rather than treating pixel clipping as a strict frequency-subspace projection. The remaining Week 8 work is to implement and validate this attack.
+* **Progress Report:** I finalized the pre-implementation experimental specification for the pixel-only, low-frequency-only, and mixed-domain adversarial-training conditions. The protocol fixes the model, CIFAR-10 setup, optimizer, schedule, pixel-space budget, checkpoint cadence, random seeds, and per-example union evaluation. I then implemented the reusable low-frequency DCT-masked PGD primitive using an orthonormal 2D DCT-II with a fixed 8x8 low-frequency mask per RGB channel. Its optimization state remains in the masked DCT subspace while image-space scaling enforces the `8/255` budget; the final image clamp is accompanied by metadata for measuring its spectral leakage. Isolated primitive checks verified DCT round-trip accuracy, zero pre-clipping out-of-mask energy, valid image bounds, and the final perturbation budget. Training-mode selection, paired checkpoint evaluation, result logging, and pipeline/cloud diagnostics remain Week 9 work.
 
 * **Deliverables:**
   * [`experimental_specification.md`](experimental_specification.md): Complete, reproducible experimental protocol and diagnostic acceptance criteria.
+  * [`scripts/dct_pgd.py`](scripts/dct_pgd.py): Reusable DCT, low-frequency mask/projection, DCT-masked PGD, and leakage-metadata implementation.
