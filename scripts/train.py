@@ -33,7 +33,7 @@ from torch.optim.lr_scheduler import MultiStepLR
 from torchvision import datasets, transforms
 from torch.utils.tensorboard import SummaryWriter
 
-from Models.preact_resnet import PreActResNet18
+from models.preact_resnet import PreActResNet18
 
 
 class Normalizer(nn.Module):

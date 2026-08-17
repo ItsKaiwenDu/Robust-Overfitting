@@ -34,7 +34,7 @@ else:
     print("Device: CPU (no GPU accelerator found).")
 
 try:
-    from Models.preact_resnet import PreActResNet18
+    from models.preact_resnet import PreActResNet18
     model = PreActResNet18(num_classes=10).to(device)
     print("PreActResNet-18 model loaded successfully.")
     

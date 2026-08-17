@@ -31,7 +31,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms
 
-from Models.preact_resnet import PreActResNet18
+from models.preact_resnet import PreActResNet18
 
 # Skips SSL certificate checks so the CIFAR-10 download doesn't fail on
 # machines with outdated or misconfigured certificates.
@@ -179,8 +179,8 @@ def main():
        the result to the output CSV.
     """
     parser = argparse.ArgumentParser(description='Evaluate PreActResNet-18 Checkpoints with PGD-20')
-    parser.add_argument('--checkpoint-dir', default='Checkpoints', type=str, help='Directory containing saved .pt checkpoints')
-    parser.add_argument('--output-csv', default='Report/evaluation_results.csv', type=str, help='Path to output CSV file')
+    parser.add_argument('--checkpoint-dir', default='checkpoints', type=str, help='Directory containing saved .pt checkpoints')
+    parser.add_argument('--output-csv', default='report/evaluation_results.csv', type=str, help='Path to output CSV file')
     parser.add_argument('--data-dir', default='./data', type=str, help='Dataset directory')
     parser.add_argument('--batch-size', default=128, type=int, help='Batch size for evaluation')
     parser.add_argument('--epsilon', default=8.0/255.0, type=float, help='Adversarial perturbation magnitude epsilon')

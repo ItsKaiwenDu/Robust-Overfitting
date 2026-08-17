@@ -22,7 +22,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
   1. Configure required Python virtual environment, set up gitignore, and specify dependencies in `requirements.txt`.
   2. Create a Lambda Labs cloud account and set up billing to access NVIDIA A10G GPU instances for Week 4 training run.
-  3. Download PreActResNet-18 model architecture in PyTorch (`Models/preact_resnet.py`) from Rice et al. 2020 codebase so our training setup matches theirs.
+  3. Download PreActResNet-18 model architecture in PyTorch (`models/preact_resnet.py`) from Rice et al. 2020 codebase so our training setup matches theirs.
   4. Write a setup verification script (`scripts/verify_setup.py`) to verify package imports, check hardware/device availability (such as CUDA/MPS/CPU), and run a forward pass sanity check with model to ensure training environment is ready to go.
   5. Create presentation slides summarizing literature review with visual and mathematical explanations of adversarial attacks. These slides communicate our foundational understanding to PI and will be reviewed and refined during Friday meeting with Dr. Tran.
 
@@ -35,8 +35,8 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ## Week 3 (Completed)
 * **Objective:** Implement Projected Gradient Descent (PGD)-based adversarial training pipeline and verify its correctness on a diagnostic test run. Lambda Labs will not be used yet this week; all local.
 
-  1. Write training script [`scripts/train.py`](scripts/train.py) using [`PreActResNet18`](Models/preact_resnet.py#L153) architecture. Script should dynamically generate adversarial images using a 10-step PGD attack, which starts with random noise and makes pixel adjustments within a safety range (the $\epsilon$-ball of $8/255$) so edits remain invisible to human eyes. All of these should match exactly as in Rice et al. paper.
-  2. Make [`scripts/train.py`](scripts/train.py) save model weights every 5 epochs to `Checkpoints/` folder. This allows us to analyze model's performance at different stages of training and pinpoint exactly where robust overfitting begins.
+  1. Write training script [`scripts/train.py`](scripts/train.py) using [`PreActResNet18`](models/preact_resnet.py#L153) architecture. Script should dynamically generate adversarial images using a 10-step PGD attack, which starts with random noise and makes pixel adjustments within a safety range (the $\epsilon$-ball of $8/255$) so edits remain invisible to human eyes. All of these should match exactly as in Rice et al. paper.
+  2. Make [`scripts/train.py`](scripts/train.py) save model weights every 5 epochs to `checkpoints/` folder. This allows us to analyze model's performance at different stages of training and pinpoint exactly where robust overfitting begins.
   3. Make and run diagnostic test locally (for 1 epoch on 10% of CIFAR-10 data) to ensure training loop, PGD attack, weight updates, checkpoints, and logging all work without complications before full training on Lambda Labs.
 
 * **Expectations:** A fully functional and verified training script (`scripts/train.py`), ready for full training runs on Lambda Labs next week.
@@ -54,7 +54,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
   4. Adjust upcoming weekly schedules.
   5. Deploy `scripts/train.py` to Lambda Labs and start full 200-epoch PGD adversarial training run, monitor for any unexpected timeouts or crashes, and download all model checkpoints once training completes (expected run time: 7-10 hours).
 
-* **Expectations:** A complete set of 40 model checkpoints in `Checkpoints/` directory covering full 200-epoch run (saved every 5 epochs), ready for evaluation.
+* **Expectations:** A complete set of 40 model checkpoints in `checkpoints/` directory covering full 200-epoch run (saved every 5 epochs), ready for evaluation.
 
 * **Progress Report & Deliverables:** Documented in [`progress.md`](progress.md#week-4-completed).
 
@@ -124,7 +124,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 * **Objective:** Run and analyze the low-frequency-only baseline.
 
   1. Run the full low-frequency-only adversarial-training experiment on Lambda Labs using the Week 9 configuration.
-  2. Save checkpoints, training logs, evaluation CSV files, attack-domain schedule metadata, and plots in `Report/`.
+  2. Save checkpoints, training logs, evaluation CSV files, attack-domain schedule metadata, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
   4. Identify the peak epoch and peak-to-final decline for every robust metric. Compare the low-frequency-only curves with the completed pixel-only baseline.
 
@@ -136,7 +136,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 * **Objective:** Run and analyze the mixed-domain experiment.
 
   1. Run the full mixed-domain adversarial-training experiment on Lambda Labs using the seeded epoch-level attack schedule.
-  2. Save checkpoints, training logs, evaluation CSV files, the chosen attack domain for every epoch, and plots in `Report/`.
+  2. Save checkpoints, training logs, evaluation CSV files, the chosen attack domain for every epoch, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
   4. Compare the mixed-domain curves with the pixel-only and low-frequency-only baselines. Determine whether robust-accuracy peaks shift, flatten, or decline differently.
 

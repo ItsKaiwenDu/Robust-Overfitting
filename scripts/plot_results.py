@@ -91,7 +91,7 @@ def plot_loss_subplot(ax, data, best_epoch):
     ax.grid(True, linestyle='--', alpha=0.6)
 
 
-def plot_results(csv_path='Report/evaluation_results.csv', output_path='Report/robust_overfitting_curves.png'):
+def plot_results(csv_path='report/evaluation_results.csv', output_path='report/robust_overfitting_curves.png'):
     """Builds the full 2-panel chart and saves it as an image file.
 
     Steps:

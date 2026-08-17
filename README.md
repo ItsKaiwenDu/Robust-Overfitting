@@ -88,14 +88,14 @@ This is a controlled robust-overfitting study, not an attempt to reproduce Multi
 
 ```text
 Robust-Overfitting/
-├── Checkpoints/                       # Saved model checkpoints during training
+├── checkpoints/                       # Saved model checkpoints during training
 │   └── diagnostic/                    # Local diagnostic run checkpoints (e.g., epoch_1.pt)
-├── Models/                            # Model architecture definitions
+├── models/                            # Model architecture definitions
 │   └── preact_resnet.py               # PreActResNet-18 model architecture in PyTorch
-├── Notes/                             # Reading literature notes
+├── notes/                             # Reading literature notes
 │   ├── goodfellow.md                  # Literature notes on FGSM and adversarial training
 │   └── rice.md                        # Literature notes on robust overfitting
-├── Report/                            # Presentations and evaluation outputs
+├── report/                            # Presentations and evaluation outputs
 │   ├── slides.pdf                     # Research presentation slides
 │   ├── evaluation_results.csv         # Raw evaluation metrics across checkpoints
 │   ├── robust_overfitting_curves.png  # Robust overfitting accuracy/loss plot

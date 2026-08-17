@@ -160,7 +160,7 @@ one row per checkpoint in `evaluation_results.csv`.
 ## Required run artifacts
 
 Each condition is stored under a distinct directory (for example,
-`Report/low_frequency_seed42/`) and must contain:
+`report/low_frequency_seed42/`) and must contain:
 
 - `config.json`: all command-line arguments, git commit SHA, Python/PyTorch/
   torchvision versions, CUDA version, GPU model, device, DCT version, 8x8

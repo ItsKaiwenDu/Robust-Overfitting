@@ -4,8 +4,8 @@
 * **Progress Report:** During week 1, I focused on digesting foundational readings for our research project. The first paper I read is "Explaining and Harnessing Adversarial Examples" by Goodfellow et al. I learned that adversarial examples are inputs with tiny, carefully calculated perturbations that are invisible to human eye yet cause neural networks to misclassify with high confidence. Contrary to common belief that complex models are tricked by being overly sensitive to fine details, paper argues opposite: adversarial examples exist because modern networks are designed to behave linearly, and in high-dimensional input spaces (such as images with tens of thousands of pixels), these linear responses let small per-pixel changes accumulate into a large shift in model's output. The Fast Gradient Sign Method (FGSM) formalizes this by computing gradient of model's loss with respect to input and shifting each pixel by $\epsilon$ in direction that increases model's error most. As a defense, paper proposes adversarial training, which mixes adversarially perturbed examples directly into training so model learns to handle attacks during training, dropping adversarial error on MNIST from 89.4% down to 17.9%. The paper also showed that common defenses such as dropout, pretraining, and model averaging are largely ineffective against these attacks. The second paper I read is "Overfitting in Adversarially Robust Deep Learning" by Rice et al. I learned that robust overfitting is a specific failure mode in adversarial training where a model's test robustness degrades over continued training even as its training loss keeps improving, and that this phenomenon appears consistently across multiple datasets including SVHN, CIFAR-10, CIFAR-100, and ImageNet. The paper tests a full range of methods to fix this: explicit regularization (L1 and L2 weight penalties), data augmentation (cutout and mixup), and semi-supervised learning on unlabeled data. None of these fully solved problem on their own. The simplest and most effective fix is early stopping, which saves model checkpoint at point of best validation robustness before test performance starts to degrade. PGD adversarial training with early stopping matches or exceeds TRADES, a far more complex method. The only approach that genuinely outperformed early stopping alone was combining it with semi-supervised learning. During Friday meeting with Dr. Tran, he suggested I condense my notes, which were very detailed, into presentation slides for better communication, and to focus specifically on early stopping as our chosen method given research time constraints.
 
 * **Deliverables:**
-  * [`goodfellow.md`](../Notes/goodfellow.md): Covers linearity hypothesis, FGSM, adversarial training results on MNIST, and connections to our research.
-  * [`rice.md`](../Notes/rice.md): Covers robust overfitting phenomenon, effect of early stopping, comparison of regularization methods, and connections to our research.
+  * [`goodfellow.md`](../notes/goodfellow.md): Covers linearity hypothesis, FGSM, adversarial training results on MNIST, and connections to our research.
+  * [`rice.md`](../notes/rice.md): Covers robust overfitting phenomenon, effect of early stopping, comparison of regularization methods, and connections to our research.
 
 ---
 
@@ -15,7 +15,7 @@
 * **Deliverables:**
   * [`.gitignore`](../.gitignore): Configured to ignore environment folders, datasets, cache files, and model checkpoints.
   * [`requirements.txt`](../requirements.txt): Lists project dependencies (`torch`, `torchvision`, `numpy`, `matplotlib`, `tensorboard`).
-  * [`Models/preact_resnet.py`](../Models/preact_resnet.py): PyTorch implementation of `PreActResNet18` sourced from the Rice et al. 2020 codebase, tailored for CIFAR-10, to replicate their training setup.
+  * [`models/preact_resnet.py`](../models/preact_resnet.py): PyTorch implementation of `PreActResNet18` sourced from the Rice et al. 2020 codebase, tailored for CIFAR-10, to replicate their training setup.
   * [`scripts/verify_setup.py`](../scripts/verify_setup.py): Script to verify python imports, system device capabilities (CPU/MPS/CUDA), and run a forward pass sanity check.
   * [`setup_lambda_labs.md`](../setup_lambda_labs.md): Guide for deploying runs to cloud instances (Lambda Labs), ssh configurations, code syncing, `tmux` sessions, and TensorBoard port forwarding.
   * [`presentation.pdf`](presentation.pdf): Presentation slides covering foundational definitions and FGSM, adversarial examples, adversarial training, robust overfitting, early stopping, and research proposal.
@@ -35,7 +35,7 @@
   PGD Attack config: epsilon=0.0314, alpha=0.0078, steps=10
   Epoch 001 | Train Loss: 2.2761 | Train Clean Acc: 20.46% | Train Robust Acc: 16.24% | Time: 41.66s
   --> Evaluation: Test Clean Acc: 16.50% | Test Robust Acc: 10.70% | Time: 28.94s
-  Checkpoint saved: Checkpoints/diagnostic/epoch_1.pt
+  Checkpoint saved: checkpoints/diagnostic/epoch_1.pt
   Training pipeline finished.
   ```
 
@@ -43,7 +43,7 @@
 
 * **Deliverables:**
   * [`scripts/train.py`](../scripts/train.py): Main PyTorch training script implementing the PGD attack, training loop, scheduler, and diagnostic setup.
-  * [`Checkpoints/diagnostic/epoch_1.pt`](../Checkpoints/diagnostic/epoch_1.pt): Model checkpoint saved from the local diagnostic test to verify weight saving.
+  * [`checkpoints/diagnostic/epoch_1.pt`](../checkpoints/diagnostic/epoch_1.pt): Model checkpoint saved from the local diagnostic test to verify weight saving.
   * [`.gitignore`](../.gitignore): Configured to ignore the raw dataset folder to keep GitHub commits clean.
 
 ---
@@ -74,8 +74,8 @@
   * [`scripts/evaluate.py`](../scripts/evaluate.py): Evaluates all 40 checkpoints using PGD-20.
   * [`evaluation_results.csv`](evaluation_results.csv): Accuracy and loss metrics for all 40 checkpoints.
   * [`scripts/plot_results.py`](../scripts/plot_results.py): Plots clean and robust accuracy curves.
-  * [`robust_overfitting_curves.png`](Report/robust_overfitting_curves.png): Chart showing robust overfitting with peak at Epoch 105.
-  * [`training_results_curves.png`](Report/training_results_curves.png): Detailed training and evaluation accuracy/loss curves.
+  * [`robust_overfitting_curves.png`](report/robust_overfitting_curves.png): Chart showing robust overfitting with peak at Epoch 105.
+  * [`training_results_curves.png`](report/training_results_curves.png): Detailed training and evaluation accuracy/loss curves.
 
 ---
 
@@ -88,17 +88,17 @@
 ---
 
 ## Week 7 (Completed)
-* **Progress Report:** This week, I studied the Discrete Cosine Transform (DCT). Then I found and reviewed six relevant research papers on frequency-domain adversarial attacks and training, and wrote notes in [`Notes/`](Notes/) covering frequency-domain attacks, frequency-aware adversarial training, frequency bias, and proposed mechanisms for robust overfitting. Three papers were more directly useful for our project: Chen et al. support frequency-masked PGD perturbations, Guo et al. provide the DCT transform-mask-inverse-transform pattern, and Yu et al. offer a possible explanation for robust overfitting. The other three provide supporting background on how frequency can affect robust learning. After that, I refined the project’s research question and hypothesis to test whether the selected perturbation band changes the timing (peak robust-accuracy epoch) and severity (post-peak decline) of robust overfitting during PGD adversarial training on CIFAR-10. Lastly, [`goals.md`](goals.md) was updated to align with this refined direction.
+* **Progress Report:** This week, I studied the Discrete Cosine Transform (DCT). Then I found and reviewed six relevant research papers on frequency-domain adversarial attacks and training, and wrote notes in [`notes/`](notes/) covering frequency-domain attacks, frequency-aware adversarial training, frequency bias, and proposed mechanisms for robust overfitting. Three papers were more directly useful for our project: Chen et al. support frequency-masked PGD perturbations, Guo et al. provide the DCT transform-mask-inverse-transform pattern, and Yu et al. offer a possible explanation for robust overfitting. The other three provide supporting background on how frequency can affect robust learning. After that, I refined the project's research question and hypothesis to test whether the selected perturbation band changes the timing (peak robust-accuracy epoch) and severity (post-peak decline) of robust overfitting during PGD adversarial training on CIFAR-10. Lastly, [`goals.md`](goals.md) was updated to align with this refined direction.
 
 * **Deliverables:**
   * [`README.md`](README.md): Updated research question and hypothesis for frequency-band study.
   * [`goals.md`](goals.md): Updated upcoming weekly goals.
-  * [`chen_et_al.md`](Notes/chen_et_al.md): Frequency-masked PGD perturbations and frequency contributions to predictions.
-  * [`guo_et_al.md`](Notes/guo_et_al.md): Low-frequency DCT perturbations; basis for frequency-restricted attacks.
-  * [`yu_et_al.md`](Notes/yu_et_al.md): Small-loss adversarial examples as a possible cause of robust overfitting.
-  * [`bu_et_al.md`](Notes/bu_et_al.md) *(background info)*: Low-frequency feature bias for adversarial robustness.
-  * [`kim_et_al.md`](Notes/kim_et_al.md) *(background info)*: Frequency principle and learning behavior in adversarial training.
-  * [`li_et_al.md`](Notes/li_et_al.md) *(background info)*: Fourier amplitude and phase in adversarial robustness.
+  * [`chen_et_al.md`](notes/chen_et_al.md): Frequency-masked PGD perturbations and frequency contributions to predictions.
+  * [`guo_et_al.md`](notes/guo_et_al.md): Low-frequency DCT perturbations; basis for frequency-restricted attacks.
+  * [`yu_et_al.md`](notes/yu_et_al.md): Small-loss adversarial examples as a possible cause of robust overfitting.
+  * [`bu_et_al.md`](notes/bu_et_al.md) *(background info)*: Low-frequency feature bias for adversarial robustness.
+  * [`kim_et_al.md`](notes/kim_et_al.md) *(background info)*: Frequency principle and learning behavior in adversarial training.
+  * [`li_et_al.md`](notes/li_et_al.md) *(background info)*: Fourier amplitude and phase in adversarial robustness.
 
 ---
 
