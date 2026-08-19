@@ -98,72 +98,72 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ---
 
 ## Week 8 (In Progress)
-* **Objective:** Study the multi-perturbation literature and implement the low-frequency DCT-PGD attack.
+* **Objective:** Study multi-perturbation literature and implement low-frequency DCT-PGD attack.
 
   1. Read and digest Tramèr and Boneh (2019), Maini, Wong, and Kolter (2020), and Xie, He, and Fang (2026). Create notes that explain their methods, results, and relevance to this project.
-  2. Distinguish the project's randomized epoch-level attack schedule from the AVG, MAX, MSD, and TaFD methods in the literature.
-  3. Finalize and document the research question, hypothesis, training conditions, checkpoint evaluation protocol, and reproducibility requirements for the pixel-only, low-frequency-only, and mixed-domain conditions.
-  4. Implement the low-frequency DCT-constrained PGD attack, including the forward transform, low-frequency mask, inverse transform, and image-space perturbation constraint. 
+  2. Distinguish project's randomized epoch-level attack schedule from AVG, MAX, MSD, and TaFD methods in literature.
+  3. Finalize and document research question, hypothesis, training conditions, checkpoint evaluation protocol, and reproducibility requirements for pixel-only, low-frequency-only, and mixed-domain conditions.
+  4. Implement low-frequency DCT-constrained PGD attack, including forward transform, low-frequency mask, inverse transform, and image-space perturbation constraint. 
 
-* **Expectations:** Complete literature notes and citations, a clear experimental specification, and a working low-frequency DCT-PGD attack ready to integrate into the training pipeline.
+* **Expectations:** Complete literature notes and citations, a clear experimental specification, and a working low-frequency DCT-PGD attack ready to integrate into training pipeline.
 
 ---
 
 ## Week 9 (Upcoming)
-* **Objective:** Integrate the DCT-PGD attack into the pipeline and validate the revised mixed-domain setup.
+* **Objective:** Integrate DCT-PGD attack into pipeline and validate revised mixed-domain setup.
 
-  1. Add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency PGD once at the start of each epoch using a seeded fair random choice.
+  1. Add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency PGD once at start of each epoch using a seeded fair random choice.
   2. Extend checkpoint evaluation to report clean accuracy, pixel-PGD robust accuracy, low-frequency-PGD robust accuracy, and a per-example worst-case union summary.
-  3. Run short local and Lambda Labs diagnostics to verify the DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, GPU behavior, and result logging.
+  3. Run short local and Lambda Labs diagnostics to verify DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, GPU behavior, and result logging.
 
 * **Expectations:** Verified training and evaluation scripts, documented run configuration, and successful local and cloud diagnostics.
 
 ---
 
 ## Week 10 (Upcoming)
-* **Objective:** Run and analyze the low-frequency-only baseline.
+* **Objective:** Run and analyze low-frequency-only baseline.
 
-  1. Run the full low-frequency-only adversarial-training experiment on Lambda Labs using the Week 9 configuration.
+  1. Run full low-frequency-only adversarial-training experiment on Lambda Labs using Week 9 configuration.
   2. Save checkpoints, training logs, evaluation CSV files, attack-domain schedule metadata, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify the peak epoch and peak-to-final decline for every robust metric. Compare the low-frequency-only curves with the completed pixel-only baseline.
+  4. Identify peak epoch and peak-to-final decline for every robust metric. Compare low-frequency-only curves with completed pixel-only baseline.
 
 * **Expectations:** A complete low-frequency-only baseline with paired evaluation curves and a documented comparison against pixel-only training.
 
 ---
 
 ## Week 11 (Upcoming)
-* **Objective:** Run and analyze the mixed-domain experiment.
+* **Objective:** Run and analyze mixed-domain experiment.
 
-  1. Run the full mixed-domain adversarial-training experiment on Lambda Labs using the seeded epoch-level attack schedule.
-  2. Save checkpoints, training logs, evaluation CSV files, the chosen attack domain for every epoch, and plots in `report/`.
+  1. Run full mixed-domain adversarial-training experiment on Lambda Labs using seeded epoch-level attack schedule.
+  2. Save checkpoints, training logs, evaluation CSV files, chosen attack domain for every epoch, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Compare the mixed-domain curves with the pixel-only and low-frequency-only baselines. Determine whether robust-accuracy peaks shift, flatten, or decline differently.
+  4. Compare mixed-domain curves with pixel-only and low-frequency-only baselines. Determine whether robust-accuracy peaks shift, flatten, or decline differently.
 
 * **Expectations:** A complete mixed-domain result with reproducible attack scheduling and a cross-condition robust-overfitting comparison.
 
 ---
 
 ## Week 12 (Upcoming)
-* **Objective:** Verify and interpret the multi-threat results.
+* **Objective:** Verify and interpret multi-threat results.
 
-  1. Check that the two attack evaluations are sufficiently strong and that the union calculation uses the worst result for each test image.
+  1. Check that two attack evaluations are sufficiently strong and that union calculation uses worst result for each test image.
   2. Rerun selected diagnostics or full conditions only if a configuration, evaluation, or reproducibility problem is identified.
   3. Analyze trade-offs between pixel and low-frequency robustness, clean accuracy, peak epoch, and post-peak decline.
-  4. Consider adversarial training-loss distributions by attack domain if the robust-overfitting curves differ substantially.
+  4. Consider adversarial training-loss distributions by attack domain if robust-overfitting curves differ substantially.
 
-* **Expectations:** Verified result quality and a defensible explanation of the observed robust-overfitting behavior.
+* **Expectations:** Verified result quality and a defensible explanation of observed robust-overfitting behavior.
 
 ---
 
 ## Week 13 (Upcoming)
-* **Objective:** Synthesize the pixel-only, low-frequency-only, and mixed-domain findings and set up the final report skeleton.
+* **Objective:** Synthesize pixel-only, low-frequency-only, and mixed-domain findings and set up final report skeleton.
 
   1. Compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three training conditions.
   2. Summarize each condition's peak epoch, peak accuracy, and peak-to-final decline. Identify whether mixed-domain training shifted, flattened, or removed any robust-overfitting peak.
-  3. Create the final report skeleton, including motivation, related work, methodology, results, limitations, and conclusions.
+  3. Create final report skeleton, including motivation, related work, methodology, results, limitations, and conclusions.
 
-* **Expectations:** A defensible interpretation of the mixed-domain robust-overfitting study and a report structure ready for writing.
+* **Expectations:** A defensible interpretation of mixed-domain robust-overfitting study and a report structure ready for writing.
 
 ---
 

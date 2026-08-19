@@ -1,6 +1,6 @@
 """Low-frequency DCT-masked PGD primitives.
 
-This module deliberately contains only the attack implementation.  Training
+This module deliberately contains only attack implementation.  Training
 mode selection, checkpoint evaluation, result logging, and diagnostics are
 integrated in Week 9 so that this Week 8 implementation can be reviewed and
 tested in isolation.
@@ -19,7 +19,7 @@ _DCT_BASIS_CACHE: Dict[Tuple[int, str, Optional[int], torch.dtype], Tensor] = {}
 
 
 def _dct_basis(size: int, device: torch.device, dtype: torch.dtype) -> Tensor:
-    """Return the orthonormal DCT-II basis for one spatial dimension."""
+    """Return orthonormal DCT-II basis for one spatial dimension."""
     if size <= 0:
         raise ValueError(f"DCT size must be positive, got {size}.")
     if not dtype.is_floating_point:
@@ -39,7 +39,7 @@ def _dct_basis(size: int, device: torch.device, dtype: torch.dtype) -> Tensor:
 
 
 def dct_2d(images: Tensor) -> Tensor:
-    """Apply an orthonormal DCT-II to the final two dimensions of a tensor."""
+    """Apply an orthonormal DCT-II to final two dimensions of a tensor."""
     if images.ndim < 2:
         raise ValueError("Expected at least two spatial dimensions for a 2D DCT.")
 
@@ -50,7 +50,7 @@ def dct_2d(images: Tensor) -> Tensor:
 
 
 def idct_2d(coefficients: Tensor) -> Tensor:
-    """Apply the inverse of :func:`dct_2d` to the final two dimensions."""
+    """Apply inverse of :func:`dct_2d` to final two dimensions."""
     if coefficients.ndim < 2:
         raise ValueError("Expected at least two spatial dimensions for a 2D inverse DCT.")
 
@@ -68,9 +68,9 @@ def low_frequency_mask(
     device: Optional[torch.device] = None,
     dtype: torch.dtype = torch.float32,
 ) -> Tensor:
-    """Create the fixed top-left low-frequency DCT mask.
+    """Create fixed top-left low-frequency DCT mask.
 
-    For the primary CIFAR-10 experiment, ``height=width=32`` and ``cutoff=8``;
+    For primary CIFAR-10 experiment, ``height=width=32`` and ``cutoff=8``;
     this keeps 64 of 1,024 DCT coefficients per color channel.
     """
     if height <= 0 or width <= 0:
@@ -89,7 +89,7 @@ def low_frequency_mask(
 
 
 def low_frequency_project(perturbation: Tensor, cutoff: int = 8) -> Tensor:
-    """Project a perturbation into the fixed low-frequency DCT subspace."""
+    """Project a perturbation into fixed low-frequency DCT subspace."""
     if perturbation.ndim < 2:
         raise ValueError("Expected a tensor with two spatial dimensions.")
 
@@ -118,9 +118,9 @@ def _scale_to_linf_ball(perturbation: Tensor, epsilon: float) -> Tensor:
 
 
 def out_of_mask_energy_fraction(perturbation: Tensor, cutoff: int = 8) -> Tensor:
-    """Return each example's DCT energy outside the low-frequency mask.
+    """Return each example's DCT energy outside low-frequency mask.
 
-    This is intended for Week 9 logging.  It detects the spectral leakage that
+    This is intended for Week 9 logging.  It detects spectral leakage that
     can be introduced when a valid image is obtained through pixel clipping.
     """
     if perturbation.ndim != 4:
@@ -160,7 +160,7 @@ def generate_low_frequency_dct_pgd(
 
     The attack keeps an unclipped DCT-masked perturbation as its optimization
     state.  It rescales that state, rather than coordinatewise clipping it, to
-    keep it within the ``L-infinity`` budget without breaking its DCT-subspace
+    keep it within ``L-infinity`` budget without breaking its DCT-subspace
     membership.  The final image is then clamped to ``[0, 1]``.  That final
     clamp is necessary for valid images but can introduce small out-of-mask
     energy; ``return_metadata=True`` exposes its magnitude for future logging.
@@ -184,7 +184,7 @@ def generate_low_frequency_dct_pgd(
     if num_steps <= 0:
         raise ValueError(f"num_steps must be positive, got {num_steps}.")
 
-    # Validate the requested mask before running the attack.
+    # Validate requested mask before running attack.
     low_frequency_mask(*images.shape[-2:], cutoff, device=images.device, dtype=images.dtype)
 
     was_training = model.training
