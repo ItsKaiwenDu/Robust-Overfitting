@@ -1,9 +1,8 @@
-"""Low-frequency DCT-masked PGD primitives.
+"""Low-frequency DCT-masked PGD attack implementation.
 
-This module deliberately contains only attack implementation.  Training
-mode selection, checkpoint evaluation, result logging, and diagnostics are
-integrated in Week 9 so that this Week 8 implementation can be reviewed and
-tested in isolation.
+This module contains only the attack itself. Training mode selection,
+checkpoint evaluation, result logging, and diagnostics are added in
+Week 9 so this Week 8 code can be reviewed and tested on its own.
 """
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ _DCT_BASIS_CACHE: Dict[Tuple[int, str, Optional[int], torch.dtype], Tensor] = {}
 
 
 def _dct_basis(size: int, device: torch.device, dtype: torch.dtype) -> Tensor:
-    """Return orthonormal DCT-II basis for one spatial dimension."""
+    """Build and cache the DCT-II basis matrix for a given image dimension (height or width)."""
     if size <= 0:
         raise ValueError(f"DCT size must be positive, got {size}.")
     if not dtype.is_floating_point:
@@ -39,7 +38,7 @@ def _dct_basis(size: int, device: torch.device, dtype: torch.dtype) -> Tensor:
 
 
 def dct_2d(images: Tensor) -> Tensor:
-    """Apply an orthonormal DCT-II to final two dimensions of a tensor."""
+    """Convert images from pixel space to frequency space using a 2D DCT."""
     if images.ndim < 2:
         raise ValueError("Expected at least two spatial dimensions for a 2D DCT.")
 
@@ -50,7 +49,7 @@ def dct_2d(images: Tensor) -> Tensor:
 
 
 def idct_2d(coefficients: Tensor) -> Tensor:
-    """Apply inverse of :func:`dct_2d` to final two dimensions."""
+    """Convert frequency coefficients back to pixel space (inverse of dct_2d)."""
     if coefficients.ndim < 2:
         raise ValueError("Expected at least two spatial dimensions for a 2D inverse DCT.")
 
@@ -68,10 +67,13 @@ def low_frequency_mask(
     device: Optional[torch.device] = None,
     dtype: torch.dtype = torch.float32,
 ) -> Tensor:
-    """Create fixed top-left low-frequency DCT mask.
+    """Create a binary mask that keeps only the low-frequency DCT coefficients.
 
-    For primary CIFAR-10 experiment, ``height=width=32`` and ``cutoff=8``;
-    this keeps 64 of 1,024 DCT coefficients per color channel.
+    The mask is a grid of ones in the top-left corner (rows 0 to cutoff,
+    columns 0 to cutoff) and zeros everywhere else. For our CIFAR-10
+    experiment (32x32 images, cutoff=8), this keeps 64 out of 1,024
+    frequency coefficients per color channel — just the coarse, large-scale
+    patterns in the image.
     """
     if height <= 0 or width <= 0:
         raise ValueError(f"Mask dimensions must be positive, got {height}x{width}.")
@@ -89,7 +91,11 @@ def low_frequency_mask(
 
 
 def low_frequency_project(perturbation: Tensor, cutoff: int = 8) -> Tensor:
-    """Project a perturbation into fixed low-frequency DCT subspace."""
+    """Strip high-frequency content from a perturbation, keeping only low-frequency components.
+
+    Converts to frequency space, zeroes out everything above the cutoff,
+    then converts back to pixel space.
+    """
     if perturbation.ndim < 2:
         raise ValueError("Expected a tensor with two spatial dimensions.")
 
@@ -105,7 +111,11 @@ def low_frequency_project(perturbation: Tensor, cutoff: int = 8) -> Tensor:
 
 
 def _scale_to_linf_ball(perturbation: Tensor, epsilon: float) -> Tensor:
-    """Rescale whole perturbations to preserve DCT-subspace membership."""
+    """Scale down the perturbation so its largest pixel change is at most epsilon.
+
+    Shrinks the whole perturbation uniformly rather than clipping individual
+    pixels, which would otherwise introduce unwanted high-frequency noise.
+    """
     if perturbation.ndim < 1:
         raise ValueError("Expected a batched perturbation tensor.")
     if epsilon <= 0:
@@ -118,10 +128,11 @@ def _scale_to_linf_ball(perturbation: Tensor, epsilon: float) -> Tensor:
 
 
 def out_of_mask_energy_fraction(perturbation: Tensor, cutoff: int = 8) -> Tensor:
-    """Return each example's DCT energy outside low-frequency mask.
+    """Measure how much of the perturbation's energy ended up outside the low-frequency mask.
 
-    This is intended for Week 9 logging.  It detects spectral leakage that
-    can be introduced when a valid image is obtained through pixel clipping.
+    Used for Week 9 logging. When images are clamped to valid pixel range
+    [0, 1], a small amount of high-frequency content can sneak in. This
+    function measures how large that leakage is for each image in the batch.
     """
     if perturbation.ndim != 4:
         raise ValueError(
@@ -156,17 +167,18 @@ def generate_low_frequency_dct_pgd(
     random_start: bool = True,
     return_metadata: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Dict[str, Tensor]]]:
-    """Generate a low-frequency DCT-masked, image-space ``L-infinity`` PGD attack.
+    """Generate adversarial images using a low-frequency DCT-masked PGD attack.
 
-    The attack keeps an unclipped DCT-masked perturbation as its optimization
-    state.  It rescales that state, rather than coordinatewise clipping it, to
-    keep it within ``L-infinity`` budget without breaking its DCT-subspace
-    membership.  The final image is then clamped to ``[0, 1]``.  That final
-    clamp is necessary for valid images but can introduce small out-of-mask
-    energy; ``return_metadata=True`` exposes its magnitude for future logging.
+    At each step, the attack computes which pixel changes would most increase
+    the model's error, restricts those changes to low-frequency patterns only,
+    and takes a small step in that direction. The perturbation is scaled (not
+    clipped pixel-by-pixel) to stay within the epsilon budget, which preserves
+    its low-frequency structure. At the end, the image is clamped to [0, 1]
+    to keep pixel values valid; this final clamp can add a tiny amount of
+    high-frequency content, which return_metadata=True reports for logging.
 
-    This function only creates attacked images.  It does not select a training
-    mode, write a schedule, evaluate checkpoints, or log results.
+    This function only generates attacked images. It does not handle training
+    mode selection, schedule logging, checkpoint evaluation, or result saving.
     """
     if images.ndim != 4:
         raise ValueError(
@@ -184,7 +196,7 @@ def generate_low_frequency_dct_pgd(
     if num_steps <= 0:
         raise ValueError(f"num_steps must be positive, got {num_steps}.")
 
-    # Validate requested mask before running attack.
+    # Check that the mask settings are valid before starting the attack.
     low_frequency_mask(*images.shape[-2:], cutoff, device=images.device, dtype=images.dtype)
 
     was_training = model.training
