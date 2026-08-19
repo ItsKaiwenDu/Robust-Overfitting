@@ -1,22 +1,16 @@
 # Investigating Robust Overfitting in Adversarial Training
 
 This is GitHub repository for research on robust overfitting in adversarial training.
+Last updated: August 19, 2026
 
 ---
 
 ## Project Overview
-Deep neural networks can be easily fooled by adversarial attacks, which are small, hidden changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
+Deep neural networks can be easily tricked by adversarial attacks, which are small, human-imperceptible changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
 
 The project first reproduced robust overfitting with pixel-space PGD adversarial training. Its next phase tests whether robust overfitting changes when adversarial-training attack domain is randomized across epochs: standard pixel-space PGD or low-frequency DCT-constrained PGD.
 
-Current Research Objectives:
-
-* Maintain existing pixel-space PGD result as robust-overfitting baseline using PreActResNet-18 on CIFAR-10.
-* Establish a low-frequency-only DCT-constrained PGD baseline using same model and training schedule.
-* Train a mixed-domain model that randomly selects pixel-space or low-frequency PGD once per epoch.
-* Compare robust-overfitting curves under both component attack domains and their per-example worst case.
-
-## Research Question and Hypothesis
+## Research Question & Hypothesis
 
 **Research question:** During PGD adversarial training of PreActResNet-18 on CIFAR-10, how does randomly alternating pixel-space PGD and low-frequency DCT-constrained PGD across epochs affect timing and severity of robust overfitting, compared with pixel-only and low-frequency-only training?
 
@@ -24,61 +18,76 @@ Current Research Objectives:
 
 ---
 
-## Planned Experiment Design
+## Experiment Design
 
-The pre-implementation specification—including fixed DCT mask, attack
-update, randomized schedule, checkpoint evaluation, run artifacts, and
-diagnostic acceptance criteria—is in
-[`experimental_specification.md`](experimental_specification.md).
+### Architectures
 
-### Training conditions
+* **Model:** PreActResNet-18: Standard deep residual network used in adversarial training research, sourced from the Rice et al. (2020) codebase.
+* **Dataset:** CIFAR-10: Contains 50,000 training images and 10,000 test images across 10 classes, each 32×32 pixels.
+
+### Training Configurations
 
 All conditions use same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, number of epochs, training PGD step count, and random seed policy.
 
-1. **Pixel-only baseline:** Train with standard pixel-space PGD in every epoch. This is completed Rice et al. replication.
-2. **Low-frequency-only baseline:** Train with DCT-constrained PGD in every epoch. The adversarial perturbation is restricted by a predefined low-frequency mask before being transformed back to image space.
-3. **Mixed-domain condition:** At start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-constrained PGD. Every batch in that epoch uses selected attack domain.
+1. **Pixel-only:** Train with standard pixel-space PGD in every epoch. This is completed Rice et al. replication.
+2. **Low-frequency-only:** Train with DCT-constrained PGD in every epoch. The adversarial perturbation is restricted by a predefined low-frequency mask before being transformed back to image space.
+3. **Mixed-domain (pixel or low-frequency):** At start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-constrained PGD. Every batch in that epoch uses selected attack domain.
 
 The low-frequency mask and attack budget will be saved with each run configuration. The frequency attack will use same image-space L-infinity budget and same number of PGD steps as pixel-space attack unless a documented diagnostic shows that an adjustment is necessary.
 
-### Evaluation protocol
+### Evaluation Configurations
 
-At every saved checkpoint, evaluate each model on:
+Every saved checkpoint (40 per condition) is evaluated against the full 10,000-image CIFAR-10 test set using four metrics:
 
-1. clean CIFAR-10 test images;
-2. test images attacked with pixel-space PGD;
-3. test images attacked with low-frequency DCT-constrained PGD; and
-4. a union summary that records whether either attack succeeds on each test image.
+1. **Clean accuracy:** test the model on unmodified images with no attack.
+2. **Pixel-space robustness:** attack each test image with pixel-space PGD-20 (20 steps, epsilon = 8/255) and measure how often the model still predicts correctly.
+3. **Low-frequency robustness:** attack each test image with DCT-masked PGD-20 using the same budget and measure robustness.
+4. **Union score:** per image, count it as correct only if the model resisted *both* the pixel-space and low-frequency attacks. This is the strictest measure.
 
-The primary robust-overfitting measurements are peak robust-accuracy epoch and peak-to-final robust-accuracy drop for pixel, low-frequency, and union evaluations. Reporting all three avoids mistaking improved robustness to one attack for an overall improvement.
-
-### Scope
-
-This is a controlled robust-overfitting study, not an attempt to reproduce Multi Steepest Descent or TaFD. The model architecture remains unchanged. The only planned training intervention is adversarial attack domain used during each epoch.
+For each metric, we record the **peak epoch** (when accuracy was highest) and the **post-peak decline** (how much it dropped by epoch 200). These are the primary numbers compared across conditions.
 
 ---
 
-## Research Team
-* Principal Investigator: Dr. Nicholas Q. Tran (Department of Mathematics and Computer Science)
-* Student Researcher: Kaiwen Du (Computer Science)
+## Setup Guide
 
----
+**Local Initialization**:
 
-## Local Setup Instructions
+1. Clone this repository and navigate into this repo.
+2. Create and activate a Python virtual environment:
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+```
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+4. Verify everything works:
+```bash
+python3 scripts/verify_setup.py
+```
+5. Run a quick diagnostic (1 epoch, 10% of data) to confirm the training pipeline:
+```bash
+python3 scripts/train.py --diagnostic
+```
 
-1. **Create virtual environment** *(an isolated Python workspace that keeps this project's dependencies separate from other Python projects on your system)*:
-   ```bash
-   python3 -m venv .venv
-   ```
-2. **Activate & install dependencies**:
-   ```bash
-   source .venv/bin/activate
-   pip3 install -r requirements.txt
-   ```
-3. **Verify setup**:
-   ```bash
-   python3 scripts/verify_setup.py
-   ```
+**Option A: Lambda Labs (Cloud)**
+
+6a. See [`setup_lambda_labs.md`](setup_lambda_labs.md) for the complete step-by-step guide, including instance provisioning, SSH access, code syncing, running training in the background, monitoring with TensorBoard, downloading results, and terminating the instance.
+
+**Option B: Local**
+
+6b. Run training:
+```bash
+python3 scripts/train.py
+```
+7b. Run evaluation across all checkpoints:
+```bash
+python3 scripts/evaluate.py
+```
+8b. Plot results:
+```bash
+python3 scripts/plot_results.py
+```
 
 > **Note:** The **CIFAR-10** dataset (~170 MB) will be downloaded automatically to `data/` on first training run. No manual download is required.
 
@@ -109,7 +118,7 @@ Robust-Overfitting/
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
 ├── runs/                              # [Ignored] TensorBoard logging directories
 ├── .gitignore                         # Files and folders ignored by Git
-├── experimental_specification.md       # Fixed mixed-domain experiment protocol
+├── experimental_specification.md      # Fixed mixed-domain experiment protocol
 ├── goals.md                           # Weekly goals, objectives, and expectations
 ├── progress.md                        # Weekly progress reports
 ├── proposal.md                        # Project proposal document
@@ -122,9 +131,14 @@ Robust-Overfitting/
 
 ## Weekly Goals & Progress
 
-Weekly research objectives, detailed action items, expectations, and deliverables are tracked in [`goals.md`](goals.md).
+* [`goals.md`](goals.md): tracks our weekly research objectives, detailed action items, and expectations.
+* [`progress.md`](progress.md): tracks our weekly execution logs, progress notes, and deliverables.
 
-For weekly execution logs and detailed progress notes, see [`progress.md`](progress.md).
+---
+
+## Research Team
+* Principal Investigator: Dr. Nicholas Q. Tran (Department of Mathematics and Computer Science)
+* Student Researcher: Kaiwen Du (Computer Science)
 
 ---
 

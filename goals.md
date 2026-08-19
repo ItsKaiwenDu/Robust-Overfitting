@@ -110,11 +110,11 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ---
 
 ## Week 9 (Upcoming)
-* **Objective:** Integrate DCT-PGD attack into pipeline and validate revised mixed-domain setup.
+* **Objective:** Fully implement DCT-PGD attack into training pipeline and verify training and evaluation setup on both local and cloud (Lambda Labs) environments.
 
   1. Add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency PGD once at start of each epoch using a seeded fair random choice.
   2. Extend checkpoint evaluation to report clean accuracy, pixel-PGD robust accuracy, low-frequency-PGD robust accuracy, and a per-example worst-case union summary.
-  3. Run short local and Lambda Labs diagnostics to verify DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, GPU behavior, and result logging.
+  3. Run short local and Lambda Labs diagnostics to verify DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, and result logging.
 
 * **Expectations:** Verified training and evaluation scripts, documented run configuration, and successful local and cloud diagnostics.
 
