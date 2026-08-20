@@ -97,26 +97,25 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 8 (In Progress)
-* **Objective:** Study multi-perturbation literature and implement low-frequency DCT-PGD attack.
+## Week 8 (Completed)
+* **Objective:** Study multi-perturbation literature and implement a low-frequency DCT-masked PGD attack.
 
   1. Read and digest Tramèr and Boneh (2019), Maini, Wong, and Kolter (2020), and Xie, He, and Fang (2026). Create notes that explain their methods, results, and relevance to this project.
-  2. Distinguish project's randomized epoch-level attack schedule from AVG, MAX, MSD, and TaFD methods in literature.
-  3. Finalize and document research question, hypothesis, training conditions, checkpoint evaluation protocol, and reproducibility requirements for pixel-only, low-frequency-only, and mixed-domain conditions.
-  4. Implement low-frequency DCT-constrained PGD attack, including forward transform, low-frequency mask, inverse transform, and image-space perturbation constraint. 
+  2. Refine research question and hypothesis to reflect updated direction, then outline training conditions and evaluation plan in [`README.md`](README.md).
+  3. Implement a low-frequency DCT-masked PGD attack, including forward transform, low-frequency mask, inverse transform, and image-space perturbation constraint.
 
-* **Expectations:** Complete literature notes and citations, a clear experimental specification, and a working low-frequency DCT-PGD attack ready to integrate into training pipeline.
+* **Expectations:** Complete literature notes and citations, a clear experimental plan, and a working low-frequency DCT-masked PGD attack ready to connect to our training pipeline.
 
 ---
 
 ## Week 9 (Upcoming)
-* **Objective:** Fully implement DCT-PGD attack into training pipeline and verify training and evaluation setup on both local and cloud (Lambda Labs) environments.
+* **Objective:** Integrate completed low-frequency DCT-masked PGD attack into training and evaluation pipeline, then verify all modes with local and cloud diagnostics.
 
-  1. Add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency PGD once at start of each epoch using a seeded fair random choice.
-  2. Extend checkpoint evaluation to report clean accuracy, pixel-PGD robust accuracy, low-frequency-PGD robust accuracy, and a per-example worst-case union summary.
-  3. Run short local and Lambda Labs diagnostics to verify DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, and result logging.
+  1. Connect DCT-masked PGD attack script to [`scripts/train.py`](../scripts/train.py) and add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency DCT-masked PGD once at start of each epoch using a seeded fair random choice.
+  2. Extend checkpoint evaluation to report clean accuracy, pixel-space PGD robust accuracy, low-frequency DCT-masked PGD robust accuracy, and per-image union robustness.
+  3. Extend diagnostic mode to support all three training modes, then run short diagnostics locally and on Lambda Labs to verify DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, and result logging.
 
-* **Expectations:** Verified training and evaluation scripts, documented run configuration, and successful local and cloud diagnostics.
+* **Expectations:** Verified three-mode training and four-metric evaluation, documented run configuration, and successful local and cloud diagnostics.
 
 ---
 

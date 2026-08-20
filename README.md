@@ -8,11 +8,11 @@ Last updated: August 19, 2026
 ## Project Overview
 Deep neural networks can be easily tricked by adversarial attacks, which are small, human-imperceptible changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
 
-The project first reproduced robust overfitting with pixel-space PGD adversarial training. Its next phase tests whether robust overfitting changes when adversarial-training attack domain is randomized across epochs: standard pixel-space PGD or low-frequency DCT-constrained PGD.
+The project first reproduced robust overfitting with pixel-space PGD adversarial training. Its next phase tests whether robust overfitting changes when adversarial-training attack domain is randomized across epochs: standard pixel-space PGD or low-frequency DCT-masked PGD.
 
 ## Research Question & Hypothesis
 
-**Research question:** During PGD adversarial training of PreActResNet-18 on CIFAR-10, how does randomly alternating pixel-space PGD and low-frequency DCT-constrained PGD across epochs affect timing and severity of robust overfitting, compared with pixel-only and low-frequency-only training?
+**Research question:** During PGD adversarial training of PreActResNet-18 on CIFAR-10, how does randomly alternating pixel-space PGD and low-frequency DCT-masked PGD across epochs affect timing and severity of robust overfitting, compared with pixel-only and low-frequency-only training?
 
 **Hypothesis:** With architecture, dataset, training schedule, perturbation budget, and evaluation schedule held constant, mixed-domain training will produce robust-accuracy curves that differ from single-domain baselines. The peak epoch may shift, peak may flatten, or post-peak decline may change under one or both evaluation attacks.
 
@@ -20,20 +20,18 @@ The project first reproduced robust overfitting with pixel-space PGD adversarial
 
 ## Experiment Design
 
-### Architectures
+### Model and Dataset
 
 * **Model:** PreActResNet-18: Standard deep residual network used in adversarial training research, sourced from the Rice et al. (2020) codebase.
 * **Dataset:** CIFAR-10: Contains 50,000 training images and 10,000 test images across 10 classes, each 32×32 pixels.
 
 ### Training Configurations
 
-All conditions use same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, number of epochs, training PGD step count, and random seed policy.
+All conditions use the same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, 200 epochs, 10-step training PGD, perturbation budget, and random-seed policy.
 
-1. **Pixel-only:** Train with standard pixel-space PGD in every epoch. This is completed Rice et al. replication.
-2. **Low-frequency-only:** Train with DCT-constrained PGD in every epoch. The adversarial perturbation is restricted by a predefined low-frequency mask before being transformed back to image space.
-3. **Mixed-domain (pixel or low-frequency):** At start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-constrained PGD. Every batch in that epoch uses selected attack domain.
-
-The low-frequency mask and attack budget will be saved with each run configuration. The frequency attack will use same image-space L-infinity budget and same number of PGD steps as pixel-space attack unless a documented diagnostic shows that an adjustment is necessary.
+1. **Pixel-only:** Train with standard pixel-space PGD in every epoch. This is the completed Rice et al. replication.
+2. **Low-frequency-only:** Train with low-frequency DCT-masked PGD in every epoch. The adversarial perturbation is restricted by a predefined low-frequency mask before being transformed back to image space.
+3. **Mixed-domain (pixel or low-frequency):** At the start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-masked PGD. Every batch in that epoch uses the selected attack domain.
 
 ### Evaluation Configurations
 
@@ -42,7 +40,7 @@ Every saved checkpoint (40 per condition) is evaluated against the full 10,000-i
 1. **Clean accuracy:** test the model on unmodified images with no attack.
 2. **Pixel-space robustness:** attack each test image with pixel-space PGD-20 (20 steps, epsilon = 8/255) and measure how often the model still predicts correctly.
 3. **Low-frequency robustness:** attack each test image with DCT-masked PGD-20 using the same budget and measure robustness.
-4. **Union score:** per image, count it as correct only if the model resisted *both* the pixel-space and low-frequency attacks. This is the strictest measure.
+4. **Union robustness:** per image, count it as correct only if the model resisted *both* the pixel-space and low-frequency attacks. This means measuring whether the model is robust to both attack domains for the same image.
 
 For each metric, we record the **peak epoch** (when accuracy was highest) and the **post-peak decline** (how much it dropped by epoch 200). These are the primary numbers compared across conditions.
 
@@ -53,6 +51,10 @@ For each metric, we record the **peak epoch** (when accuracy was highest) and th
 **Local Initialization**:
 
 1. Clone this repository and navigate into this repo.
+   ```bash
+   git clone https://github.com/ItsKaiwenDu/Robust-Overfitting.git
+   cd Robust-Overfitting
+   ```
 2. Create and activate a Python virtual environment:
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -91,6 +93,10 @@ python3 scripts/plot_results.py
 
 > **Note:** The **CIFAR-10** dataset (~170 MB) will be downloaded automatically to `data/` on first training run. No manual download is required.
 
+### Pretrained Checkpoints
+
+To inspect the completed pixel-space PGD training run without reproducing all 200 epochs, download the 40 released checkpoints from [Hugging Face](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints). The checkpoint at epoch 105 achieved the highest measured PGD-20 robust accuracy; `epoch_200.pt` is the final checkpoint.
+
 ---
 
 ## Project Directory Structure
@@ -118,7 +124,6 @@ Robust-Overfitting/
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
 ├── runs/                              # [Ignored] TensorBoard logging directories
 ├── .gitignore                         # Files and folders ignored by Git
-├── experimental_specification.md      # Fixed mixed-domain experiment protocol
 ├── goals.md                           # Weekly goals, objectives, and expectations
 ├── progress.md                        # Weekly progress reports
 ├── proposal.md                        # Project proposal document
