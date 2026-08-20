@@ -35,7 +35,7 @@ The authors also give a conditional theoretical result: under their augmentation
 
 ## Important Results
 
-For ResNet-18 on CIFAR-10, DAT reports 57.55% robust accuracy under PGD-20 and 51.36% under AutoAttack, versus 51.30% and 47.63% for their PGD-AT baseline. DAT also reports higher clean accuracy (84.17% versus 82.78%).
+For ResNet-18 on CIFAR-10, DAT reports 57.55% robust accuracy under PGD-20 and 51.36% under AutoAttack, vs. 51.30% and 47.63% for their PGD-AT baseline. DAT also reports higher clean accuracy (84.17% vs. 82.78%).
 
 Their ablations show that the AAG, amplitude mix-up, and split batch normalization all matter; removing split batch normalization produces the largest robustness drop in their table.
 
@@ -43,7 +43,7 @@ Their ablations show that the AAG, amplitude mix-up, and split batch normalizati
 
 This paper is useful evidence that *how* information is changed in the frequency domain can affect adversarial robustness. It also uses CIFAR-10, ResNet-18, and PGD-style adversarial training, so its setting is close enough to help motivate our work.
 
-But it does **not** answer our research question directly. Amplitude versus phase is different from low-, middle-, and high-frequency bands. DAT changes several things at once - a generator, image augmentation, losses, and batch-normalization layers - while our experiment should keep the training and evaluation setup fixed and change only the allowed perturbation band.
+But it does **not** answer our research question directly. Amplitude vs. phase is different from low-, middle-, and high-frequency bands. DAT changes several things at once - a generator, image augmentation, losses, and batch-normalization layers - while our experiment should keep the training and evaluation setup fixed and change only the allowed perturbation band.
 
 Li et al. mention robust overfitting only as a limitation: DAT without AWP must be trained for a limited number of epochs. They do not compare peak robust-accuracy epochs or post-peak decline across frequency bands. That is the gap our robust-accuracy curves address.
 
