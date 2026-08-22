@@ -199,6 +199,7 @@ def main():
     parser = argparse.ArgumentParser(description='PreActResNet-18 PGD Adversarial Training on CIFAR-10')
     parser.add_argument('--epochs', default=200, type=int, help='total epochs (default: 200)')
     parser.add_argument('--batch-size', default=128, type=int, help='batch size for training (default: 128)')
+    parser.add_argument('--num-workers', default=2, type=int, help='DataLoader worker processes when using an accelerator (default: 2)')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--lr-decay-epochs', default=[100, 150], type=int, nargs='+', help='epochs at which to decay lr')
     parser.add_argument('--weight-decay', default=5e-4, type=float, help='weight decay (L2 penalty)')
@@ -220,12 +221,36 @@ def main():
     )
     parser.add_argument('--diagnostic', action='store_true', help='run in diagnostic mode (1 epoch, 10%% data)')
     parser.add_argument('--seed', default=42, type=int, help='random seed (default: 42)')
-    parser.add_argument('--checkpoint-dir', default='Checkpoints', type=str, help='directory to save checkpoints')
-    parser.add_argument('--runs-dir', default='runs', type=str, help='TensorBoard logging directory')
+    parser.add_argument(
+        '--run-name', default=None, type=str,
+        help='name for this run inside its training-mode directory (default: seed-<seed>)',
+    )
+    parser.add_argument(
+        '--checkpoint-dir', default=None, type=str,
+        help='checkpoint output directory (default: checkpoints/<mode>/<run-name>)',
+    )
+    parser.add_argument(
+        '--runs-dir', default=None, type=str,
+        help='TensorBoard output directory (default: runs/<mode>/<run-name>)',
+    )
     args = parser.parse_args()
 
     if not 1 <= args.dct_cutoff <= 32:
         parser.error('--dct-cutoff must be between 1 and 32 for CIFAR-10 images.')
+
+    # Keep every condition and random seed in its own directory. This avoids
+    # overwriting checkpoints or TensorBoard logs when several runs coexist.
+    if args.run_name is None:
+        args.run_name = f'seed-{args.seed}' if args.seed is not None else 'unseeded'
+    run_parts = [args.training_mode]
+    if args.diagnostic:
+        run_parts.append('diagnostic')
+    run_parts.append(args.run_name)
+    run_relative_path = os.path.join(*run_parts)
+    if args.checkpoint_dir is None:
+        args.checkpoint_dir = os.path.join('checkpoints', run_relative_path)
+    if args.runs_dir is None:
+        args.runs_dir = os.path.join('runs', run_relative_path)
     
     # Step 1: set up reproducibility and device.
     if args.seed is not None:
@@ -254,8 +279,6 @@ def main():
     if args.diagnostic:
         print("Mode: Diagnostic")
         args.epochs = 1
-        args.checkpoint_dir = os.path.join(args.checkpoint_dir, 'diagnostic')
-        args.runs_dir = os.path.join(args.runs_dir, 'diagnostic')
         
     os.makedirs(args.checkpoint_dir, exist_ok=True)
     os.makedirs(args.runs_dir, exist_ok=True)
@@ -283,8 +306,14 @@ def main():
         print(f"Diagnostic training subset size: {len(train_dataset)}")
         print(f"Diagnostic test subset size: {len(test_dataset)}")
         
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=2, pin_memory=True)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2, pin_memory=True)
+    # This local environment cannot create PyTorch shared-memory worker
+    # processes. CPU runs use the main process; accelerator runs retain the
+    # configurable worker count used on Lambda Labs.
+    dataloader_workers = args.num_workers if device.type != 'cpu' else 0
+    pin_memory = device.type == 'cuda'
+    print(f"DataLoader workers: {dataloader_workers} | Pin memory: {pin_memory}")
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=dataloader_workers, pin_memory=pin_memory)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=dataloader_workers, pin_memory=pin_memory)
     
     cifar10_mean = (0.4914, 0.4822, 0.4465)
     cifar10_std = (0.2471, 0.2435, 0.2616)
@@ -303,7 +332,8 @@ def main():
     print(f"Starting training pipeline: {args.epochs} epochs.")
     print(f"Hyperparameters: LR={args.lr}, Decay Epochs={args.lr_decay_epochs}, Weight Decay={args.weight_decay}, Momentum={args.momentum}")
     print(f"PGD Attack config: epsilon={args.epsilon:.4f}, alpha={args.alpha:.4f}, steps={args.attack_steps}")
-    print(f"Training mode: {args.training_mode} | DCT cutoff: {args.dct_cutoff}")
+    print(f"Training mode: {args.training_mode} | Run: {args.run_name} | DCT cutoff: {args.dct_cutoff}")
+    print(f"Checkpoints: {args.checkpoint_dir} | TensorBoard: {args.runs_dir}")
 
     # This RNG is intentionally independent from augmentation, shuffled data,
     # and PGD random starts. Therefore the same seed produces the same

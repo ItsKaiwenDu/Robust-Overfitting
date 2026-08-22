@@ -1,0 +1,2 @@
+epoch,clean_loss,clean_acc,pixel_robust_loss,pixel_robust_acc,low_frequency_robust_loss,low_frequency_robust_acc,union_robust_acc,eval_time_sec
+1,2.168846,0.251000,2.920912,0.096000,2.297515,0.210000,0.096000,364.26

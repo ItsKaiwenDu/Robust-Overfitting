@@ -85,6 +85,24 @@ python3 scripts/train.py --training-mode low-frequency-only --dct-cutoff 8
 python3 scripts/train.py --training-mode mixed-domain --seed 42 --dct-cutoff 8
 ```
 
+By default, each run uses a separate directory named after its condition and
+seed. Diagnostics add a `diagnostic/` level, so the three one-epoch checks do
+not overwrite one another:
+
+```text
+checkpoints/<training-mode>/[diagnostic/]<run-name>/
+runs/<training-mode>/[diagnostic/]<run-name>/
+report/<training-mode>/[diagnostic/]<run-name>/evaluation_results.csv
+```
+
+`<run-name>` defaults to `seed-<seed>` and can be changed with `--run-name`.
+For example, run the low-frequency diagnostic and then its matching evaluation:
+
+```bash
+python3 scripts/train.py --training-mode low-frequency-only --diagnostic --seed 42
+python3 scripts/evaluate.py --training-mode low-frequency-only --diagnostic --seed 42
+```
+
 Mixed-domain checkpoints record the selected domain for the checkpoint epoch
 and the complete schedule so far, together with the seed and DCT cutoff.
 

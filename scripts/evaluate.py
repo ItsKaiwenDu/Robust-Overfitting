@@ -192,10 +192,20 @@ def main():
        summary line, and write the result to the output CSV.
     """
     parser = argparse.ArgumentParser(description='Evaluate PreActResNet-18 Checkpoints with pixel and low-frequency PGD-20')
-    parser.add_argument('--checkpoint-dir', default='checkpoints', type=str, help='Directory containing saved .pt checkpoints')
-    parser.add_argument('--output-csv', default='report/evaluation_results.csv', type=str, help='Path to output CSV file')
+    parser.add_argument(
+        '--training-mode', default='pixel-only',
+        choices=('pixel-only', 'low-frequency-only', 'mixed-domain'),
+        help='training condition being evaluated; used to choose default paths',
+    )
+    parser.add_argument(
+        '--run-name', default=None, type=str,
+        help='name for this run inside its training-mode directory (default: seed-<seed>)',
+    )
+    parser.add_argument('--checkpoint-dir', default=None, type=str, help='Directory containing saved .pt checkpoints')
+    parser.add_argument('--output-csv', default=None, type=str, help='Path to output CSV file')
     parser.add_argument('--data-dir', default='./data', type=str, help='Dataset directory')
     parser.add_argument('--batch-size', default=128, type=int, help='Batch size for evaluation')
+    parser.add_argument('--num-workers', default=2, type=int, help='DataLoader worker processes when using an accelerator (default: 2)')
     parser.add_argument('--epsilon', default=8.0/255.0, type=float, help='Adversarial perturbation magnitude epsilon')
     parser.add_argument('--alpha', default=2.0/255.0, type=float, help='PGD step size alpha')
     parser.add_argument('--attack-steps', default=20, type=int, help='Number of PGD attack steps (default: 20 for PGD-20)')
@@ -206,6 +216,22 @@ def main():
 
     if not 1 <= args.dct_cutoff <= 32:
         parser.error('--dct-cutoff must be between 1 and 32 for CIFAR-10 images.')
+
+    # Match train.py's condition/seed layout unless a path is explicitly
+    # supplied. This keeps metrics for independent runs from overwriting.
+    if args.run_name is None:
+        args.run_name = f'seed-{args.seed}' if args.seed is not None else 'unseeded'
+    run_parts = [args.training_mode]
+    if args.diagnostic:
+        run_parts.append('diagnostic')
+    run_parts.append(args.run_name)
+    run_relative_path = os.path.join(*run_parts)
+    if args.checkpoint_dir is None:
+        args.checkpoint_dir = os.path.join('checkpoints', run_relative_path)
+    if args.output_csv is None:
+        args.output_csv = os.path.join(
+            'report', run_relative_path, 'evaluation_results.csv'
+        )
 
     # Step 1: set up device and reproducibility.
     # Fix all random seeds so the evaluation (e.g. random PGD start point)
@@ -242,6 +268,10 @@ def main():
 
     print(f"Found {len(ckpt_files)} checkpoints in '{args.checkpoint_dir}'.")
     print(
+        f"Training mode: {args.training_mode} | Run: {args.run_name} | "
+        f"Results: {args.output_csv}"
+    )
+    print(
         f"Attack Configuration: PGD-{args.attack_steps} | "
         f"Epsilon: {args.epsilon:.4f} ({args.epsilon * 255:.1f}/255) | "
         f"Alpha: {args.alpha:.4f} ({args.alpha * 255:.1f}/255) | "
@@ -265,7 +295,12 @@ def main():
         test_dataset = Subset(test_dataset, test_indices)
         print(f"Diagnostic test dataset size: {len(test_dataset)}")
 
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2, pin_memory=True)
+    # CPU diagnostics must avoid multiprocessing in this local environment;
+    # Lambda GPU runs continue to use the requested worker count.
+    dataloader_workers = args.num_workers if device.type != 'cpu' else 0
+    pin_memory = device.type == 'cuda'
+    print(f"DataLoader workers: {dataloader_workers} | Pin memory: {pin_memory}")
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=dataloader_workers, pin_memory=pin_memory)
 
     cifar10_mean = (0.4914, 0.4822, 0.4465)
     cifar10_std = (0.2471, 0.2435, 0.2616)

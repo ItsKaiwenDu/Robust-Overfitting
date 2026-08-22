@@ -113,7 +113,7 @@ Since adversarial training runs can take several hours, SSH connection drops wil
 2. Activate your virtual environment and start training:
    ```bash
    source .venv/bin/activate
-   python scripts/train.py
+   python scripts/train.py --training-mode pixel-only --seed 42
    ```
    Running with no flags uses our project's defaults: PreActResNet-18 on CIFAR-10, 200 epochs, PGD-10 adversarial training (epsilon = 8/255, step size = 2/255), SGD with momentum 0.9 and weight decay 5e-4, learning rate decaying at epochs 100 and 150. A checkpoint is saved and a test-set evaluation runs every 5 epochs (plus epoch 1 and the final epoch). Training progress and the same clean/robust metrics are also logged to TensorBoard as it runs (see Section 6). Add `--diagnostic` to instead run a quick 1-epoch sanity check on 10% of the data before committing to a full run.
 3. Detach from session by pressing `Ctrl + B`, then `D`.
@@ -166,7 +166,13 @@ source .venv/bin/activate
 python scripts/evaluate.py
 ```
 
-This defaults to evaluating every `.pt`/`.pth` file in `checkpoints/` against a 20-step PGD attack (epsilon = 8/255, step size = 2/255), and writes one row per checkpoint to `report/evaluation_results.csv` (columns: `epoch, clean_loss, clean_acc, robust_loss, robust_acc, eval_time_sec`). Results are written after each checkpoint, so partial results are saved even if evaluation is interrupted partway through. Like training, this can take a while, so it's worth running inside its own `tmux` session (see Section 5) rather than the same session as training.
+Pass the same training mode and seed used for training. For example:
+
+```bash
+python scripts/evaluate.py --training-mode pixel-only --seed 42
+```
+
+By default, that evaluates `checkpoints/pixel-only/seed-42/` and writes one row per checkpoint to `report/pixel-only/seed-42/evaluation_results.csv`. It records clean accuracy, pixel-PGD robustness, low-frequency-PGD robustness, and union robustness. Results are written after each checkpoint, so partial results are saved even if evaluation is interrupted partway through. Like training, this can take a while, so it's worth running inside its own `tmux` session (see Section 5) rather than the same session as training.
 
 ---
 
