@@ -72,6 +72,22 @@ python3 scripts/verify_setup.py
 python3 scripts/train.py --diagnostic
 ```
 
+The training domain is selected with `--training-mode`:
+
+```bash
+# Pixel-only baseline (default)
+python3 scripts/train.py --training-mode pixel-only
+
+# Low-frequency DCT-masked PGD
+python3 scripts/train.py --training-mode low-frequency-only --dct-cutoff 8
+
+# Seeded, fair pixel/DCT selection once per epoch
+python3 scripts/train.py --training-mode mixed-domain --seed 42 --dct-cutoff 8
+```
+
+Mixed-domain checkpoints record the selected domain for the checkpoint epoch
+and the complete schedule so far, together with the seed and DCT cutoff.
+
 **Option A: Lambda Labs (Cloud)**
 
 6a. See [`setup_lambda_labs.md`](setup_lambda_labs.md) for the complete step-by-step guide, including instance provisioning, SSH access, code syncing, running training in the background, monitoring with TensorBoard, downloading results, and terminating the instance.

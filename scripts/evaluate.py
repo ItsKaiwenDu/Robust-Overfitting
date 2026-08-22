@@ -3,11 +3,10 @@
 # Description:
 #   This script measures how well a trained model is doing at each saved
 #   checkpoint. For every checkpoint, it checks accuracy on normal
-#   (clean) test images, and it also checks accuracy after attacking
-#   those images with PGD-20, a standard adversarial attack. This lets us
-#   see how the model's real-world robustness changes over the course of
-#   training, which is what we need to find robust overfitting. Results
-#   for every checkpoint get written out to a CSV file.
+#   (clean) test images, pixel-space PGD-20 images, and low-frequency
+#   DCT-masked PGD-20 images. It also reports per-image union robustness:
+#   a test image counts as robust only when it resists both attacks.
+#   Results for every checkpoint get written out to a CSV file.
 # References:
 #   * Rice, L., Wong, E., and Kolter, J. Z. (2020). Overfitting in
 #     adversarially robust deep learning. ICML.
@@ -32,6 +31,7 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms
 
 from models.preact_resnet import PreActResNet18
+from scripts.dct_pgd import generate_low_frequency_dct_pgd
 
 # Skips SSL certificate checks so the CIFAR-10 download doesn't fail on
 # machines with outdated or misconfigured certificates.
@@ -69,92 +69,105 @@ def generate_pgd_adversarial(model, normalizer, X, y, epsilon, alpha, num_steps,
     The result still looks like the original image but is designed to
     fool the model.
     """
+    was_training = model.training
     model.eval()
-    
-    # Start from a small random perturbation instead of zero. This helps
-    # avoid a weaker, less realistic attack and is standard practice for PGD.
-    delta = torch.zeros_like(X).uniform_(-epsilon, epsilon).to(device)
-    delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
-    
-    for _ in range(num_steps):
-        delta.requires_grad = True
-        perturbed_X = X + delta
-        outputs = model(normalizer(perturbed_X))
-        loss = F.cross_entropy(outputs, y)
-        
-        model.zero_grad()
-        loss.backward()
-        
-        grad = delta.grad.detach()
-        
-        # Step 3: move in the direction that increases the loss (the sign
-        # of the gradient).
-        delta = delta.detach() + alpha * grad.sign()
-        # Step 4: keep the change within the allowed budget and make sure
-        # the image stays a valid pixel value.
-        delta = torch.clamp(delta, min=-epsilon, max=epsilon)
+    try:
+        # Start from a small random perturbation instead of zero. This helps
+        # avoid a weaker, less realistic attack and is standard practice for PGD.
+        delta = torch.zeros_like(X).uniform_(-epsilon, epsilon).to(device)
         delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
-        
+
+        for _ in range(num_steps):
+            delta = delta.detach().requires_grad_(True)
+            outputs = model(normalizer(X + delta))
+            loss = F.cross_entropy(outputs, y)
+            grad = torch.autograd.grad(loss, delta, only_inputs=True)[0]
+
+            # Step 3: move in the direction that increases the loss (the sign
+            # of the gradient).
+            delta = delta.detach() + alpha * grad.sign()
+            # Step 4: keep the change within the allowed budget and make sure
+            # the image stays a valid pixel value.
+            delta = torch.clamp(delta, min=-epsilon, max=epsilon)
+            delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
+    finally:
+        model.train(was_training)
+
     return (X + delta).detach()
 
 
-def evaluate_checkpoint(model, normalizer, dataloader, device, epsilon, alpha, num_steps):
-    """Measures a model's accuracy and loss on clean and attacked images.
+def evaluate_checkpoint(
+    model, normalizer, dataloader, device, epsilon, alpha, num_steps,
+    dct_cutoff,
+):
+    """Evaluate clean, pixel-PGD, low-frequency-PGD, and union robustness.
 
-    Runs through the test data in two passes:
-    1. Evaluate on the original ("clean") images.
-    2. Generate an adversarial attack for each batch, then evaluate on that.
-
-    Returns the average loss and accuracy for both passes, which together
-    show how much the model's performance drops under attack.
+    Each test batch receives both attacks. Union robustness is computed from
+    their paired per-image predictions, so an image is counted only if it is
+    correctly classified after both the pixel and low-frequency attacks.
     """
     model.eval()
     clean_loss = 0.0
     clean_correct = 0
-    robust_loss = 0.0
-    robust_correct = 0
+    pixel_robust_loss = 0.0
+    pixel_robust_correct = 0
+    low_frequency_robust_loss = 0.0
+    low_frequency_robust_correct = 0
+    union_robust_correct = 0
     total = 0
-    
-    # Step 1: evaluate on the original, unmodified images.
-    with torch.no_grad():
-        for X, y in dataloader:
-            X, y = X.to(device), y.to(device)
-            batch_size = X.size(0)
-            total += batch_size
-            
-            clean_outputs = model(normalizer(X))
-            c_loss = F.cross_entropy(clean_outputs, y, reduction='sum')
-            clean_loss += c_loss.item()
-            clean_pred = clean_outputs.argmax(dim=1)
-            clean_correct += clean_pred.eq(y).sum().item()
-            
-    # Step 2: generate an attack for each batch, then evaluate on that.
-    # Gradients need to be enabled here since generating the attack requires
-    # them, even though the model itself isn't being trained.
+
     for X, y in dataloader:
         X, y = X.to(device), y.to(device)
+
+        # Clean predictions are evaluated before generating either attack.
+        with torch.no_grad():
+            batch_size = X.size(0)
+            total += batch_size
+            clean_outputs = model(normalizer(X))
+            clean_loss += F.cross_entropy(clean_outputs, y, reduction='sum').item()
+            clean_correct += clean_outputs.argmax(dim=1).eq(y).sum().item()
+
+        # Gradients are enabled only while creating adversarial images.
         with torch.enable_grad():
-            X_adv = generate_pgd_adversarial(
+            pixel_adv = generate_pgd_adversarial(
                 model, normalizer, X, y,
                 epsilon=epsilon,
                 alpha=alpha,
                 num_steps=num_steps,
                 device=device
             )
-            
+            low_frequency_adv = generate_low_frequency_dct_pgd(
+                model, normalizer, X, y,
+                epsilon=epsilon,
+                alpha=alpha,
+                num_steps=num_steps,
+                cutoff=dct_cutoff,
+            )
+
         with torch.no_grad():
-            robust_outputs = model(normalizer(X_adv))
-            r_loss = F.cross_entropy(robust_outputs, y, reduction='sum')
-            robust_loss += r_loss.item()
-            robust_pred = robust_outputs.argmax(dim=1)
-            robust_correct += robust_pred.eq(y).sum().item()
-            
-    return (
-        clean_loss / total,
-        clean_correct / total,
-        robust_loss / total,
-        robust_correct / total
-    )
+            pixel_outputs = model(normalizer(pixel_adv))
+            low_frequency_outputs = model(normalizer(low_frequency_adv))
+            pixel_robust_loss += F.cross_entropy(
+                pixel_outputs, y, reduction='sum'
+            ).item()
+            low_frequency_robust_loss += F.cross_entropy(
+                low_frequency_outputs, y, reduction='sum'
+            ).item()
+            pixel_correct = pixel_outputs.argmax(dim=1).eq(y)
+            low_frequency_correct = low_frequency_outputs.argmax(dim=1).eq(y)
+            pixel_robust_correct += pixel_correct.sum().item()
+            low_frequency_robust_correct += low_frequency_correct.sum().item()
+            union_robust_correct += (pixel_correct & low_frequency_correct).sum().item()
+
+    return {
+        'clean_loss': clean_loss / total,
+        'clean_acc': clean_correct / total,
+        'pixel_robust_loss': pixel_robust_loss / total,
+        'pixel_robust_acc': pixel_robust_correct / total,
+        'low_frequency_robust_loss': low_frequency_robust_loss / total,
+        'low_frequency_robust_acc': low_frequency_robust_correct / total,
+        'union_robust_acc': union_robust_correct / total,
+    }
 
 
 def extract_epoch_number(filename):
@@ -175,10 +188,10 @@ def main():
     2. Find and sort all checkpoint files in the given directory.
     3. Load the test dataset.
     4. For each checkpoint, in order: load its weights, evaluate on clean
-       and adversarial (PGD-20) images, print a summary line, and write
-       the result to the output CSV.
+       and both PGD-20 attack domains, compute union robustness, print a
+       summary line, and write the result to the output CSV.
     """
-    parser = argparse.ArgumentParser(description='Evaluate PreActResNet-18 Checkpoints with PGD-20')
+    parser = argparse.ArgumentParser(description='Evaluate PreActResNet-18 Checkpoints with pixel and low-frequency PGD-20')
     parser.add_argument('--checkpoint-dir', default='checkpoints', type=str, help='Directory containing saved .pt checkpoints')
     parser.add_argument('--output-csv', default='report/evaluation_results.csv', type=str, help='Path to output CSV file')
     parser.add_argument('--data-dir', default='./data', type=str, help='Dataset directory')
@@ -186,9 +199,13 @@ def main():
     parser.add_argument('--epsilon', default=8.0/255.0, type=float, help='Adversarial perturbation magnitude epsilon')
     parser.add_argument('--alpha', default=2.0/255.0, type=float, help='PGD step size alpha')
     parser.add_argument('--attack-steps', default=20, type=int, help='Number of PGD attack steps (default: 20 for PGD-20)')
-    parser.add_argument('--diagnostic', action='store_true', help='Diagnostic mode: evaluate on 10% of test set')
+    parser.add_argument('--dct-cutoff', default=8, type=int, help='side length of the retained top-left DCT low-frequency mask')
+    parser.add_argument('--diagnostic', action='store_true', help='Diagnostic mode: evaluate on 10%% of test set')
     parser.add_argument('--seed', default=42, type=int, help='Random seed for reproducibility')
     args = parser.parse_args()
+
+    if not 1 <= args.dct_cutoff <= 32:
+        parser.error('--dct-cutoff must be between 1 and 32 for CIFAR-10 images.')
 
     # Step 1: set up device and reproducibility.
     # Fix all random seeds so the evaluation (e.g. random PGD start point)
@@ -224,7 +241,12 @@ def main():
     ckpt_files.sort(key=extract_epoch_number)
 
     print(f"Found {len(ckpt_files)} checkpoints in '{args.checkpoint_dir}'.")
-    print(f"Attack Configuration: PGD-{args.attack_steps} | Epsilon: {args.epsilon:.4f} ({args.epsilon*255:.1f}/255) | Alpha: {args.alpha:.4f} ({args.alpha*255:.1f}/255)")
+    print(
+        f"Attack Configuration: PGD-{args.attack_steps} | "
+        f"Epsilon: {args.epsilon:.4f} ({args.epsilon * 255:.1f}/255) | "
+        f"Alpha: {args.alpha:.4f} ({args.alpha * 255:.1f}/255) | "
+        f"DCT cutoff: {args.dct_cutoff}"
+    )
     if args.diagnostic:
         print("Running in Diagnostic Mode (10% test dataset).")
 
@@ -253,7 +275,11 @@ def main():
     # checkpoint in the loop below, instead of rebuilding it every time.
     model = PreActResNet18(num_classes=10).to(device)
 
-    fieldnames = ['epoch', 'clean_loss', 'clean_acc', 'robust_loss', 'robust_acc', 'eval_time_sec']
+    fieldnames = [
+        'epoch', 'clean_loss', 'clean_acc', 'pixel_robust_loss',
+        'pixel_robust_acc', 'low_frequency_robust_loss',
+        'low_frequency_robust_acc', 'union_robust_acc', 'eval_time_sec',
+    ]
     
     out_dir = os.path.dirname(args.output_csv)
     if out_dir:
@@ -265,7 +291,10 @@ def main():
 
         print("\nStarting Checkpoint Evaluations:")
         print("=" * 85)
-        print(f"{'Epoch':^8} | {'Clean Acc':^12} | {'Robust Acc':^12} | {'Clean Loss':^12} | {'Robust Loss':^12} | {'Time (s)':^8}")
+        print(
+            f"{'Epoch':^8} | {'Clean Acc':^10} | {'Pixel Acc':^10} | "
+            f"{'Low-Freq Acc':^12} | {'Union Acc':^10} | {'Time (s)':^8}"
+        )
         print("=" * 85)
 
         for ckpt_name in ckpt_files:
@@ -286,29 +315,38 @@ def main():
 
             start_time = time.time()
 
-            clean_loss, clean_acc, robust_loss, robust_acc = evaluate_checkpoint(
+            metrics = evaluate_checkpoint(
                 model=model,
                 normalizer=normalizer,
                 dataloader=test_loader,
                 device=device,
                 epsilon=args.epsilon,
                 alpha=args.alpha,
-                num_steps=args.attack_steps
+                num_steps=args.attack_steps,
+                dct_cutoff=args.dct_cutoff,
             )
 
             eval_duration = time.time() - start_time
 
-            print(f"{epoch:^8d} | {clean_acc * 100:^11.2f}% | {robust_acc * 100:^11.2f}% | {clean_loss:^12.4f} | {robust_loss:^12.4f} | {eval_duration:^8.2f}")
+            print(
+                f"{epoch:^8d} | {metrics['clean_acc'] * 100:^9.2f}% | "
+                f"{metrics['pixel_robust_acc'] * 100:^9.2f}% | "
+                f"{metrics['low_frequency_robust_acc'] * 100:^11.2f}% | "
+                f"{metrics['union_robust_acc'] * 100:^9.2f}% | {eval_duration:^8.2f}"
+            )
 
             # Write results after every checkpoint (not just at the end) so
             # progress isn't lost if a later checkpoint fails or the run
             # gets interrupted.
             writer.writerow({
                 'epoch': epoch,
-                'clean_loss': f"{clean_loss:.6f}",
-                'clean_acc': f"{clean_acc:.6f}",
-                'robust_loss': f"{robust_loss:.6f}",
-                'robust_acc': f"{robust_acc:.6f}",
+                'clean_loss': f"{metrics['clean_loss']:.6f}",
+                'clean_acc': f"{metrics['clean_acc']:.6f}",
+                'pixel_robust_loss': f"{metrics['pixel_robust_loss']:.6f}",
+                'pixel_robust_acc': f"{metrics['pixel_robust_acc']:.6f}",
+                'low_frequency_robust_loss': f"{metrics['low_frequency_robust_loss']:.6f}",
+                'low_frequency_robust_acc': f"{metrics['low_frequency_robust_acc']:.6f}",
+                'union_robust_acc': f"{metrics['union_robust_acc']:.6f}",
                 'eval_time_sec': f"{eval_duration:.2f}"
             })
             csv_file.flush()

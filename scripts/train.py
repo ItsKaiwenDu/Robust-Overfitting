@@ -34,6 +34,7 @@ from torchvision import datasets, transforms
 from torch.utils.tensorboard import SummaryWriter
 
 from models.preact_resnet import PreActResNet18
+from scripts.dct_pgd import generate_low_frequency_dct_pgd
 
 
 class Normalizer(nn.Module):
@@ -97,6 +98,39 @@ def generate_pgd_adversarial(model, normalizer, X, y, epsilon, alpha, num_steps,
     # the training loop, right before the model is trained on this batch.
     model.train()
     return (X + delta).detach()
+
+
+def select_epoch_attack_domain(training_mode, schedule_rng):
+    """Choose the attack domain used for one complete training epoch.
+
+    Single-domain modes always return their requested domain. Mixed-domain
+    mode uses a private, seeded RNG so its schedule remains reproducible even
+    when other parts of the training run consume random numbers.
+    """
+    if training_mode == 'pixel-only':
+        return 'pixel'
+    if training_mode == 'low-frequency-only':
+        return 'low-frequency'
+    if training_mode == 'mixed-domain':
+        return schedule_rng.choice(('pixel', 'low-frequency'))
+    raise ValueError(f"Unknown training mode: {training_mode}")
+
+
+def generate_adversarial_examples(
+    attack_domain, model, normalizer, X, y, epsilon, alpha, num_steps, device,
+    dct_cutoff,
+):
+    """Generate a batch of adversarial examples in the selected domain."""
+    if attack_domain == 'pixel':
+        return generate_pgd_adversarial(
+            model, normalizer, X, y, epsilon, alpha, num_steps, device
+        )
+    if attack_domain == 'low-frequency':
+        return generate_low_frequency_dct_pgd(
+            model, normalizer, X, y, epsilon, alpha, num_steps,
+            cutoff=dct_cutoff,
+        )
+    raise ValueError(f"Unknown attack domain: {attack_domain}")
 
 
 def evaluate(model, normalizer, dataloader, device, epsilon, alpha, num_steps):
@@ -172,11 +206,26 @@ def main():
     parser.add_argument('--epsilon', default=8.0/255.0, type=float, help='adversarial perturbation constraint epsilon')
     parser.add_argument('--alpha', default=2.0/255.0, type=float, help='adversarial step size alpha')
     parser.add_argument('--attack-steps', default=10, type=int, help='number of PGD attack steps during training')
-    parser.add_argument('--diagnostic', action='store_true', help='run in diagnostic mode (1 epoch, 10% data)')
+    parser.add_argument(
+        '--training-mode', default='pixel-only',
+        choices=('pixel-only', 'low-frequency-only', 'mixed-domain'),
+        help=(
+            'adversarial-training mode: pixel-only uses pixel-space PGD, '
+            'low-frequency-only uses DCT-masked PGD, and mixed-domain chooses one per epoch'
+        ),
+    )
+    parser.add_argument(
+        '--dct-cutoff', default=8, type=int,
+        help='side length of the retained top-left DCT low-frequency mask',
+    )
+    parser.add_argument('--diagnostic', action='store_true', help='run in diagnostic mode (1 epoch, 10%% data)')
     parser.add_argument('--seed', default=42, type=int, help='random seed (default: 42)')
     parser.add_argument('--checkpoint-dir', default='Checkpoints', type=str, help='directory to save checkpoints')
     parser.add_argument('--runs-dir', default='runs', type=str, help='TensorBoard logging directory')
     args = parser.parse_args()
+
+    if not 1 <= args.dct_cutoff <= 32:
+        parser.error('--dct-cutoff must be between 1 and 32 for CIFAR-10 images.')
     
     # Step 1: set up reproducibility and device.
     if args.seed is not None:
@@ -254,10 +303,20 @@ def main():
     print(f"Starting training pipeline: {args.epochs} epochs.")
     print(f"Hyperparameters: LR={args.lr}, Decay Epochs={args.lr_decay_epochs}, Weight Decay={args.weight_decay}, Momentum={args.momentum}")
     print(f"PGD Attack config: epsilon={args.epsilon:.4f}, alpha={args.alpha:.4f}, steps={args.attack_steps}")
+    print(f"Training mode: {args.training_mode} | DCT cutoff: {args.dct_cutoff}")
+
+    # This RNG is intentionally independent from augmentation, shuffled data,
+    # and PGD random starts. Therefore the same seed produces the same
+    # epoch-level mixed-domain schedule across runs.
+    schedule_rng = random.Random(args.seed)
+    attack_domain_schedule = []
     
     # Step 3: train for the given number of epochs.
     for epoch in range(1, args.epochs + 1):
         epoch_start_time = time.time()
+        attack_domain = select_epoch_attack_domain(args.training_mode, schedule_rng)
+        attack_domain_schedule.append(attack_domain)
+        print(f"Epoch {epoch:03d} attack domain: {attack_domain}")
         
         train_loss = 0.0
         train_clean_correct = 0
@@ -282,12 +341,11 @@ def main():
             # model on it. This is the core of adversarial training: the
             # model only ever learns from attacked images, not clean ones.
             with torch.enable_grad():
-                X_adv = generate_pgd_adversarial(
-                    model, normalizer, X, y,
-                    epsilon=args.epsilon,
-                    alpha=args.alpha,
-                    num_steps=args.attack_steps,
-                    device=device
+                X_adv = generate_adversarial_examples(
+                    attack_domain, model, normalizer, X, y,
+                    epsilon=args.epsilon, alpha=args.alpha,
+                    num_steps=args.attack_steps, device=device,
+                    dct_cutoff=args.dct_cutoff,
                 )
                 
             robust_outputs = model(normalizer(X_adv))
@@ -307,7 +365,7 @@ def main():
         epoch_train_clean_acc = train_clean_correct / total
         epoch_train_robust_acc = train_robust_correct / total
         
-        print(f"Epoch {epoch:03d} | Train Loss: {epoch_train_loss:.4f} | "
+        print(f"Epoch {epoch:03d} ({attack_domain}) | Train Loss: {epoch_train_loss:.4f} | "
               f"Train Clean Acc: {epoch_train_clean_acc:.2%} | Train Robust Acc: {epoch_train_robust_acc:.2%} | "
               f"Time: {epoch_time:.2f}s")
         
@@ -316,6 +374,7 @@ def main():
         writer.add_scalar('Accuracy/train_clean', epoch_train_clean_acc, epoch)
         writer.add_scalar('Accuracy/train_robust', epoch_train_robust_acc, epoch)
         writer.add_scalar('LearningRate', scheduler.get_last_lr()[0], epoch)
+        writer.add_text('AttackDomain/train', attack_domain, epoch)
         
         # Step 3c: evaluate on the test set every 5 epochs (plus the first
         # and last epoch, or every epoch in diagnostic mode). Running a
@@ -350,6 +409,11 @@ def main():
                 'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict': scheduler.state_dict(),
                 'train_loss': epoch_train_loss,
+                'training_mode': args.training_mode,
+                'dct_cutoff': args.dct_cutoff,
+                'attack_domain': attack_domain,
+                'attack_domain_schedule': attack_domain_schedule.copy(),
+                'seed': args.seed,
             }, checkpoint_path)
             print(f"Checkpoint saved: {checkpoint_path}")
             
