@@ -1,7 +1,7 @@
 # Investigating Robust Overfitting in Adversarial Training
 
 This is GitHub repository for research on robust overfitting in adversarial training.
-Last updated: August 19, 2026
+Last updated: August 21, 2026
 
 ---
 
@@ -137,30 +137,59 @@ To inspect the completed pixel-space PGD training run without reproducing all 20
 
 ```text
 Robust-Overfitting/
-├── checkpoints/                       # Saved model checkpoints during training
-│   └── diagnostic/                    # Local diagnostic run checkpoints (e.g., epoch_1.pt)
+├── checkpoints/                       # Saved model checkpoints, grouped by condition and run
+│   ├── pixel-only/
+│   │   ├── baseline/                  # Completed original pixel-PGD replication
+│   │   ├── diagnostic/seed-42/        # Local diagnostic checkpoint
+│   │   └── seed-<seed>/               # Full repeated run checkpoints
+│   ├── low-frequency-only/
+│   │   ├── diagnostic/seed-42/
+│   │   └── seed-<seed>/
+│   └── mixed-domain/
+│       ├── diagnostic/seed-42/
+│       └── seed-<seed>/
 ├── models/                            # Model architecture definitions
+│   ├── __init__.py                    # Exports PreActResNet variants
 │   └── preact_resnet.py               # PreActResNet-18 model architecture in PyTorch
 ├── notes/                             # Reading literature notes
-│   ├── goodfellow.md                  # Literature notes on FGSM and adversarial training
-│   └── rice.md                        # Literature notes on robust overfitting
+│   ├── bu_et_al.md                    # Literature notes on frequency bias in robust models
+│   ├── chen_et_al.md                  # Literature notes on Shapley-value frequency domain analysis
+│   ├── goodfellow_et_al.md            # Literature notes on FGSM and adversarial training
+│   ├── guo_et_al.md                   # Literature notes on low-frequency adversarial perturbation
+│   ├── kim_et_al.md                   # Literature notes on phase-shifted adversarial training
+│   ├── li_et_al.md                    # Literature notes on DAT frequency domain amplitude mix-up
+│   ├── maini_et_al.md                 # Literature notes on robustness against union of perturbations
+│   ├── rice_et_al.md                  # Literature notes on robust overfitting
+│   ├── tramer_et_al.md                # Literature notes on adversarial training for multiple perturbations
+│   ├── xie_et_al.md                   # Literature notes on threat-aware frequency decoupling
+│   └── yu_et_al.md                    # Literature notes on understanding robust overfitting
 ├── report/                            # Presentations and evaluation outputs
 │   ├── slides.pdf                     # Research presentation slides
-│   ├── evaluation_results.csv         # Raw evaluation metrics across checkpoints
-│   ├── robust_overfitting_curves.png  # Robust overfitting accuracy/loss plot
-│   └── training_results_curves.png    # Training & evaluation performance curves
+│   ├── pixel-only/
+│   │   ├── baseline/                  # Original CSV and figures
+│   │   ├── diagnostic/seed-42/        # Local diagnostic CSV
+│   │   └── seed-<seed>/               # Full-run CSVs and figures
+│   ├── low-frequency-only/
+│   │   ├── diagnostic/seed-42/
+│   │   └── seed-<seed>/
+│   └── mixed-domain/
+│       ├── diagnostic/seed-42/
+│       └── seed-<seed>/
 ├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
 │   ├── dct_pgd.py                     # Low-frequency DCT-masked PGD implementation
-│   ├── evaluate.py                    # Checkpoint evaluation script (PGD-20)
-│   ├── plot_results.py                # Plotting script for accuracy and loss curves
+│   ├── evaluate.py                    # Four-metric checkpoint evaluation script (PGD-20)
+│   ├── plot_results.py                # Per-run accuracy and loss plotting script
 │   ├── train.py                       # Core adversarial PGD training script
 │   └── verify_setup.py                # Setup verification script
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
-├── runs/                              # [Ignored] TensorBoard logging directories
+├── runs/                              # [Ignored] TensorBoard logs, grouped like checkpoints/
+│   ├── pixel-only/[diagnostic/]seed-<seed>/
+│   ├── low-frequency-only/[diagnostic/]seed-<seed>/
+│   └── mixed-domain/[diagnostic/]seed-<seed>/
 ├── .gitignore                         # Files and folders ignored by Git
 ├── goals.md                           # Weekly goals, objectives, and expectations
+├── LICENSE                            # Project license
 ├── progress.md                        # Weekly progress reports
-├── proposal.md                        # Project proposal document
 ├── README.md                          # Project documentation and setup
 ├── setup_lambda_labs.md               # Cloud GPU setup guide for Lambda Labs
 └── requirements.txt                   # Python package dependencies
