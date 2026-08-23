@@ -108,12 +108,12 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 9 (Upcoming)
+## Week 9 (In Progress)
 * **Objective:** Integrate completed low-frequency DCT-masked PGD attack into training and evaluation pipeline, then verify all modes with local and cloud diagnostics.
 
   1. Connect DCT-masked PGD attack script to [`scripts/train.py`](../scripts/train.py) and add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency DCT-masked PGD once at start of each epoch using a seeded fair random choice.
   2. Extend checkpoint evaluation to report clean accuracy, pixel-space PGD robust accuracy, low-frequency DCT-masked PGD robust accuracy, and per-image union robustness.
-  3. Extend diagnostic mode to support all three training modes, then run short diagnostics locally and on Lambda Labs to verify DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, runtime, and result logging.
+  3. Extend diagnostic mode and run the three local diagnostics. Next, run the matching Lambda Labs diagnostics to verify CUDA runtime, DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, and result logging.
 
 * **Expectations:** Verified three-mode training and four-metric evaluation, documented run configuration, and successful local and cloud diagnostics.
 
@@ -122,40 +122,53 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ## Week 10 (Upcoming)
 * **Objective:** Run and analyze low-frequency-only baseline.
 
-  1. Run full low-frequency-only adversarial-training experiment on Lambda Labs using Week 9 configuration.
+  1. Run 10 full low-frequency-only adversarial-training experiments on Lambda Labs using Week 9 configuration and the same set of random seeds that will be used for every condition.
   2. Save checkpoints, training logs, evaluation CSV files, attack-domain schedule metadata, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify peak epoch and peak-to-final decline for every robust metric. Compare low-frequency-only curves with completed pixel-only baseline.
+  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 10 seeds, but save the full comparison until all three conditions are complete.
 
-* **Expectations:** A complete low-frequency-only baseline with paired evaluation curves and a documented comparison against pixel-only training.
+* **Expectations:** A complete low-frequency-only baseline with 10 seeded runs, paired evaluation curves, and a documented summary.
 
 ---
 
 ## Week 11 (Upcoming)
-* **Objective:** Run and analyze mixed-domain experiment.
+* **Objective:** Run and analyze pixel-only control across 10 seeds.
 
-  1. Run full mixed-domain adversarial-training experiment on Lambda Labs using seeded epoch-level attack schedule.
-  2. Save checkpoints, training logs, evaluation CSV files, chosen attack domain for every epoch, and plots in `report/`.
+  1. Run 10 full pixel-only adversarial-training experiments on Lambda Labs using the same random seeds as the low-frequency-only runs.
+  2. Save checkpoints, training logs, evaluation CSV files, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Compare mixed-domain curves with pixel-only and low-frequency-only baselines. Determine whether robust-accuracy peaks shift, flatten, or decline differently.
+  4. Identify peak epoch and peak-to-final decline for every robust metric. Keep the completed original pixel-only run as a reference, but do not count it as one of the 10 new seeded runs.
 
-* **Expectations:** A complete mixed-domain result with reproducible attack scheduling and a cross-condition robust-overfitting comparison.
+* **Expectations:** A complete 10-seed pixel-only control with paired evaluation curves and a documented summary.
 
 ---
 
 ## Week 12 (Upcoming)
-* **Objective:** Verify and interpret multi-threat results.
+* **Objective:** Run and analyze mixed-domain experiment across 10 seeds.
 
-  1. Check that two attack evaluations are sufficiently strong and that union calculation uses worst result for each test image.
+  1. Run 10 full mixed-domain adversarial-training experiments on Lambda Labs using the same random seeds and seeded epoch-level attack schedule.
+  2. Save checkpoints, training logs, evaluation CSV files, chosen attack domain for every epoch, and plots in `report/`.
+  3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
+  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 10 seeds, but save the full comparison until next week.
+
+* **Expectations:** A complete 10-seed mixed-domain result with reproducible schedules and paired evaluation curves.
+
+---
+
+## Week 13 (Upcoming)
+* **Objective:** Verify and compare pixel-only, low-frequency-only, and mixed-domain results.
+
+  1. Check that the two attack evaluations are sufficiently strong and that union calculation uses the worst result for each test image.
   2. Rerun selected diagnostics or full conditions only if a configuration, evaluation, or reproducibility problem is identified.
-  3. Analyze trade-offs between pixel and low-frequency robustness, clean accuracy, peak epoch, and post-peak decline.
-  4. Consider adversarial training-loss distributions by attack domain if robust-overfitting curves differ substantially.
+  3. Compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three training conditions.
+  4. Summarize each condition's peak epoch, peak accuracy, and peak-to-final decline. Identify whether mixed-domain training shifted, flattened, or removed any robust-overfitting peak.
+  5. Consider adversarial training-loss distributions by attack domain if robust-overfitting curves differ substantially.
 
 * **Expectations:** Verified result quality and a defensible explanation of observed robust-overfitting behavior.
 
 ---
 
-## Week 13 (Upcoming)
+## Week 14 (Upcoming)
 * **Objective:** Synthesize pixel-only, low-frequency-only, and mixed-domain findings and set up final report skeleton.
 
   1. Compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three training conditions.
@@ -166,7 +179,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 14 (Upcoming)
+## Week 15 (Upcoming)
 * **Objective:** Make progress on final report and consortium slides in parallel.
 
   1. Write sections of final report (motivation, related work, methodology, results, limitations, conclusions) and incorporate figures, tables, and citations.
@@ -176,7 +189,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 15 (Upcoming)
+## Week 16 (Upcoming)
 * **Objective:** Continue and complete final report and consortium slides in parallel.
 
   1. Continue writing and finishing remaining sections of final report.
@@ -186,7 +199,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 16 (Upcoming)
+## Week 17 (Upcoming)
 * **Objective:** Verify all materials and prepare for submission.
 
   1. Review repository and final report for accuracy and clarity. Fix any typos, unclear phrasing, or inconsistencies.
