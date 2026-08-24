@@ -4,33 +4,33 @@
 
 ## Main Idea
 
-Kim et al. study adversarial training (AT) through the frequency principle: neural networks tend to learn lower-frequency parts of a target function before higher-frequency parts. They show, under mathematical assumptions, that this principle also holds during adversarial training.
+Kim et al. study adversarial training (AT) through frequency principle: neural networks tend to learn lower-frequency parts of a target function before higher-frequency parts. They show, under mathematical assumptions, that this principle also holds during adversarial training.
 
-Their experiments on CIFAR-10 show that ordinary adversarial training learns high-frequency information more slowly than standard training. The authors propose PhaseAT, which shifts selected high-frequency components into a lower-frequency range so the model can learn them faster. PhaseAT improved clean and robust accuracy in their experiments.
+Their experiments on CIFAR-10 show that ordinary adversarial training learns high-frequency information more slowly than standard training. The authors propose PhaseAT, which shifts selected high-frequency components into a lower-frequency range so model can learn them faster. PhaseAT improved clean and robust accuracy in their experiments.
 
 ## Key Terms
 
 - **Frequency principle:** Neural networks usually learn smoother, lower-frequency patterns before finer, higher-frequency patterns.
-- **Response frequency:** Frequency of the model's input-output mapping. This is the kind of frequency analyzed in this paper.
-- **PhaseAT:** An adversarial-training method that uses a phase-shifted, multi-headed network to help the model learn high-frequency response components faster.
+- **Response frequency:** Frequency of model's input-output mapping. This is kind of frequency analyzed in this paper.
+- **PhaseAT:** An adversarial-training method that uses a phase-shifted, multi-headed network to help model learn high-frequency response components faster.
 - **Adaptive attack:** An evaluation attack designed with knowledge of a defense. Kim et al. use this to test whether PhaseAT remains robust when its stochastic frequency-selection mechanism is accounted for.
 
 ## Why This Matters for Our Project
 
-This paper gives a useful reason to study frequency in adversarial training: frequency-related behavior can affect how quickly robust models learn and how robust they become. It also uses CIFAR-10 and evaluates a ResNet-18 model against PGD and AutoAttack, which makes its setting closer to ours than the Guo et al. paper.
+This paper gives a useful reason to study frequency in adversarial training: frequency-related behavior can affect how quickly robust models learn and how robust they become. It also uses CIFAR-10 and evaluates a ResNet-18 model against PGD and AutoAttack, which makes its setting closer to ours than Guo et al. paper.
 
-However, the paper studies the frequency of the **model response**, not the frequency band of the **perturbation**. PhaseAT changes the training method and model architecture; it does not train standard PGD with perturbations restricted to low-, middle-, or high-frequency image bands. It also does not measure robust overfitting as peak robust accuracy followed by a later decline.
+However, paper studies frequency of **model response**, not frequency band of **perturbation**. PhaseAT changes training method and model architecture; it does not train standard PGD with perturbations restricted to low-, middle-, or high-frequency image bands. It also does not measure robust overfitting as peak robust accuracy followed by a later decline.
 
-Our project therefore asks a different question: with the training and evaluation setup otherwise held constant, does the frequency band allowed in the adversarial perturbation change the timing or severity of robust overfitting?
+Our project therefore asks a different question: with training and evaluation setup otherwise held constant, does frequency band allowed in adversarial perturbation change timing or severity of robust overfitting?
 
 ## Important Results
 
 - In their CIFAR-10 frequency-error analysis, PhaseAT learned high-frequency response components faster than ordinary adversarial training, while their low-frequency errors were similar.
-- On CIFAR-10, PhaseAT had higher clean and robust accuracy than the compared baselines under their experimental settings.
-- PhaseAT was evaluated against adaptive PGD attacks that account for its stochastic frequency selection. Its robustness decreased somewhat under the stronger adaptive attack but remained substantial.
+- On CIFAR-10, PhaseAT had higher clean and robust accuracy than compared baselines under their experimental settings.
+- PhaseAT was evaluated against adaptive PGD attacks that account for its stochastic frequency selection. Its robustness decreased somewhat under stronger adaptive attack but remained substantial.
 
-These results support frequency as a meaningful factor in adversarial training, but they do not predict which perturbation band will have the earliest robust-accuracy peak or the largest post-peak decline in our experiments.
+These results support frequency as a meaningful factor in adversarial training, but they do not predict which perturbation band will have earliest robust-accuracy peak or largest post-peak decline in our experiments.
 
 ## Works Cited
 
-Kim, Yeachan, Seongyeon Kim, Ihyeok Seo, and Bonggun Shin. "Phase-shifted Adversarial Training." *Proceedings of the 39th Conference on Uncertainty in Artificial Intelligence*, PMLR 216:1068-1077, 2023.
+Kim, Yeachan, Seongyeon Kim, Ihyeok Seo, and Bonggun Shin. "Phase-shifted Adversarial Training." *Proceedings of 39th Conference on Uncertainty in Artificial Intelligence*, PMLR 216:1068-1077, 2023.
