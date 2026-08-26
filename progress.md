@@ -110,3 +110,16 @@
   * [`maini_et_al.md`](notes/maini_et_al.md): Multi Steepest Descent (MSD); per-checkpoint tracking of clean, pixel-space, low-frequency, and union robust accuracy.
   * [`xie_et_al.md`](notes/xie_et_al.md): Threat-Aware Frequency Decoupling (TaFD); separable attack frequency spectra; negative transfer in joint adversarial training.
   * [`scripts/dct_pgd.py`](scripts/dct_pgd.py): Reusable DCT, low-frequency mask/projection, DCT-masked PGD, and leakage-metadata implementation.
+
+---
+
+## Week 9 (Completed)
+* **Progress Report:** This week, I connected the low-frequency DCT-masked PGD attack to the training and evaluation pipeline. [`scripts/train.py`](scripts/train.py) now supports pixel-only, low-frequency-only, and mixed-domain training. In mixed-domain mode, the program makes a seeded 50/50 choice between pixel-space and low-frequency attacks at the start of each epoch, then saves the selected attack domain, complete schedule, seed, and DCT cutoff with every checkpoint. I also extended [`scripts/evaluate.py`](scripts/evaluate.py) to evaluate each checkpoint on clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness, where an image must resist both attacks to count as correct. To keep conditions and repeated runs organized, checkpoints, TensorBoard logs, evaluation CSV files, and plots are now saved in separate directories by training mode and seed. I ran short diagnostics for all three modes locally and on Lambda Labs. All diagnostics completed without unexpected behavior: each mode used the intended attack domain, saved its checkpoint and metadata correctly, and produced a four-metric evaluation CSV.
+
+* **Deliverables:**
+  * [`scripts/train.py`](scripts/train.py): Supports pixel-only, low-frequency-only, and seeded mixed-domain adversarial training with condition-and-seed-specific output directories.
+  * [`scripts/evaluate.py`](scripts/evaluate.py): Reports clean, pixel-PGD, low-frequency-PGD, and union robustness for every checkpoint.
+  * [`scripts/plot_results.py`](scripts/plot_results.py): Reads the expanded evaluation CSV format and saves plots in the matching condition-and-seed directory.
+  * [`README.md`](README.md): Documents the three modes, output-directory layout, commands, and updated project structure.
+  * [`goals.md`](goals.md): Updated schedule for 10 low-frequency-only runs, 10 pixel-only runs, 10 mixed-domain runs, and the later full comparison.
+  * Local and Lambda Labs diagnostic checkpoints, TensorBoard logs, and four-metric evaluation CSV files for all three training modes.
