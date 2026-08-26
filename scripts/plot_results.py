@@ -84,8 +84,8 @@ def plot_accuracy_subplot(ax, data, best_epoch, peak_accuracy, peak_label):
     ax.set_xlabel('Epochs\n(↑ Higher is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax.set_ylabel('Accuracy (%)', fontsize=12, fontweight='bold')
     ax.set_title('CIFAR-10 Test Accuracy vs. Epochs', fontsize=13, fontweight='bold', pad=12)
-    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
-    ax.set_ylim(25, 90)
+    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10, loc='center right')
+    ax.set_ylim(-2, 100)
     ax.grid(True, linestyle='--', alpha=0.6)
 
 
@@ -105,37 +105,51 @@ def plot_loss_subplot(ax, data, best_epoch, peak_label):
     ax.set_xlabel('Epochs\n(↓ Lower is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax.set_ylabel('Cross Entropy Loss', fontsize=12, fontweight='bold')
     ax.set_title('CIFAR-10 Test Loss vs. Epochs', fontsize=13, fontweight='bold', pad=12)
-    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
+    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10, loc='upper right')
     ax.grid(True, linestyle='--', alpha=0.6)
 
 
-def plot_results(csv_path, output_path):
+def plot_results(csv_path, output_path, training_mode='pixel-only'):
     """Builds the full 2-panel chart and saves it as an image file.
 
     Steps:
     1. Load the evaluation results from the CSV.
-    2. Find the epoch with the best robust accuracy.
+    2. Find the epoch with the best robust accuracy for this condition.
     3. Draw the accuracy chart and the loss chart side by side.
     4. Save the finished chart to a PNG file.
     """
     # Step 1: load the evaluation results.
     data = load_evaluation_data(csv_path)
 
-    # Step 2: find the epoch with the best robust accuracy.
-    peak_values = data['union_accs'] if data['union_accs'] else data['pixel_accs']
-    peak_label = 'Union Robustness' if data['union_accs'] else 'Pixel Robustness'
+    # Step 2: find the epoch with the best robust accuracy based on training mode.
+    if training_mode == 'low-frequency-only':
+        peak_values = data['low_frequency_accs']
+        peak_label = 'Low-Freq Robustness'
+    elif training_mode == 'mixed-domain':
+        peak_values = data['union_accs'] if data['union_accs'] else data['pixel_accs']
+        peak_label = 'Union Robustness'
+    else:
+        peak_values = data['pixel_accs']
+        peak_label = 'Pixel Robustness'
+
     peak_accuracy = max(peak_values)
     max_idx = peak_values.index(peak_accuracy)
     best_epoch = data['epochs'][max_idx]
 
     # Step 3: draw both charts side by side.
     plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), dpi=300)
 
     plot_accuracy_subplot(ax1, data, best_epoch, peak_accuracy, peak_label)
     plot_loss_subplot(ax2, data, best_epoch, peak_label)
 
-    plt.suptitle('Investigating Robust Overfitting in PreActResNet-18 (Rice et al. Replication)', fontsize=15, fontweight='bold', y=1.02)
+    mode_titles = {
+        'pixel-only': 'Pixel-Only Adversarial Training',
+        'low-frequency-only': 'Low-Frequency-Only Adversarial Training',
+        'mixed-domain': 'Mixed-Domain Adversarial Training'
+    }
+    condition_title = mode_titles.get(training_mode, training_mode)
+    plt.suptitle(f'Robust Overfitting Investigation: {condition_title}', fontsize=15, fontweight='bold', y=1.02)
     plt.tight_layout()
 
     # Step 4: save the chart to a file.
@@ -147,11 +161,16 @@ def plot_results(csv_path, output_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot one condition and seed from evaluation results.')
     parser.add_argument('--training-mode', default='pixel-only', choices=('pixel-only', 'low-frequency-only', 'mixed-domain'))
-    parser.add_argument('--run-name', default='seed-42', help='run directory name, such as seed-42')
+    parser.add_argument('--seed', default=None, type=int, help='random seed (e.g. 42)')
+    parser.add_argument('--run-name', default=None, help='run directory name, such as seed-42')
     parser.add_argument('--diagnostic', action='store_true', help='read from a diagnostic run directory')
     parser.add_argument('--csv-path', default=None, help='override the default evaluation CSV path')
     parser.add_argument('--output-path', default=None, help='override the default chart path')
     args = parser.parse_args()
+
+    if args.run_name is None:
+        args.run_name = f'seed-{args.seed}' if args.seed is not None else 'seed-42'
+
     run_parts = [args.training_mode]
     if args.diagnostic:
         run_parts.append('diagnostic')
@@ -159,4 +178,4 @@ if __name__ == '__main__':
     run_relative_path = os.path.join(*run_parts)
     csv_path = args.csv_path or os.path.join('report', run_relative_path, 'evaluation_results.csv')
     output_path = args.output_path or os.path.join('report', run_relative_path, 'robust_overfitting_curves.png')
-    plot_results(csv_path, output_path)
+    plot_results(csv_path, output_path, training_mode=args.training_mode)
