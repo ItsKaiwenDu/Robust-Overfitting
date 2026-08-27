@@ -120,38 +120,38 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ---
 
 ## Week 10 (Upcoming)
-* **Objective:** Run and analyze low-frequency-only baseline.
+* **Objective:** Run and analyze low-frequency-only experiment across 5 seeds.
 
-  1. Run 10 full low-frequency-only adversarial-training experiments on Lambda Labs using Week 9 configuration and the same set of random seeds that will be used for every condition.
+  1. Run 5 full low-frequency-only adversarial-training experiments on Lambda Labs using Week 9 configuration and the same set of random seeds that will be used for every condition.
   2. Save checkpoints, training logs, evaluation CSV files, attack-domain schedule metadata, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 10 seeds, but save the full comparison until all three conditions are complete.
+  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 5 seeds, but save the full comparison until all three conditions are complete.
 
-* **Expectations:** A complete low-frequency-only baseline with 10 seeded runs, paired evaluation curves, and a documented summary.
+* **Expectations:** A complete low-frequency-only baseline with 5 seeded runs, paired evaluation curves, and a documented summary.
 
 ---
 
 ## Week 11 (Upcoming)
-* **Objective:** Run and analyze pixel-only control across 10 seeds.
+* **Objective:** Run and analyze pixel-only experiment across 5 seeds.
 
-  1. Run 10 full pixel-only adversarial-training experiments on Lambda Labs using the same random seeds as the low-frequency-only runs.
+  1. Run 5 full pixel-only adversarial-training experiments on Lambda Labs using the same random seeds as the low-frequency-only runs.
   2. Save checkpoints, training logs, evaluation CSV files, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify peak epoch and peak-to-final decline for every robust metric. Keep the completed original pixel-only run as a reference, but do not count it as one of the 10 new seeded runs.
+  4. Identify peak epoch and peak-to-final decline for every robust metric. Keep the completed original pixel-only run as a reference, but do not count it as one of the 5 new seeded runs.
 
-* **Expectations:** A complete 10-seed pixel-only control with paired evaluation curves and a documented summary.
+* **Expectations:** A complete 5-seed pixel-only control with paired evaluation curves and a documented summary.
 
 ---
 
 ## Week 12 (Upcoming)
-* **Objective:** Run and analyze mixed-domain experiment across 10 seeds.
+* **Objective:** Run and analyze mixed-domain experiment across 5 seeds.
 
-  1. Run 10 full mixed-domain adversarial-training experiments on Lambda Labs using the same random seeds and seeded epoch-level attack schedule.
+  1. Run 5 full mixed-domain adversarial-training experiments on Lambda Labs using the same random seeds and seeded epoch-level attack schedule.
   2. Save checkpoints, training logs, evaluation CSV files, chosen attack domain for every epoch, and plots in `report/`.
   3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 10 seeds, but save the full comparison until next week.
+  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 5 seeds, but save the full comparison until next week.
 
-* **Expectations:** A complete 10-seed mixed-domain result with reproducible schedules and paired evaluation curves.
+* **Expectations:** A complete 5-seed mixed-domain result with reproducible schedules and paired evaluation curves.
 
 ---
 
