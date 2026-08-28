@@ -108,7 +108,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 9 (In Progress)
+## Week 9 (Completed)
 * **Objective:** Integrate completed low-frequency DCT-masked PGD attack into training and evaluation pipeline, then verify all modes with local and cloud diagnostics.
 
   1. Connect DCT-masked PGD attack script to [`scripts/train.py`](../scripts/train.py) and add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency DCT-masked PGD once at start of each epoch using a seeded fair random choice.
@@ -119,13 +119,13 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 10 (Upcoming)
+## Week 10 (In Progress)
 * **Objective:** Run and analyze low-frequency-only experiment across 5 seeds.
 
-  1. Run 5 full low-frequency-only adversarial-training experiments on Lambda Labs using Week 9 configuration and the same set of random seeds that will be used for every condition.
-  2. Save checkpoints, training logs, evaluation CSV files, attack-domain schedule metadata, and plots in `report/`.
-  3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 5 seeds, but save the full comparison until all three conditions are complete.
+  1. Run 5 full low-frequency-only training experiments on Lambda Labs using 5 different seeds. I plan to run them in parallel (x5 NVIDIA A10 GPUs) to save time.
+  2. Save checkpoints and TensorBoard logs in our local checkpoints and runs folders.
+  3. Evaluate every saved checkpoint on clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness (both domains).
+  4. Save resulting evaluation CSV files and plots under [`report`](report/), then identify each metric’s peak epoch and peak-to-final decline and average results across 5 seeds.
 
 * **Expectations:** A complete low-frequency-only baseline with 5 seeded runs, paired evaluation curves, and a documented summary.
 
