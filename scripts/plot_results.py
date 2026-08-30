@@ -84,7 +84,7 @@ def plot_accuracy_subplot(ax, data, best_epoch, peak_accuracy, peak_label):
     ax.set_xlabel('Epochs\n(↑ Higher is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax.set_ylabel('Accuracy (%)', fontsize=12, fontweight='bold')
     ax.set_title('CIFAR-10 Test Accuracy vs. Epochs', fontsize=13, fontweight='bold', pad=12)
-    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10, loc='center right')
+    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10, loc='lower right')
     ax.set_ylim(-2, 100)
     ax.grid(True, linestyle='--', alpha=0.6)
 
@@ -105,7 +105,7 @@ def plot_loss_subplot(ax, data, best_epoch, peak_label):
     ax.set_xlabel('Epochs\n(↓ Lower is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax.set_ylabel('Cross Entropy Loss', fontsize=12, fontweight='bold')
     ax.set_title('CIFAR-10 Test Loss vs. Epochs', fontsize=13, fontweight='bold', pad=12)
-    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10, loc='upper right')
+    ax.legend(frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10, loc='upper left')
     ax.grid(True, linestyle='--', alpha=0.6)
 
 
