@@ -75,6 +75,9 @@ def plot_accuracy_subplot(ax, data, best_epoch, peak_accuracy, peak_label, train
     ax.axvline(x=best_epoch, color='#2ca02c', linestyle='--', linewidth=2, label=f'Peak {peak_label} (Epoch {best_epoch})')
     if training_mode == 'low-frequency-only':
         xytext = (best_epoch - 42, 48)
+    elif training_mode == 'mixed-domain':
+        x_text_offset = -40 if best_epoch > 140 else 8
+        xytext = (best_epoch + x_text_offset, peak_accuracy + 12)
     elif best_epoch > 150:
         xytext = (best_epoch - 38, peak_accuracy + 4.5)
     else:
@@ -391,6 +394,9 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_png_path, training
     # Highlight the peak
     if training_mode == 'low-frequency-only':
         xytext = (best_epoch - 42, 48)
+    elif training_mode == 'mixed-domain':
+        x_text_offset = -40 if best_epoch > 140 else 8
+        xytext = (best_epoch + x_text_offset, peak_accuracy_mean + 12)
     elif best_epoch > 150:
         xytext = (best_epoch - 38, peak_accuracy_mean + 4.5)
     else:
@@ -434,7 +440,7 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_png_path, training
         'mixed-domain': 'Mixed-Domain Adversarial Training'
     }
     condition_title = mode_titles.get(training_mode, training_mode)
-    plt.suptitle(f'Robust Overfitting Investigation: {condition_title} ({agg["num_seeds"]}-Seed Aggregate)', fontsize=15, fontweight='bold', y=0.98)
+    plt.suptitle(f'Robust Overfitting Investigation: {condition_title} ({agg["num_seeds"]}-Seed Overall)', fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
@@ -542,7 +548,7 @@ def plot_aggregate_training_results(runs_mode_dir, output_png_path, training_mod
         'mixed-domain': 'Mixed-Domain Adversarial Training'
     }
     condition_title = mode_titles.get(training_mode, training_mode)
-    plt.suptitle(f'Training Dynamics: {condition_title} ({agg["num_seeds"]}-Seed Aggregate)', fontsize=15, fontweight='bold', y=0.98)
+    plt.suptitle(f'Training Dynamics: {condition_title} ({agg["num_seeds"]}-Seed Overall)', fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
@@ -581,6 +587,8 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
     if all_seeds:
         seed_dirs = sorted(glob.glob(os.path.join(report_mode_dir, 'seed-*')))
         target_runs = [os.path.basename(sd) for sd in seed_dirs]
+        if os.path.exists(os.path.join(report_mode_dir, 'baseline')):
+            target_runs.insert(0, 'baseline')
     elif run_name is not None:
         target_runs = [run_name]
     elif seed is not None:
