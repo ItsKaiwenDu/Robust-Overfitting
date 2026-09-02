@@ -168,17 +168,20 @@ Robust-Overfitting/
 │   ├── pixel-only/
 │   │   ├── baseline/                  # Original CSV and figures
 │   │   ├── diagnostic/seed-42/        # Local diagnostic CSV
-│   │   └── seed-<seed>/               # Full-run CSVs and figures
+│   │   ├── overall/                   # 5-seed overall curves and summary CSV
+│   │   └── seed-<seed>/               # Full-run CSVs and figures (evaluation & training)
 │   ├── low-frequency-only/
 │   │   ├── diagnostic/seed-42/
-│   │   └── seed-<seed>/
+│   │   ├── overall/                   # 5-seed overall curves and summary CSV
+│   │   └── seed-<seed>/               # Full-run CSVs and figures (evaluation & training)
 │   └── mixed-domain/
 │       ├── diagnostic/seed-42/
-│       └── seed-<seed>/
+│       ├── overall/                   # 5-seed overall curves and summary CSV
+│       └── seed-<seed>/               # Full-run CSVs and figures (evaluation & training)
 ├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
 │   ├── dct_pgd.py                     # Low-frequency DCT-masked PGD implementation
 │   ├── evaluate.py                    # Four-metric checkpoint evaluation script (PGD-20)
-│   ├── plot_results.py                # Per-run accuracy and loss plotting script
+│   ├── plot_results.py                # Evaluation & training plotting script (per-seed & overall)
 │   ├── train.py                       # Core adversarial PGD training script
 │   └── verify_setup.py                # Setup verification script
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
