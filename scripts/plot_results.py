@@ -147,7 +147,7 @@ def plot_results(csv_path, output_path, training_mode='pixel-only', title_suffix
     plt.suptitle(f'Robust Overfitting Investigation: {condition_title}', fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
@@ -259,7 +259,7 @@ def plot_training_results(tb_dir, output_path, training_mode='pixel-only', title
     plt.suptitle(f'Training Dynamics: {condition_title}', fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
@@ -443,7 +443,7 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_png_path, training
     plt.suptitle(f'Robust Overfitting Investigation: {condition_title} ({agg["num_seeds"]}-Seed Overall)', fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
     os.makedirs(os.path.dirname(output_png_path) or '.', exist_ok=True)
@@ -551,7 +551,7 @@ def plot_aggregate_training_results(runs_mode_dir, output_png_path, training_mod
     plt.suptitle(f'Training Dynamics: {condition_title} ({agg["num_seeds"]}-Seed Overall)', fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=True, facecolor='white', edgecolor='#cccccc', fontsize=10)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
     os.makedirs(os.path.dirname(output_png_path) or '.', exist_ok=True)

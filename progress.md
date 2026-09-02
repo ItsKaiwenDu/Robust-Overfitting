@@ -123,3 +123,17 @@
   * [`README.md`](README.md): Documents the three modes, output-directory layout, commands, and updated project structure.
   * [`goals.md`](goals.md): Updated schedule for 10 low-frequency-only runs, 10 pixel-only runs, 10 mixed-domain runs, and the later full comparison.
   * Local and Lambda Labs diagnostic checkpoints, TensorBoard logs, and four-metric evaluation CSV files for all three training modes.
+
+---
+
+## Week 10 (Completed)
+* **Progress Report:** This week, I ran five full 200-epoch low-frequency-only adversarial-training experiments on Lambda Labs using seeds 42 through 46, saved 40 checkpoints and TensorBoard logs for each run, and evaluated every checkpoint on clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and their per-image union. The results show that the models were consistently robust to the low-frequency attacks they were trained against: peak low-frequency robust accuracy ranged from 84.22% to 85.32% across the five seeds, and the five-seed average at epoch 200 was 84.50%. In contrast, pixel-space and union robust accuracy never exceeded 0.02%, so the models remained almost completely vulnerable to unrestricted pixel-space attacks; low-frequency robustness also remained largely stable late in training, with only small end-of-training declines in two seeds. This matches my prediction: training against the restricted, smooth low-frequency perturbations produced strong low-frequency robustness but did not transfer to the broader pixel-space threat model, which also caused union robustness to remain near zero.
+
+* **Deliverables:**
+  * [`checkpoints/low-frequency-only/`](checkpoints/low-frequency-only/): Five seed-specific folders containing 40 saved model checkpoints each, from epochs 5 through 200.
+  * [`runs/low-frequency-only/`](runs/low-frequency-only/): TensorBoard event logs for the five full low-frequency-only training runs.
+  * [`report/low-frequency-only/`](report/low-frequency-only/): Seed-specific evaluation CSVs, evaluation figures (`robust_overfitting_curves.png`), and training dynamics figures (`training_results_curves.png`) across all 5 seeds.
+  * [`report/low-frequency-only/overall/`](report/low-frequency-only/overall/): 5-seed overall evaluation curves, training dynamics curves with mean $\pm 1\text{ SD}$ error bands, and summary CSV (`evaluation_results.csv`).
+  * [`scripts/evaluate.py`](scripts/evaluate.py): Used to evaluate all saved checkpoints under clean, pixel-PGD-20, low-frequency-PGD-20, and union conditions.
+  * [`scripts/plot_results.py`](scripts/plot_results.py): Unified plotting script generating per-seed and aggregated evaluation and training curves.
+  * [`goals.md`](goals.md): Week 10 status updated to Completed after all five runs and evaluations finished.

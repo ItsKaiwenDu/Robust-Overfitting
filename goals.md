@@ -119,7 +119,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 10 (In Progress)
+## Week 10 (Completed)
 * **Objective:** Run and analyze low-frequency-only experiment across 5 seeds.
 
   1. Run 5 full low-frequency-only training experiments on Lambda Labs using 5 different seeds. I plan to run them in parallel (x5 NVIDIA A10 GPUs) to save time.
