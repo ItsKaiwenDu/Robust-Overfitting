@@ -1,14 +1,14 @@
 # Investigating Robust Overfitting in Adversarial Training
 
 This is GitHub repository for research on robust overfitting in adversarial training.
-Last updated: August 21, 2026
+Last updated: September 2, 2026
 
 ---
 
 ## Project Overview
 Deep neural networks can be easily tricked by adversarial attacks, which are small, human-imperceptible changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
 
-The project first reproduced robust overfitting with pixel-space PGD adversarial training. Its next phase tests whether robust overfitting changes when adversarial-training attack domain is randomized across epochs: standard pixel-space PGD or low-frequency DCT-masked PGD.
+The project first reproduced robust overfitting with pixel-space PGD adversarial training. It has also completed five low-frequency DCT-masked PGD runs (seeds 42–46). The next phases are a five-seed pixel-only control and a five-seed mixed-domain experiment, which randomly selects standard pixel-space PGD or low-frequency DCT-masked PGD once per epoch.
 
 ## Research Question & Hypothesis
 
@@ -35,14 +35,14 @@ All conditions use the same PreActResNet-18 architecture, CIFAR-10 data, optimiz
 
 ### Evaluation Configurations
 
-Every saved checkpoint (40 per condition) is evaluated against the full 10,000-image CIFAR-10 test set using four metrics:
+For each new full run, all 40 saved checkpoints (epochs 5–200, every 5 epochs) are evaluated against the full 10,000-image CIFAR-10 test set using four metrics:
 
 1. **Clean accuracy:** test the model on unmodified images with no attack.
 2. **Pixel-space robustness:** attack each test image with pixel-space PGD-20 (20 steps, epsilon = 8/255) and measure how often the model still predicts correctly.
 3. **Low-frequency robustness:** attack each test image with DCT-masked PGD-20 using the same budget and measure robustness.
 4. **Union robustness:** per image, count it as correct only if the model resisted *both* the pixel-space and low-frequency attacks. This means measuring whether the model is robust to both attack domains for the same image.
 
-For each metric, we record the **peak epoch** (when accuracy was highest) and the **post-peak decline** (how much it dropped by epoch 200). These are the primary numbers compared across conditions.
+For each applicable metric, we record the **peak epoch** (when accuracy was highest) and the **post-peak decline** (how much it dropped by epoch 200). These are the primary numbers compared across conditions. The completed legacy pixel-only replication has clean and pixel-PGD-20 measurements only; low-frequency and union metrics were added for the new multi-condition runs.
 
 ---
 
@@ -120,16 +120,16 @@ python3 scripts/train.py
 ```bash
 python3 scripts/evaluate.py
 ```
-8b. Plot results:
+8b. Plot the matching run's results (replace the mode and seed as needed):
 ```bash
-python3 scripts/plot_results.py
+python3 scripts/plot_results.py --training-mode pixel-only --seed 42
 ```
 
 > **Note:** The **CIFAR-10** dataset (~170 MB) will be downloaded automatically to `data/` on first training run. No manual download is required.
 
 ### Pretrained Checkpoints
 
-To inspect the completed pixel-space PGD training run without reproducing all 200 epochs, download the 40 released checkpoints from [Hugging Face](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints). The checkpoint at epoch 105 achieved the highest measured PGD-20 robust accuracy; `epoch_200.pt` is the final checkpoint.
+To inspect the completed legacy pixel-space PGD training run without reproducing all 200 epochs, download the 40 released checkpoints from [Hugging Face](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints). Its evaluation reports clean and pixel-PGD-20 metrics; the checkpoint at epoch 105 achieved the highest measured PGD-20 robust accuracy, and `epoch_200.pt` is the final checkpoint.
 
 ---
 
@@ -137,17 +137,17 @@ To inspect the completed pixel-space PGD training run without reproducing all 20
 
 ```text
 Robust-Overfitting/
-├── checkpoints/                       # Saved model checkpoints, grouped by condition and run
+├── checkpoints/                       # [Ignored] Created locally for completed or future runs
 │   ├── pixel-only/
 │   │   ├── baseline/                  # Completed original pixel-PGD replication
 │   │   ├── diagnostic/seed-42/        # Local diagnostic checkpoint
-│   │   └── seed-<seed>/               # Full repeated run checkpoints
+│   │   └── seed-<seed>/               # Planned full 5-seed control checkpoints
 │   ├── low-frequency-only/
 │   │   ├── diagnostic/seed-42/
-│   │   └── seed-<seed>/
+│   │   └── seed-42/ ... seed-46/      # Completed full 5-seed run checkpoints
 │   └── mixed-domain/
-│       ├── diagnostic/seed-42/
-│       └── seed-<seed>/
+│       ├── diagnostic/seed-42/        # Completed diagnostic checkpoint
+│       └── seed-<seed>/               # Planned full 5-seed run checkpoints
 ├── models/                            # Model architecture definitions
 │   ├── __init__.py                    # Exports PreActResNet variants
 │   └── preact_resnet.py               # PreActResNet-18 model architecture in PyTorch
@@ -166,18 +166,14 @@ Robust-Overfitting/
 ├── report/                            # Presentations and evaluation outputs
 │   ├── slides.pdf                     # Research presentation slides
 │   ├── pixel-only/
-│   │   ├── baseline/                  # Original CSV and figures
+│   │   ├── baseline/                  # Completed legacy CSV and figures
 │   │   ├── diagnostic/seed-42/        # Local diagnostic CSV
-│   │   ├── overall/                   # 5-seed overall curves and summary CSV
-│   │   └── seed-<seed>/               # Full-run CSVs and figures (evaluation & training)
 │   ├── low-frequency-only/
 │   │   ├── diagnostic/seed-42/
-│   │   ├── overall/                   # 5-seed overall curves and summary CSV
-│   │   └── seed-<seed>/               # Full-run CSVs and figures (evaluation & training)
+│   │   ├── seed-42/ ... seed-46/      # Completed per-seed CSVs and figures
+│   │   └── overall/                   # Completed 5-seed curves and summary CSV
 │   └── mixed-domain/
-│       ├── diagnostic/seed-42/
-│       ├── overall/                   # 5-seed overall curves and summary CSV
-│       └── seed-<seed>/               # Full-run CSVs and figures (evaluation & training)
+│       └── diagnostic/seed-42/        # Completed diagnostic CSV
 ├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
 │   ├── dct_pgd.py                     # Low-frequency DCT-masked PGD implementation
 │   ├── evaluate.py                    # Four-metric checkpoint evaluation script (PGD-20)
@@ -185,7 +181,7 @@ Robust-Overfitting/
 │   ├── train.py                       # Core adversarial PGD training script
 │   └── verify_setup.py                # Setup verification script
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
-├── runs/                              # [Ignored] TensorBoard logs, grouped like checkpoints/
+├── runs/                              # [Ignored] TensorBoard logs, created and grouped like checkpoints/
 │   ├── pixel-only/[diagnostic/]seed-<seed>/
 │   ├── low-frequency-only/[diagnostic/]seed-<seed>/
 │   └── mixed-domain/[diagnostic/]seed-<seed>/
