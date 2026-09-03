@@ -132,6 +132,7 @@
 * **Deliverables:**
   * [`report/low-frequency-only/seed-*`](report/low-frequency-only/): Per-seed evaluation data and figures.
   * [`report/low-frequency-only/overall/`](report/low-frequency-only/overall/): 5-seed aggregate evaluation data and figures.
-  * [`checkpoints/low-frequency-only/`](checkpoints/low-frequency-only/): 5 seed-specific folders containing 40 saved model checkpoints each, from epochs 5 through 200.
-  * [`runs/low-frequency-only/`](runs/low-frequency-only/): TensorBoard event logs for the 5 full low-frequency-only training runs.
+  * [`checkpoints/low-frequency-only/*`](checkpoints/low-frequency-only/): 5 seed-specific folders containing 40 saved model checkpoints each, from epochs 5 through 200.
+  * [`runs/low-frequency-only/*`](runs/low-frequency-only/): TensorBoard event logs for the 5 full low-frequency-only training runs.
   * [`scripts/plot_results.py`](scripts/plot_results.py): Added minor evaluation-chart styling updates and training-chart plotting.
+  * Markdown result summary files (`lfo_overall.md` and `lfo_seed42.md` through `lfo_seed46.md`).
