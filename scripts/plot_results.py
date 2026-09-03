@@ -15,6 +15,7 @@ import argparse
 import csv
 import glob
 import os
+import shutil
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import matplotlib.pyplot as plt
@@ -97,13 +98,42 @@ def plot_accuracy_subplot(ax, data, best_epoch, peak_accuracy, peak_label, train
     ax.grid(True, linestyle='--', alpha=0.6)
 
 
-def plot_loss_subplot(ax, data, best_epoch, peak_label):
+def plot_loss_subplot(ax, data, best_epoch, peak_label, training_mode='pixel-only'):
     """Draws the loss-vs-epochs chart onto the given subplot axis."""
     ax.plot(data['epochs'], data['clean_losses'], label='Clean Test Loss', color='#1f77b4', linewidth=2.5, marker='o', markersize=4)
     ax.plot(data['epochs'], data['pixel_losses'], label='Pixel-PGD-20 Loss', color='#d62728', linewidth=2.5, marker='s', markersize=4)
     if data['low_frequency_losses']:
         ax.plot(data['epochs'], data['low_frequency_losses'], label='Low-Frequency-PGD-20 Loss', color='#ff7f0e', linewidth=2.5, marker='^', markersize=4)
     ax.axvline(x=best_epoch, color='#2ca02c', linestyle='--', linewidth=2)
+
+    max_idx = data['epochs'].index(best_epoch)
+    if training_mode == 'low-frequency-only':
+        loss_val = data['low_frequency_losses'][max_idx]
+        loss_label = 'Low-Freq Robust Loss'
+        xytext_loss = (best_epoch - 8, 3.2)
+        ha = 'right'
+    elif training_mode == 'mixed-domain':
+        loss_val = data['pixel_losses'][max_idx]
+        loss_label = 'Pixel Robust Loss'
+        if best_epoch > 130:
+            xytext_loss = (best_epoch - 38, loss_val + 2.2)
+            ha = 'left'
+        else:
+            xytext_loss = (best_epoch + 8, loss_val + 2.2)
+            ha = 'left'
+    else:  # pixel-only
+        loss_val = data['pixel_losses'][max_idx]
+        loss_label = 'Pixel Robust Loss'
+        xytext_loss = (best_epoch - 42, loss_val + 0.8)
+        ha = 'left'
+
+    ax.annotate(f'{loss_label}: {loss_val:.2f}\n(Epoch {best_epoch})',
+                 xy=(best_epoch, loss_val),
+                 xytext=xytext_loss,
+                 ha=ha,
+                 arrowprops=dict(facecolor='#2ca02c', shrink=0.08, width=1.5, headwidth=8),
+                 fontsize=10, fontweight='bold', color='#2ca02c',
+                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', edgecolor='#2ca02c', alpha=0.9))
 
     ax.set_xlabel('Epochs\n(↓ Lower is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax.set_ylabel('Cross Entropy Loss', fontsize=12, fontweight='bold')
@@ -134,7 +164,7 @@ def plot_results(csv_path, output_path, training_mode='pixel-only', title_suffix
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), dpi=300)
 
     plot_accuracy_subplot(ax1, data, best_epoch, peak_accuracy, peak_label, training_mode=training_mode)
-    plot_loss_subplot(ax2, data, best_epoch, peak_label)
+    plot_loss_subplot(ax2, data, best_epoch, peak_label, training_mode=training_mode)
 
     mode_titles = {
         'pixel-only': 'Pixel-Only Adversarial Training',
@@ -428,6 +458,38 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_png_path, training
         ax2.fill_between(epochs, agg['low_frequency_losses_mean'] - agg['low_frequency_losses_std'], agg['low_frequency_losses_mean'] + agg['low_frequency_losses_std'], color='#ff7f0e', alpha=0.18)
 
     ax2.axvline(x=best_epoch, color='#2ca02c', linestyle='--', linewidth=2)
+
+    if training_mode == 'low-frequency-only':
+        loss_val_mean = agg['low_frequency_losses_mean'][max_idx]
+        loss_val_std = agg['low_frequency_losses_std'][max_idx]
+        loss_label = 'Low-Freq Robust Loss'
+        xytext_loss = (best_epoch - 8, 3.2)
+        ha = 'right'
+    elif training_mode == 'mixed-domain':
+        loss_val_mean = agg['pixel_losses_mean'][max_idx]
+        loss_val_std = agg['pixel_losses_std'][max_idx]
+        loss_label = 'Pixel Robust Loss'
+        if best_epoch > 130:
+            xytext_loss = (best_epoch - 38, loss_val_mean + 2.2)
+            ha = 'left'
+        else:
+            xytext_loss = (best_epoch + 8, loss_val_mean + 2.2)
+            ha = 'left'
+    else:  # pixel-only
+        loss_val_mean = agg['pixel_losses_mean'][max_idx]
+        loss_val_std = agg['pixel_losses_std'][max_idx]
+        loss_label = 'Pixel Robust Loss'
+        xytext_loss = (best_epoch - 42, loss_val_mean + 0.8)
+        ha = 'left'
+
+    ax2.annotate(f'{loss_label}:\n{loss_val_mean:.2f} ± {loss_val_std:.2f}\n(Epoch {best_epoch})',
+                 xy=(best_epoch, loss_val_mean),
+                 xytext=xytext_loss,
+                 ha=ha,
+                 arrowprops=dict(facecolor='#2ca02c', shrink=0.08, width=1.5, headwidth=8),
+                 fontsize=10, fontweight='bold', color='#2ca02c',
+                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', edgecolor='#2ca02c', alpha=0.9))
+
     ax2.set_xlabel('Epochs\n(↓ Lower is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax2.set_ylabel('Cross Entropy Loss', fontsize=12, fontweight='bold')
     ax2.set_title(f'CIFAR-10 Test Loss vs. Epochs ({agg["num_seeds"]} Seeds Mean ± SD)', fontsize=13, fontweight='bold', pad=12)
@@ -585,6 +647,9 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
             agg_eval_png = os.path.join(agg_report_dir, f'{mode_prefix}_eval_results_curves.png')
             agg_eval_csv = os.path.join(agg_report_dir, 'evaluation_results.csv')
             plot_aggregate_evaluation_results(report_mode_dir, agg_eval_png, training_mode=training_mode, output_csv_path=agg_eval_csv)
+            legacy_agg_png = os.path.join(agg_report_dir, 'robust_overfitting_curves.png')
+            if os.path.exists(legacy_agg_png):
+                shutil.copyfile(agg_eval_png, legacy_agg_png)
         if plot_type in ('both', 'train'):
             agg_train_png = os.path.join(agg_report_dir, f'{mode_prefix}_train_results_curves.png')
             plot_aggregate_training_results(runs_mode_dir, agg_train_png, training_mode=training_mode)
@@ -622,6 +687,9 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
         seed_label = r_name.replace('seed-', 'Seed ') if r_name.startswith('seed-') else r_name
         if plot_type in ('both', 'eval') and os.path.exists(cur_csv):
             plot_results(cur_csv, cur_eval_png, training_mode=training_mode, title_suffix=seed_label)
+            legacy_cur_png = os.path.join(os.path.dirname(cur_eval_png), 'robust_overfitting_curves.png')
+            if os.path.exists(legacy_cur_png):
+                shutil.copyfile(cur_eval_png, legacy_cur_png)
         if plot_type in ('both', 'train') and os.path.exists(cur_runs_dir):
             try:
                 plot_training_results(cur_runs_dir, cur_train_png, training_mode=training_mode, title_suffix=seed_label)
