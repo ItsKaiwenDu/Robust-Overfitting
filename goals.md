@@ -113,7 +113,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
   1. Connect DCT-masked PGD attack script to [`scripts/train.py`](../scripts/train.py) and add three reproducible training modes: pixel-only, low-frequency-only, and mixed-domain. In mixed-domain mode, choose pixel-space or low-frequency DCT-masked PGD once at start of each epoch using a seeded fair random choice.
   2. Extend checkpoint evaluation to report clean accuracy, pixel-space PGD robust accuracy, low-frequency DCT-masked PGD robust accuracy, and per-image union robustness.
-  3. Extend diagnostic mode and run the three local diagnostics. Next, run the matching Lambda Labs diagnostics to verify CUDA runtime, DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, and result logging.
+  3. Extend diagnostic mode and run three local diagnostics. Next, run matching Lambda Labs diagnostics to verify CUDA runtime, DCT mask, epoch-level attack selection, checkpoint saving, evaluation metrics, and result logging.
 
 * **Expectations:** Verified three-mode training and four-metric evaluation, documented run configuration, and successful local and cloud diagnostics.
 
@@ -122,10 +122,10 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ## Week 10 (Completed)
 * **Objective:** Run and analyze low-frequency-only experiment across 5 seeds.
 
-  1. Run 5 full low-frequency-only training experiments on Lambda Labs using 5 different seeds. I plan to run them in parallel (x5 NVIDIA A10 GPUs) to save time.
-  2. Save checkpoints and TensorBoard logs in our local checkpoints and runs folders.
-  3. Evaluate every saved checkpoint on clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness (both domains).
-  4. Save resulting evaluation CSV files and plots under [`report`](report/), then identify each metric’s peak epoch and peak-to-final decline and average results across 5 seeds.
+  1. Run 5 full low-frequency-only training experiments on Lambda Labs using 5 different seeds. Run in parallel (5x NVIDIA A10 GPUs) to save time.
+  2. Download completed checkpoints and TensorBoard logs.
+  3. Evaluate each saved checkpoint on: clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness (both domains).
+  4. Save resulting evaluation CSV files and plots, then identify each metric’s peak epoch and peak-to-final decline and average results across 5 seeds.
 
 * **Expectations:** A complete low-frequency-only baseline with 5 seeded runs, paired evaluation curves, and a documented summary.
 
@@ -134,10 +134,12 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ## Week 11 (Upcoming)
 * **Objective:** Run and analyze pixel-only experiment across 5 seeds.
 
-  1. Run 5 full pixel-only adversarial-training experiments on Lambda Labs using the same random seeds as the low-frequency-only runs.
-  2. Save checkpoints, training logs, evaluation CSV files, and plots in `report/`.
-  3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify peak epoch and peak-to-final decline for every robust metric. Keep the completed original pixel-only run as a reference, but do not count it as one of the 5 new seeded runs.
+  1. Run 5 full pixel-only training experiments on Lambda Labs using same 5 random seeds as low-frequency-only runs. Run in parallel (5x NVIDIA A10 GPUs) to save time.
+  2. Download completed checkpoints and TensorBoard logs.
+  3. Evaluate each saved checkpoint on: clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness (both domains).
+  4. Save resulting evaluation CSV files and plots, then identify each metric’s peak epoch and peak-to-final decline and average results across 5 seeds.
+
+* **Note:** Keep baseline pixel-only run as a reference (Rice et al. robust overfitting behavior is reproducible), but do not count it as one of 5 new seeded runs.
 
 * **Expectations:** A complete 5-seed pixel-only control with paired evaluation curves and a documented summary.
 
@@ -146,10 +148,12 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ## Week 12 (Upcoming)
 * **Objective:** Run and analyze mixed-domain experiment across 5 seeds.
 
-  1. Run 5 full mixed-domain adversarial-training experiments on Lambda Labs using the same random seeds and seeded epoch-level attack schedule.
-  2. Save checkpoints, training logs, evaluation CSV files, chosen attack domain for every epoch, and plots in `report/`.
-  3. Evaluate every checkpoint under clean, pixel-PGD, low-frequency-PGD, and union conditions.
-  4. Identify peak epoch and peak-to-final decline for every robust metric. Average results across the 5 seeds, but save the full comparison until next week.
+  1. Run 5 full mixed-domain training experiments on Lambda Labs using same 5 random seeds and seeded epoch-level attack schedule. Run in parallel (5x NVIDIA A10 GPUs) to save time.
+  2. Download completed checkpoints and TensorBoard logs.
+  3. Evaluate each saved checkpoint on: clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness (both domains).
+  4. Save resulting evaluation CSV files and plots, then identify each metric’s peak epoch and peak-to-final decline and average results across 5 seeds.
+
+* **Note:** Record chosen attack domain for every epoch to ensure schedule reproducibility. Save full comparison until next week.
 
 * **Expectations:** A complete 5-seed mixed-domain result with reproducible schedules and paired evaluation curves.
 
@@ -158,7 +162,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 ## Week 13 (Upcoming)
 * **Objective:** Verify and compare pixel-only, low-frequency-only, and mixed-domain results.
 
-  1. Check that the two attack evaluations are sufficiently strong and that union calculation uses the worst result for each test image.
+  1. Check that two attack evaluations are sufficiently strong and that union calculation uses worst result for each test image.
   2. Rerun selected diagnostics or full conditions only if a configuration, evaluation, or reproducibility problem is identified.
   3. Compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three training conditions.
   4. Summarize each condition's peak epoch, peak accuracy, and peak-to-final decline. Identify whether mixed-domain training shifted, flattened, or removed any robust-overfitting peak.
