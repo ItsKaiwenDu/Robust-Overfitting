@@ -9,8 +9,8 @@
 
 ## Lines
 
-- Mean clean accuracy rises from 66.15% at epoch 5 to 88.11% at epoch 200.
-- Mean low-frequency robust accuracy rises from 61.80% to 84.50%, including 68.51% at epoch 100 and 79.57% at epoch 150.
+- Mean clean accuracy rises from **66.15%** at epoch 5 to **88.11%** at epoch 200.
+- Mean low-frequency robust accuracy rises from **61.80%** to **84.50%**, including **68.51%** at epoch 100 and **79.57%** at epoch 150.
 - The low-frequency robustness curve remains high late in training and reaches its overall maximum at final checkpoint rather than falling off.
 - The pixel-PGD-20 and union-robustness curves stay essentially on zero line throughout training.
 

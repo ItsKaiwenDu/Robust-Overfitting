@@ -570,17 +570,23 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
     """Processes plotting workflows for a specific mode."""
     report_mode_dir = os.path.join('report', training_mode)
     runs_mode_dir = os.path.join('runs', training_mode)
+    mode_prefixes = {
+        'pixel-only': 'po',
+        'low-frequency-only': 'lfo',
+        'mixed-domain': 'mixed',
+    }
+    mode_prefix = mode_prefixes[training_mode]
 
     # 1. Overall plotting if requested or if all_seeds is requested
     if aggregate or all_seeds:
         print(f"\n--- Generating Overall Results for {training_mode} ---")
         agg_report_dir = os.path.join(report_mode_dir, 'overall')
         if plot_type in ('both', 'eval'):
-            agg_eval_png = os.path.join(agg_report_dir, 'robust_overfitting_curves.png')
+            agg_eval_png = os.path.join(agg_report_dir, f'{mode_prefix}_eval_results_curves.png')
             agg_eval_csv = os.path.join(agg_report_dir, 'evaluation_results.csv')
             plot_aggregate_evaluation_results(report_mode_dir, agg_eval_png, training_mode=training_mode, output_csv_path=agg_eval_csv)
         if plot_type in ('both', 'train'):
-            agg_train_png = os.path.join(agg_report_dir, 'training_results_curves.png')
+            agg_train_png = os.path.join(agg_report_dir, f'{mode_prefix}_train_results_curves.png')
             plot_aggregate_training_results(runs_mode_dir, agg_train_png, training_mode=training_mode)
 
     # 2. Identify target runs to plot
@@ -609,9 +615,9 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
         run_rel = os.path.join(*run_parts)
 
         cur_csv = csv_path or os.path.join('report', run_rel, 'evaluation_results.csv')
-        cur_eval_png = output_path or os.path.join('report', run_rel, 'robust_overfitting_curves.png')
+        cur_eval_png = output_path or os.path.join('report', run_rel, f'{mode_prefix}_eval_results_curves.png')
         cur_runs_dir = runs_dir or os.path.join('runs', run_rel)
-        cur_train_png = os.path.join('report', run_rel, 'training_results_curves.png')
+        cur_train_png = os.path.join('report', run_rel, f'{mode_prefix}_train_results_curves.png')
 
         seed_label = r_name.replace('seed-', 'Seed ') if r_name.startswith('seed-') else r_name
         if plot_type in ('both', 'eval') and os.path.exists(cur_csv):

@@ -57,7 +57,7 @@
 ---
 
 ## Week 5 (Completed)
-* **Progress Report:** Last Friday, I launched full 200-epoch PGD-10 adversarial training run on a 1x NVIDIA A10 GPU instance on Lambda Labs (~2.5 mins per epoch, ~8 hours total). The run completed all 200 epochs with clear robust overfitting observed. All 40 checkpoints (~3.57 GB) were downloaded locally, excluded from version control via `.gitignore`, and uploaded to HuggingFace for public access. This week, I created [`scripts/evaluate.py`](../scripts/evaluate.py) to run PGD-20 adversarial evaluation across all 40 checkpoints on CIFAR-10 test set and launched it on Lambda Labs again, confirming robust overfitting as described by Rice et al. (2020). Evaluation results were saved to [`evaluation_results.csv`](evaluation_results.csv) and visualized in [`robust_overfitting_curves.png`](robust_overfitting_curves.png) using [`scripts/plot_results.py`](../scripts/plot_results.py). Finally, I have polished slides for clarifications, organization, and added robust overfitting curve graph to there as well. I am also getting familiar with Overleaf, including LaTeX formats, which will be used to write our final report during Week 8.
+* **Progress Report:** Last Friday, I launched full 200-epoch PGD-10 adversarial training run on a 1x NVIDIA A10 GPU instance on Lambda Labs (~2.5 mins per epoch, ~8 hours total). The run completed all 200 epochs with clear robust overfitting observed. All 40 checkpoints (~3.57 GB) were downloaded locally, excluded from version control via `.gitignore`, and uploaded to HuggingFace for public access. This week, I created [`scripts/evaluate.py`](../scripts/evaluate.py) to run PGD-20 adversarial evaluation across all 40 checkpoints on CIFAR-10 test set and launched it on Lambda Labs again, confirming robust overfitting as described by Rice et al. (2020). Evaluation results were saved to [`evaluation_results.csv`](evaluation_results.csv) and visualized in [`po_eval_results_curves.png`](report/pixel-only/baseline/po_eval_results_curves.png) using [`scripts/plot_results.py`](../scripts/plot_results.py). Finally, I have polished slides for clarifications, organization, and added robust overfitting curve graph to there as well. I am also getting familiar with Overleaf, including LaTeX formats, which will be used to write our final report during Week 8.
 
   **Training results (PGD-10):**
   * Test robust accuracy: peaked at **47.85%** at Epoch 105, declined to **41.26%** by Epoch 200
@@ -74,8 +74,8 @@
   * [`scripts/evaluate.py`](../scripts/evaluate.py): Evaluates all 40 checkpoints using PGD-20.
   * [`evaluation_results.csv`](evaluation_results.csv): Accuracy and loss metrics for all 40 checkpoints.
   * [`scripts/plot_results.py`](../scripts/plot_results.py): Plots clean and robust accuracy curves.
-  * [`robust_overfitting_curves.png`](report/robust_overfitting_curves.png): Chart showing robust overfitting with peak at Epoch 105.
-  * [`training_results_curves.png`](report/training_results_curves.png): Detailed training and evaluation accuracy/loss curves.
+  * [`po_eval_results_curves.png`](report/pixel-only/baseline/po_eval_results_curves.png): Chart showing robust overfitting with peak at Epoch 105.
+  * [`po_train_results_curves.png`](report/pixel-only/baseline/po_train_results_curves.png): Detailed training and evaluation accuracy/loss curves.
 
 ---
 
