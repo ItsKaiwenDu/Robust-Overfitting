@@ -15,7 +15,6 @@ import argparse
 import csv
 import glob
 import os
-import shutil
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import matplotlib.pyplot as plt
@@ -635,7 +634,7 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
     mode_prefixes = {
         'pixel-only': 'po',
         'low-frequency-only': 'lfo',
-        'mixed-domain': 'mixed',
+        'mixed-domain': 'mdo',
     }
     mode_prefix = mode_prefixes[training_mode]
 
@@ -647,9 +646,6 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
             agg_eval_png = os.path.join(agg_report_dir, f'{mode_prefix}_eval_results_curves.png')
             agg_eval_csv = os.path.join(agg_report_dir, 'evaluation_results.csv')
             plot_aggregate_evaluation_results(report_mode_dir, agg_eval_png, training_mode=training_mode, output_csv_path=agg_eval_csv)
-            legacy_agg_png = os.path.join(agg_report_dir, 'robust_overfitting_curves.png')
-            if os.path.exists(legacy_agg_png):
-                shutil.copyfile(agg_eval_png, legacy_agg_png)
         if plot_type in ('both', 'train'):
             agg_train_png = os.path.join(agg_report_dir, f'{mode_prefix}_train_results_curves.png')
             plot_aggregate_training_results(runs_mode_dir, agg_train_png, training_mode=training_mode)
@@ -687,9 +683,6 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
         seed_label = r_name.replace('seed-', 'Seed ') if r_name.startswith('seed-') else r_name
         if plot_type in ('both', 'eval') and os.path.exists(cur_csv):
             plot_results(cur_csv, cur_eval_png, training_mode=training_mode, title_suffix=seed_label)
-            legacy_cur_png = os.path.join(os.path.dirname(cur_eval_png), 'robust_overfitting_curves.png')
-            if os.path.exists(legacy_cur_png):
-                shutil.copyfile(cur_eval_png, legacy_cur_png)
         if plot_type in ('both', 'train') and os.path.exists(cur_runs_dir):
             try:
                 plot_training_results(cur_runs_dir, cur_train_png, training_mode=training_mode, title_suffix=seed_label)

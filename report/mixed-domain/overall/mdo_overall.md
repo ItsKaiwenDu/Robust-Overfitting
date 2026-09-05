@@ -25,6 +25,6 @@
 
 ## Visualizations
 
-- Evaluation Curves: [`mixed_eval_results_curves.png`](mixed_eval_results_curves.png)
+- Evaluation Curves: [`mdo_eval_results_curves.png`](mdo_eval_results_curves.png)
+- Training Dynamics: [`mdo_train_results_curves.png`](mdo_train_results_curves.png)
 - Training Dynamics: [`mixed_train_results_curves.png`](mixed_train_results_curves.png)
-

@@ -174,7 +174,7 @@ def generate_low_frequency_dct_pgd(
     and takes a small step in that direction. The perturbation is scaled (not
     clipped pixel-by-pixel) to stay within the epsilon budget, which preserves
     its low-frequency structure. At the end, the image is clamped to [0, 1]
-    to keep pixel values valid; this final clamp can add a tiny amount of
+    to keep pixel values valid; this final clamp can add a small amount of
     high-frequency content, which return_metadata=True reports for logging.
 
     This function only generates attacked images. It does not handle training

@@ -67,7 +67,7 @@ def generate_pgd_adversarial(model, normalizer, X, y, epsilon, alpha, num_steps,
     4. Keep the change small and repeat this for a set number of steps.
 
     The result still looks like the original image but is designed to
-    fool the model.
+    trick the model.
     """
     was_training = model.training
     model.eval()
