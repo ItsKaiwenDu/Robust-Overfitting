@@ -142,7 +142,7 @@ def plot_loss_subplot(ax, data, best_epoch, peak_label, training_mode='pixel-onl
 
 
 def plot_results(csv_path, output_path, training_mode='pixel-only', title_suffix=None):
-    """Builds the full 2-panel evaluation chart and saves it as a PNG file."""
+    """Builds the full 2-panel evaluation chart and saves it as a PDF file."""
     data = load_evaluation_data(csv_path)
 
     if training_mode == 'low-frequency-only':
@@ -180,7 +180,9 @@ def plot_results(csv_path, output_path, training_mode='pixel-only', title_suffix
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    if not output_path.endswith('.pdf'):
+        output_path = f"{os.path.splitext(output_path)[0]}.pdf"
+    plt.savefig(output_path, bbox_inches='tight')
     plt.close(fig)
     print(f"Evaluation chart saved successfully as {output_path}")
 
@@ -234,7 +236,7 @@ def load_tensorboard_training_data(tb_dir):
 
 
 def plot_training_results(tb_dir, output_path, training_mode='pixel-only', title_suffix=None):
-    """Builds the full 2-panel training dynamics chart and saves it as a PNG file."""
+    """Builds the full 2-panel training dynamics chart and saves it as a PDF file."""
     data = load_tensorboard_training_data(tb_dir)
 
     attack_names = {
@@ -292,7 +294,9 @@ def plot_training_results(tb_dir, output_path, training_mode='pixel-only', title
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
-    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    if not output_path.endswith('.pdf'):
+        output_path = f"{os.path.splitext(output_path)[0]}.pdf"
+    plt.savefig(output_path, bbox_inches='tight')
     plt.close(fig)
     print(f"Training chart saved successfully as {output_path}")
 
@@ -380,7 +384,7 @@ def aggregate_evaluation_data(report_mode_dir, output_csv_path=None):
     return agg
 
 
-def plot_aggregate_evaluation_results(report_mode_dir, output_png_path, training_mode='pixel-only', output_csv_path=None):
+def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mode='pixel-only', output_csv_path=None):
     """Draws aggregated evaluation curves with mean and shaded standard deviation bands."""
     agg = aggregate_evaluation_data(report_mode_dir, output_csv_path=output_csv_path)
     epochs = np.array(agg['epochs'])
@@ -507,10 +511,12 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_png_path, training
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
-    os.makedirs(os.path.dirname(output_png_path) or '.', exist_ok=True)
-    plt.savefig(output_png_path, dpi=300, bbox_inches='tight')
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+    if not output_path.endswith('.pdf'):
+        output_path = f"{os.path.splitext(output_path)[0]}.pdf"
+    plt.savefig(output_path, bbox_inches='tight')
     plt.close(fig)
-    print(f"Aggregated evaluation chart saved successfully as {output_png_path}")
+    print(f"Aggregated evaluation chart saved successfully as {output_path}")
 
 
 def aggregate_training_data(runs_mode_dir):
@@ -552,7 +558,7 @@ def aggregate_training_data(runs_mode_dir):
     return agg
 
 
-def plot_aggregate_training_results(runs_mode_dir, output_png_path, training_mode='pixel-only'):
+def plot_aggregate_training_results(runs_mode_dir, output_path, training_mode='pixel-only'):
     """Draws aggregated training curves with mean and shaded standard deviation bands."""
     agg = aggregate_training_data(runs_mode_dir)
     train_epochs = agg['train_epochs']
@@ -615,10 +621,12 @@ def plot_aggregate_training_results(runs_mode_dir, output_png_path, training_mod
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
     plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
-    os.makedirs(os.path.dirname(output_png_path) or '.', exist_ok=True)
-    plt.savefig(output_png_path, dpi=300, bbox_inches='tight')
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+    if not output_path.endswith('.pdf'):
+        output_path = f"{os.path.splitext(output_path)[0]}.pdf"
+    plt.savefig(output_path, bbox_inches='tight')
     plt.close(fig)
-    print(f"Aggregated training chart saved successfully as {output_png_path}")
+    print(f"Aggregated training chart saved successfully as {output_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -643,12 +651,12 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
         print(f"\n--- Generating Overall Results for {training_mode} ---")
         agg_report_dir = os.path.join(report_mode_dir, 'overall')
         if plot_type in ('both', 'eval'):
-            agg_eval_png = os.path.join(agg_report_dir, f'{mode_prefix}_eval_results_curves.png')
+            agg_eval_pdf = os.path.join(agg_report_dir, f'{mode_prefix}_eval_results_curves.pdf')
             agg_eval_csv = os.path.join(agg_report_dir, 'evaluation_results.csv')
-            plot_aggregate_evaluation_results(report_mode_dir, agg_eval_png, training_mode=training_mode, output_csv_path=agg_eval_csv)
+            plot_aggregate_evaluation_results(report_mode_dir, agg_eval_pdf, training_mode=training_mode, output_csv_path=agg_eval_csv)
         if plot_type in ('both', 'train'):
-            agg_train_png = os.path.join(agg_report_dir, f'{mode_prefix}_train_results_curves.png')
-            plot_aggregate_training_results(runs_mode_dir, agg_train_png, training_mode=training_mode)
+            agg_train_pdf = os.path.join(agg_report_dir, f'{mode_prefix}_train_results_curves.pdf')
+            plot_aggregate_training_results(runs_mode_dir, agg_train_pdf, training_mode=training_mode)
 
     # 2. Identify target runs to plot
     if all_seeds:
@@ -676,16 +684,16 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
         run_rel = os.path.join(*run_parts)
 
         cur_csv = csv_path or os.path.join('report', run_rel, 'evaluation_results.csv')
-        cur_eval_png = output_path or os.path.join('report', run_rel, f'{mode_prefix}_eval_results_curves.png')
+        cur_eval_pdf = output_path or os.path.join('report', run_rel, f'{mode_prefix}_eval_results_curves.pdf')
         cur_runs_dir = runs_dir or os.path.join('runs', run_rel)
-        cur_train_png = os.path.join('report', run_rel, f'{mode_prefix}_train_results_curves.png')
+        cur_train_pdf = os.path.join('report', run_rel, f'{mode_prefix}_train_results_curves.pdf')
 
         seed_label = r_name.replace('seed-', 'Seed ') if r_name.startswith('seed-') else r_name
         if plot_type in ('both', 'eval') and os.path.exists(cur_csv):
-            plot_results(cur_csv, cur_eval_png, training_mode=training_mode, title_suffix=seed_label)
+            plot_results(cur_csv, cur_eval_pdf, training_mode=training_mode, title_suffix=seed_label)
         if plot_type in ('both', 'train') and os.path.exists(cur_runs_dir):
             try:
-                plot_training_results(cur_runs_dir, cur_train_png, training_mode=training_mode, title_suffix=seed_label)
+                plot_training_results(cur_runs_dir, cur_train_pdf, training_mode=training_mode, title_suffix=seed_label)
             except Exception as e:
                 print(f"Warning: Could not generate training plot for {cur_runs_dir}: {e}")
 

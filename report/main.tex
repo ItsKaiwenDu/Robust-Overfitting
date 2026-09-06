@@ -7,7 +7,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
-\usepackage{microtype}
+\usepackage[nopatch=footnote]{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{tabularx}
@@ -336,7 +336,7 @@ identical in the present aggregate outputs. That observation should be
 described as an empirical result of this evaluation protocol, not as a general
 equivalence between the metrics.
 
-\begin{table*}[htbp]
+\begin{table}[htbp]
 \centering
 \small
 \caption{Current five-seed aggregate results. Accuracy values are percentages
@@ -344,6 +344,7 @@ equivalence between the metrics.
 on the mean trajectory. \TBD{Regenerate and verify every entry from the final
 CSV files before submission.}}
 \label{tab:main-results}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
 & \multicolumn{4}{c}{Epoch-200 accuracy (\%)}
@@ -355,8 +356,9 @@ Pixel-only & $82.01\pm0.30$ & $35.22\pm0.67$ & $72.74\pm0.25$ & $35.22\pm0.67$ &
 Low-frequency-only & $88.11\pm0.33$ & $0.00\pm0.00$ & $84.50\pm0.56$ & $0.00\pm0.00$ & $0.01$ (100) & $0.01$ & $84.50$ (200) & $0.00$ \\
 Mixed-domain & $88.34\pm3.34$ & $17.80\pm12.79$ & $82.97\pm3.93$ & $17.80\pm12.79$ & $37.93$ (85) & $20.13$ & $84.39$ (195) & $1.42$ \\
 \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}
 
 \paragraph{Results narrative to complete.}
 \TBD{Write a concise paragraph that answers the research question from the
@@ -376,7 +378,7 @@ whereas clean loss remains low.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{pixel-only/overall/po_eval_results_curves.png}
+  \includegraphics[width=\linewidth]{pixel-only/overall/po_eval_results_curves.pdf}
   \caption{Pixel-only five-seed evaluation trajectories. \TBD{Replace this
   caption with a self-contained description of each panel, uncertainty shading,
   the checkpoint cadence, and the substantive comparison the reader should
@@ -386,7 +388,7 @@ whereas clean loss remains low.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{pixel-only/overall/po_train_results_curves.png}
+  \includegraphics[width=\linewidth]{pixel-only/overall/po_train_results_curves.pdf}
   \caption{Pixel-only training dynamics from logged PGD-10 training metrics.
   \TBD{Clarify which quantities are averaged and why training-time PGD-10
   metrics should not be directly equated with checkpoint PGD-20 evaluation.}}
@@ -402,7 +404,7 @@ losses decline through epoch 200, while pixel robust loss remains high.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_eval_results_curves.png}
+  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_eval_results_curves.pdf}
   \caption{Low-frequency-only five-seed evaluation trajectories. \TBD{Explain
   the sustained low-frequency robustness, near-zero observed pixel-PGD-20
   robustness, and what this does and does not establish about transfer between
@@ -412,7 +414,7 @@ losses decline through epoch 200, while pixel robust loss remains high.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_train_results_curves.png}
+  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_train_results_curves.pdf}
   \caption{Low-frequency-only training dynamics. \TBD{Add the key comparison
   with \cref{fig:pixel-training} and define any loss or accuracy labels whose
   training-domain meaning could be ambiguous.}}
@@ -429,7 +431,7 @@ aggregate curve should be interpreted alongside the individual seed curves.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_results_curves.png}
+  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_results_curves.pdf}
   \caption{Mixed-domain five-seed evaluation trajectories. \TBD{Describe the
   mixed schedule and emphasize the large seed-to-seed variation in pixel and
   conjunction robustness. Do not attribute the pattern to a mechanism not
@@ -439,7 +441,7 @@ aggregate curve should be interpreted alongside the individual seed curves.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_train_results_curves.png}
+  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_train_results_curves.pdf}
   \caption{Mixed-domain training dynamics. \TBD{State whether the logged
   training robustness is stratified by the epoch's selected domain; if not,
   explain why it is not a like-for-like comparison across all epochs.}}
@@ -531,7 +533,7 @@ The implementation and report artifacts are organized as follows:
   \item \texttt{scripts/evaluate.py}: checkpoint evaluation under clean,
   pixel-PGD-20, low-frequency-PGD-20, and conjunction metrics;
   \item \texttt{scripts/plot\_results.py}: per-seed and overall plots;
-  \item \texttt{report/<condition>/overall/evaluation\_results.csv}: current
+  \item \texttt{report/\allowbreak<condition>/\allowbreak overall/\allowbreak evaluation\_results.csv}: current
   five-seed mean and standard-deviation checkpoint summaries.
 \end{itemize}
 \TBD{Add a stable repository URL, commit hash or release tag, exact commands,

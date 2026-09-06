@@ -1,14 +1,14 @@
 # Investigating Robust Overfitting in Adversarial Training
 
 This is GitHub repository for research on robust overfitting in adversarial training.
-Last updated: September 2, 2026
+Last updated: September 5, 2026
 
 ---
 
 ## Project Overview
 Deep neural networks can be easily tricked by adversarial attacks, which are small, human-imperceptible changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
 
-The project first reproduced robust overfitting with pixel-space PGD adversarial training. It has also completed five low-frequency DCT-masked PGD runs (seeds 42–46). The next phases are a five-seed pixel-only control and a five-seed mixed-domain experiment, which randomly selects standard pixel-space PGD or low-frequency DCT-masked PGD once per epoch.
+The project reproduced robust overfitting with pixel-space PGD adversarial training and has completed all 5-seed experiments (seeds 42–46) across three training conditions: pixel-only control, low-frequency DCT-masked PGD, and epoch-wise mixed-domain adversarial training (randomly alternating pixel-space and low-frequency PGD).
 
 ## Research Question & Hypothesis
 
@@ -122,7 +122,11 @@ python3 scripts/evaluate.py
 ```
 8b. Plot the matching run's results (replace the mode and seed as needed):
 ```bash
+# Plot a single seed run (generates vector PDF figures)
 python3 scripts/plot_results.py --training-mode pixel-only --seed 42
+
+# Generate aggregate 5-seed curves and summaries in overall/
+python3 scripts/plot_results.py --training-mode pixel-only --overall
 ```
 
 > **Note:** The **CIFAR-10** dataset (~170 MB) will be downloaded automatically to `data/` on first training run. No manual download is required.
@@ -137,17 +141,17 @@ To inspect the completed legacy pixel-space PGD training run without reproducing
 
 ```text
 Robust-Overfitting/
-├── checkpoints/                       # [Ignored] Created locally for completed or future runs
+├── checkpoints/                       # [Ignored] Checkpoints saved every 5 epochs (epochs 5–200)
 │   ├── pixel-only/
-│   │   ├── baseline/                  # Completed original pixel-PGD replication
-│   │   ├── diagnostic/seed-42/        # Local diagnostic checkpoint
-│   │   └── seed-<seed>/               # Planned full 5-seed control checkpoints
+│   │   ├── baseline/                  # Completed original pixel-PGD replication (epochs 5–200)
+│   │   ├── diagnostic/seed-42/        # Local diagnostic checkpoint (1 epoch)
+│   │   └── seed-42/ ... seed-46/      # Completed full 5-seed control checkpoints
 │   ├── low-frequency-only/
-│   │   ├── diagnostic/seed-42/
+│   │   ├── diagnostic/seed-42/        # Local diagnostic checkpoint (1 epoch)
 │   │   └── seed-42/ ... seed-46/      # Completed full 5-seed run checkpoints
 │   └── mixed-domain/
-│       ├── diagnostic/seed-42/        # Completed diagnostic checkpoint
-│       └── seed-<seed>/               # Planned full 5-seed run checkpoints
+│       ├── diagnostic/seed-42/        # Local diagnostic checkpoint (1 epoch)
+│       └── seed-42/ ... seed-46/      # Completed full 5-seed run checkpoints
 ├── models/                            # Model architecture definitions
 │   ├── __init__.py                    # Exports PreActResNet variants
 │   └── preact_resnet.py               # PreActResNet-18 model architecture in PyTorch
@@ -163,21 +167,26 @@ Robust-Overfitting/
 │   ├── tramer_et_al.md                # Literature notes on adversarial training for multiple perturbations
 │   ├── xie_et_al.md                   # Literature notes on threat-aware frequency decoupling
 │   └── yu_et_al.md                    # Literature notes on understanding robust overfitting
-├── report/                            # Presentations and evaluation outputs
+├── report/                            # Research paper, presentations, and evaluation outputs
+│   ├── main.tex                       # LaTeX paper / technical report source
 │   ├── slides.pdf                     # Research presentation slides
 │   ├── pixel-only/
-│   │   ├── baseline/                  # Completed legacy CSV and figures
-│   │   ├── diagnostic/seed-42/        # Local diagnostic CSV
+│   │   ├── baseline/                  # Completed legacy CSV, summary, and vector PDF plots
+│   │   ├── diagnostic/seed-42/        # Diagnostic evaluation CSV
+│   │   ├── seed-42/ ... seed-46/      # Completed per-seed CSVs, summaries, and vector PDF plots
+│   │   └── overall/                   # Completed 5-seed aggregate curves (PDF) and summary CSV
 │   ├── low-frequency-only/
-│   │   ├── diagnostic/seed-42/
-│   │   ├── seed-42/ ... seed-46/      # Completed per-seed CSVs and figures
-│   │   └── overall/                   # Completed 5-seed curves and summary CSV
+│   │   ├── diagnostic/seed-42/        # Diagnostic evaluation CSV
+│   │   ├── seed-42/ ... seed-46/      # Completed per-seed CSVs, summaries, and vector PDF plots
+│   │   └── overall/                   # Completed 5-seed aggregate curves (PDF) and summary CSV
 │   └── mixed-domain/
-│       └── diagnostic/seed-42/        # Completed diagnostic CSV
+│       ├── diagnostic/seed-42/        # Diagnostic evaluation CSV
+│       ├── seed-42/ ... seed-46/      # Completed per-seed CSVs, summaries, and vector PDF plots
+│       └── overall/                   # Completed 5-seed aggregate curves (PDF) and summary CSV
 ├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
 │   ├── dct_pgd.py                     # Low-frequency DCT-masked PGD implementation
 │   ├── evaluate.py                    # Four-metric checkpoint evaluation script (PGD-20)
-│   ├── plot_results.py                # Evaluation & training plotting script (per-seed & overall)
+│   ├── plot_results.py                # Evaluation & training plotting script (per-seed & aggregate vector PDF)
 │   ├── train.py                       # Core adversarial PGD training script
 │   └── verify_setup.py                # Setup verification script
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
