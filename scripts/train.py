@@ -68,35 +68,33 @@ def generate_pgd_adversarial(model, normalizer, X, y, epsilon, alpha, num_steps,
     The result still looks like the original image but is designed to
     trick the model.
     """
+    # Attack generation uses evaluation-mode BatchNorm statistics, but it must
+    # not decide the caller's final model mode. In particular, evaluate()
+    # calls this helper while the model is already in evaluation mode.
+    was_training = model.training
     model.eval()
-    
-    # Start from a small random perturbation instead of zero. This helps
-    # avoid a weaker, less realistic attack and is standard practice for PGD.
-    delta = torch.zeros_like(X).uniform_(-epsilon, epsilon).to(device)
-    delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
-    
-    for _ in range(num_steps):
-        delta.requires_grad = True
-        perturbed_X = X + delta
-        outputs = model(normalizer(perturbed_X))
-        loss = F.cross_entropy(outputs, y)
-        
-        model.zero_grad()
-        loss.backward()
-        
-        grad = delta.grad.detach()
-        
-        # Step 3: move in the direction that increases the loss (the sign
-        # of the gradient).
-        delta = delta.detach() + alpha * grad.sign()
-        # Step 4: keep the change within the allowed budget and make sure
-        # the image stays a valid pixel value.
-        delta = torch.clamp(delta, min=-epsilon, max=epsilon)
+    try:
+        delta = torch.zeros_like(X).uniform_(-epsilon, epsilon).to(device)
         delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
-        
-    # Switch back to train mode since this function is called from inside
-    # the training loop, right before the model is trained on this batch.
-    model.train()
+
+        for _ in range(num_steps):
+            delta = delta.detach().requires_grad_(True)
+            perturbed_X = X + delta
+            outputs = model(normalizer(perturbed_X))
+            loss = F.cross_entropy(outputs, y)
+
+            gradient = torch.autograd.grad(loss, delta, only_inputs=True)[0]
+
+            # Step 3: move in the direction that increases the loss (the sign
+            # of the gradient).
+            delta = delta.detach() + alpha * gradient.sign()
+            # Step 4: keep the change within the allowed budget and make sure
+            # the image stays a valid pixel value.
+            delta = torch.clamp(delta, min=-epsilon, max=epsilon)
+            delta = torch.clamp(X + delta, min=0.0, max=1.0) - X
+    finally:
+        model.train(was_training)
+
     return (X + delta).detach()
 
 
@@ -144,47 +142,53 @@ def evaluate(model, normalizer, dataloader, device, epsilon, alpha, num_steps):
     training to periodically check how the model is doing on held-out
     test data, separate from what it's actually being trained on.
     """
+    was_training = model.training
     model.eval()
-    clean_loss = 0.0
-    clean_correct = 0
-    robust_loss = 0.0
-    robust_correct = 0
-    total = 0
-    
-    # Step 1: evaluate on the original, unmodified images.
-    with torch.no_grad():
+    try:
+        clean_loss = 0.0
+        clean_correct = 0
+        robust_loss = 0.0
+        robust_correct = 0
+        total = 0
+
+        # Step 1: evaluate on the original, unmodified images.
+        with torch.no_grad():
+            for X, y in dataloader:
+                X, y = X.to(device), y.to(device)
+                batch_size = X.size(0)
+                total += batch_size
+
+                clean_outputs = model(normalizer(X))
+                c_loss = F.cross_entropy(clean_outputs, y, reduction='sum')
+                clean_loss += c_loss.item()
+                clean_pred = clean_outputs.argmax(dim=1)
+                clean_correct += clean_pred.eq(y).sum().item()
+
+        # Step 2: generate an attack for each batch, then evaluate on that.
+        # Gradients need to be enabled here since generating the attack requires
+        # them, even though the model itself isn't being trained.
         for X, y in dataloader:
             X, y = X.to(device), y.to(device)
-            batch_size = X.size(0)
-            total += batch_size
-            
-            clean_outputs = model(normalizer(X))
-            c_loss = F.cross_entropy(clean_outputs, y, reduction='sum')
-            clean_loss += c_loss.item()
-            clean_pred = clean_outputs.argmax(dim=1)
-            clean_correct += clean_pred.eq(y).sum().item()
-            
-    # Step 2: generate an attack for each batch, then evaluate on that.
-    # Gradients need to be enabled here since generating the attack requires
-    # them, even though the model itself isn't being trained.
-    for X, y in dataloader:
-        X, y = X.to(device), y.to(device)
-        with torch.enable_grad():
-            X_adv = generate_pgd_adversarial(model, normalizer, X, y, epsilon, alpha, num_steps, device)
-        
-        with torch.no_grad():
-            robust_outputs = model(normalizer(X_adv))
-            r_loss = F.cross_entropy(robust_outputs, y, reduction='sum')
-            robust_loss += r_loss.item()
-            robust_pred = robust_outputs.argmax(dim=1)
-            robust_correct += robust_pred.eq(y).sum().item()
-            
-    return (
-        clean_loss / total,
-        clean_correct / total,
-        robust_loss / total,
-        robust_correct / total
-    )
+            with torch.enable_grad():
+                X_adv = generate_pgd_adversarial(
+                    model, normalizer, X, y, epsilon, alpha, num_steps, device
+                )
+
+            with torch.no_grad():
+                robust_outputs = model(normalizer(X_adv))
+                r_loss = F.cross_entropy(robust_outputs, y, reduction='sum')
+                robust_loss += r_loss.item()
+                robust_pred = robust_outputs.argmax(dim=1)
+                robust_correct += robust_pred.eq(y).sum().item()
+
+        return (
+            clean_loss / total,
+            clean_correct / total,
+            robust_loss / total,
+            robust_correct / total
+        )
+    finally:
+        model.train(was_training)
 
 
 def main():
