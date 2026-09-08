@@ -69,12 +69,12 @@ def plot_accuracy_subplot(ax, data, best_epoch, peak_accuracy, peak_label, train
     ax.plot(data['epochs'], data['pixel_accs'], label='Pixel-PGD-20 Robustness', color='#d62728', linewidth=2.5, marker='s', markersize=4)
     if data['low_frequency_accs']:
         ax.plot(data['epochs'], data['low_frequency_accs'], label='Low-Frequency-PGD-20 Robustness', color='#ff7f0e', linewidth=2.5, marker='^', markersize=4)
-        ax.plot(data['epochs'], data['union_accs'], label='Union Robustness', color='#9467bd', linewidth=2.5, marker='D', markersize=4)
+        ax.plot(data['epochs'], data['union_accs'], label='Joint Robustness (Both Attacks)', color='#9467bd', linewidth=2.5, marker='D', markersize=4)
 
     # Highlight the best-robustness epoch with a vertical line and callout box.
     ax.axvline(x=best_epoch, color='#2ca02c', linestyle='--', linewidth=2, label=f'Peak {peak_label} (Epoch {best_epoch})')
     if training_mode == 'low-frequency-only':
-        xytext = (best_epoch - 42, 48)
+        xytext = (best_epoch - 42, max(12, peak_accuracy - 18))
     elif training_mode == 'mixed-domain':
         x_text_offset = -40 if best_epoch > 140 else 8
         xytext = (best_epoch + x_text_offset, peak_accuracy + 12)
@@ -113,7 +113,7 @@ def plot_loss_subplot(ax, data, best_epoch, peak_label, training_mode='pixel-onl
         ha = 'right'
     elif training_mode == 'mixed-domain':
         loss_val = data['pixel_losses'][max_idx]
-        loss_label = 'Pixel Robust Loss'
+        loss_label = 'Pixel Loss at Joint Peak'
         if best_epoch > 130:
             xytext_loss = (best_epoch - 38, loss_val + 2.2)
             ha = 'left'
@@ -150,7 +150,7 @@ def plot_results(csv_path, output_path, training_mode='pixel-only', title_suffix
         peak_label = 'Low-Freq Robustness'
     elif training_mode == 'mixed-domain':
         peak_values = data['union_accs'] if data['union_accs'] else data['pixel_accs']
-        peak_label = 'Union Robustness'
+        peak_label = 'Joint Robustness'
     else:
         peak_values = data['pixel_accs']
         peak_label = 'Pixel Robustness'
@@ -257,7 +257,7 @@ def plot_training_results(tb_dir, output_path, training_mode='pixel-only', title
     if data['test_clean_accs']:
         ax1.plot(data['test_epochs'], data['test_clean_accs'], label='Test Clean Acc', color='#d62728', linestyle='--', linewidth=2)
     if data['test_robust_accs']:
-        ax1.plot(data['test_epochs'], data['test_robust_accs'], label='Test Robust Acc (PGD-10)', color='#d62728', linestyle='-', linewidth=2.5)
+        ax1.plot(data['test_epochs'], data['test_robust_accs'], label='Test Robust Acc (Pixel-PGD-10)', color='#d62728', linestyle='-', linewidth=2.5)
 
     ax1.set_xlabel('Epochs\n(↑ Higher is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax1.set_ylabel('Accuracy (%)', fontsize=12, fontweight='bold')
@@ -271,7 +271,7 @@ def plot_training_results(tb_dir, output_path, training_mode='pixel-only', title
     if data['test_clean_losses']:
         ax2.plot(data['test_epochs'], data['test_clean_losses'], label='Test Clean Loss', color='#d62728', linestyle='--', linewidth=2)
     if data['test_robust_losses']:
-        ax2.plot(data['test_epochs'], data['test_robust_losses'], label='Test Robust Loss', color='#d62728', linestyle='-', linewidth=2.5)
+        ax2.plot(data['test_epochs'], data['test_robust_losses'], label='Test Robust Loss (Pixel-PGD-10)', color='#d62728', linestyle='-', linewidth=2.5)
 
     ax2.set_xlabel('Epochs\n(↓ Lower is better)', fontsize=11, fontweight='bold', labelpad=8)
     ax2.set_ylabel('Loss', fontsize=12, fontweight='bold')
@@ -357,7 +357,7 @@ def aggregate_evaluation_data(report_mode_dir, output_csv_path=None):
             ])
 
         with open(output_csv_path, mode='w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator='\n')
             writer.writeheader()
             for i, epoch in enumerate(epochs):
                 row = {
@@ -396,7 +396,7 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mod
     elif training_mode == 'mixed-domain':
         peak_means = agg['union_accs_mean'] if len(agg['union_accs_mean']) > 0 else agg['pixel_accs_mean']
         peak_stds = agg['union_accs_std'] if len(agg['union_accs_std']) > 0 else agg['pixel_accs_std']
-        peak_label = 'Union Robustness'
+        peak_label = 'Joint Robustness'
     else:
         peak_means = agg['pixel_accs_mean']
         peak_stds = agg['pixel_accs_std']
@@ -421,12 +421,12 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mod
         ax1.plot(epochs, agg['low_frequency_accs_mean'], label='Low-Frequency-PGD-20 Robustness (Mean)', color='#ff7f0e', linewidth=2.5, marker='^', markersize=4)
         ax1.fill_between(epochs, agg['low_frequency_accs_mean'] - agg['low_frequency_accs_std'], agg['low_frequency_accs_mean'] + agg['low_frequency_accs_std'], color='#ff7f0e', alpha=0.18)
 
-        ax1.plot(epochs, agg['union_accs_mean'], label='Union Robustness (Mean)', color='#9467bd', linewidth=2.5, marker='D', markersize=4)
+        ax1.plot(epochs, agg['union_accs_mean'], label='Joint Robustness (Both Attacks, Mean)', color='#9467bd', linewidth=2.5, marker='D', markersize=4)
         ax1.fill_between(epochs, agg['union_accs_mean'] - agg['union_accs_std'], agg['union_accs_mean'] + agg['union_accs_std'], color='#9467bd', alpha=0.18)
 
     # Highlight the peak
     if training_mode == 'low-frequency-only':
-        xytext = (best_epoch - 42, 48)
+        xytext = (best_epoch - 42, max(12, peak_accuracy_mean - 18))
     elif training_mode == 'mixed-domain':
         x_text_offset = -40 if best_epoch > 140 else 8
         xytext = (best_epoch + x_text_offset, peak_accuracy_mean + 12)
@@ -471,7 +471,7 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mod
     elif training_mode == 'mixed-domain':
         loss_val_mean = agg['pixel_losses_mean'][max_idx]
         loss_val_std = agg['pixel_losses_std'][max_idx]
-        loss_label = 'Pixel Robust Loss'
+        loss_label = 'Pixel Loss at Joint Peak'
         if best_epoch > 130:
             xytext_loss = (best_epoch - 38, loss_val_mean + 2.2)
             ha = 'left'
@@ -584,7 +584,7 @@ def plot_aggregate_training_results(runs_mode_dir, output_path, training_mode='p
     ax1.plot(test_epochs, agg['test_clean_accs_mean'], label='Test Clean Acc (Mean)', color='#d62728', linestyle='--', linewidth=2)
     ax1.fill_between(test_epochs, agg['test_clean_accs_mean'] - agg['test_clean_accs_std'], agg['test_clean_accs_mean'] + agg['test_clean_accs_std'], color='#d62728', alpha=0.15)
 
-    ax1.plot(test_epochs, agg['test_robust_accs_mean'], label='Test Robust Acc (PGD-10, Mean)', color='#d62728', linestyle='-', linewidth=2.5)
+    ax1.plot(test_epochs, agg['test_robust_accs_mean'], label='Test Robust Acc (Pixel-PGD-10, Mean)', color='#d62728', linestyle='-', linewidth=2.5)
     ax1.fill_between(test_epochs, agg['test_robust_accs_mean'] - agg['test_robust_accs_std'], agg['test_robust_accs_mean'] + agg['test_robust_accs_std'], color='#d62728', alpha=0.15)
 
     ax1.set_xlabel('Epochs\n(↑ Higher is better)', fontsize=11, fontweight='bold', labelpad=8)
@@ -600,7 +600,7 @@ def plot_aggregate_training_results(runs_mode_dir, output_path, training_mode='p
     ax2.plot(test_epochs, agg['test_clean_losses_mean'], label='Test Clean Loss (Mean)', color='#d62728', linestyle='--', linewidth=2)
     ax2.fill_between(test_epochs, agg['test_clean_losses_mean'] - agg['test_clean_losses_std'], agg['test_clean_losses_mean'] + agg['test_clean_losses_std'], color='#d62728', alpha=0.15)
 
-    ax2.plot(test_epochs, agg['test_robust_losses_mean'], label='Test Robust Loss (Mean)', color='#d62728', linestyle='-', linewidth=2.5)
+    ax2.plot(test_epochs, agg['test_robust_losses_mean'], label='Test Robust Loss (Pixel-PGD-10, Mean)', color='#d62728', linestyle='-', linewidth=2.5)
     ax2.fill_between(test_epochs, agg['test_robust_losses_mean'] - agg['test_robust_losses_std'], agg['test_robust_losses_mean'] + agg['test_robust_losses_std'], color='#d62728', alpha=0.15)
 
     ax2.set_xlabel('Epochs\n(↓ Lower is better)', fontsize=11, fontweight='bold', labelpad=8)
@@ -662,8 +662,6 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
     if all_seeds:
         seed_dirs = sorted(glob.glob(os.path.join(report_mode_dir, 'seed-*')))
         target_runs = [os.path.basename(sd) for sd in seed_dirs]
-        if os.path.exists(os.path.join(report_mode_dir, 'baseline')):
-            target_runs.insert(0, 'baseline')
     elif run_name is not None:
         target_runs = [run_name]
     elif seed is not None:

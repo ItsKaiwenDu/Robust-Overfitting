@@ -2,18 +2,26 @@
 
 ## Numbers
 
-- The run evaluates 40 checkpoints from epoch 5 through epoch 200.
-- At epoch 200, clean accuracy is **87.60%** and low-frequency-PGD-20 robust accuracy is **83.88%**.
-- Peak clean accuracy is 87.96% and peak low-frequency robust accuracy is 84.26%, both at epoch 160; low-frequency robustness declines **0.38 pp** by epoch 200.
-- Pixel-PGD-20 and union robust accuracy both finish at **0.00%**; their maximum is only **0.01%** at epoch 35.
+- Evaluated 40 checkpoints at five-epoch intervals from epoch 5 through epoch 200.
+- Epoch 200: clean **94.47%**, pixel-PGD-20 **0.00%**, low-frequency-PGD-20 **92.99%**, and joint robustness **0.00%**.
+- Peaks: clean **94.47%** at epoch 200; pixel **0.00%** at epoch 5; low-frequency **92.99%** at epoch 200; joint **0.00%** at epoch 5.
+- Peak-to-final declines: pixel **0.00 pp**, low-frequency **0.00 pp**, and joint **0.00 pp**.
+- Minimum losses occur at epoch 105 for clean (0.211), epoch 5 for pixel (17.682), and epoch 105 for low-frequency (0.266).
 
-## Lines
+## Trajectory
 
-- Clean accuracy rises from 65.78% at epoch 5 to its high point near epoch 160, then ends slightly lower at 87.60%.
-- Low-frequency robust accuracy rises from 61.18% to 69.37% at epoch 100 and 80.42% at epoch 150 before small late decline.
-- Pixel and union robustness remain on zero line apart from isolated 0.01% measurement.
+- Low-frequency robustness reaches 92.99% and changes by only 0.00 pp by epoch 200.
+- Pixel and joint robustness remain effectively zero, despite strong clean and low-frequency accuracy.
+- Low-frequency robust loss is minimized at epoch 105 (0.266) and ends at 0.312.
 
-## What this indicates
+## Interpretation
 
-- This seed achieves high low-frequency robustness, with only mild late-training degradation rather than a severe robust-overfitting drop.
-- It remains almost entirely vulnerable to pixel-space PGD, so its strong low-frequency result does not produce joint robustness.
+- This seed learns strong matched-domain robustness with little or no late decline in low-frequency accuracy.
+- The result does not transfer to unrestricted pixel-PGD; specialization to the low-frequency threat model is pronounced.
+
+## Visualizations
+
+- [Evaluation curves](lfo_eval_results_curves.pdf)
+- [Training dynamics](lfo_train_results_curves.pdf)
+
+The TensorBoard test-robust curve in the training-dynamics figure uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.

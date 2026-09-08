@@ -2,29 +2,26 @@
 
 ## Numbers
 
-- This summary collects overall results from 5 runs (seeds 42–46) across 40 checkpoints, evaluated every 5 epochs from epoch 5 through 200. The separate Rice et al. reproduction is documented in `baseline/po_baseline.md` and is not included here.
-- At epoch 200, mean clean accuracy is **82.01% ± 0.30 pp**, pixel-PGD-20 robust accuracy is **35.22% ± 0.67 pp**, low-frequency-PGD-20 robust accuracy is **72.74% ± 0.25 pp**, and union robust accuracy is **35.22% ± 0.67 pp**.
-- Mean pixel and union robustness peak at **44.73%** at epoch 105, then decline **9.51 pp** by epoch 200.
-- Mean low-frequency robustness peaks at **75.44%** at epoch 105 and declines **2.70 pp** by final checkpoint.
-- Mean pixel robust test loss reaches its minimum of **1.52 ± 0.03** at epoch 105 (matching peak robust accuracy), then surges to **3.84 ± 0.07** by epoch 200 (+2.32 increase, +153%), while clean test loss remains low at **0.63 ± 0.01** (down from 0.81 at epoch 100).
+- Five runs (seeds 42-46), each with 40 checkpoints evaluated every five epochs from epoch 5 through epoch 200.
+- Epoch 200 mean +/- sample SD: clean **84.40% +/- 0.09 pp**, pixel-PGD-20 **42.66% +/- 0.22 pp**, low-frequency-PGD-20 **76.48% +/- 0.26 pp**, and joint robustness **42.66% +/- 0.22 pp**.
+- Mean peaks: clean **85.07%** at epoch 155; pixel **51.22%** at epoch 105; low-frequency **78.36%** at epoch 155; joint **51.22%** at epoch 105.
+- Mean peak-to-final declines: pixel **8.56 pp**, low-frequency **1.88 pp**, and joint **8.56 pp**.
+- Mean minimum losses: clean **0.469 +/- 0.003** at epoch 155; pixel **1.291 +/- 0.005** at epoch 105; low-frequency **0.652 +/- 0.004** at epoch 115.
 
-## Lines
+## Trajectory
 
-- Mean clean accuracy rises from 57.70% at epoch 5, peaks at 82.73% at epoch 155, and ends at 82.01%.
-- Pixel and union robustness rise early, peak at epoch 105, then gradually decline to 35.22%.
-- Low-frequency robustness rises from 53.20% to 75.44% at epoch 105, then declines more mildly to 72.74%.
-- The small final standard deviations across all metrics show that 5 seeded runs have closely matched late-training results.
-- Pixel-PGD-20 test loss shows clear divergence after epoch 105: it drops to 1.52 at the first learning-rate decay, then explodes steadily up to 3.84 at epoch 200, mirroring the decline in robust accuracy.
+- Every seed reaches its pixel-robust peak at epoch 105; the aggregate falls 8.56 pp afterward.
+- Mean pixel robust loss rises from 1.291 at epoch 105 to 3.223 at epoch 200.
+- Joint and pixel robustness are effectively identical, establishing pixel-PGD as the binding threat in this condition.
 
-## What this indicates
+## Interpretation
 
-- Pixel-only training produces reproducible robust overfitting under pixel-PGD-20: test robustness peaks well before final checkpoint and loses 9.51 pp by epoch 200.
-- Low-frequency robustness is higher and declines much less, while union robustness is determined by weaker pixel-PGD result.
-- An early checkpoint near epoch 105 would preserve substantially more pixel and joint robustness than final checkpoint.
-- The sharp divergence between decreasing clean loss and exploding robust loss reproduces the hallmark signature of robust overfitting described by Rice et al. (2020).
+- The five seeds reproduce the qualitative robust-overfitting result: robust test performance peaks well before training ends and then declines consistently.
+- Reporting both the best and final checkpoints is necessary; selecting only the final model understates the attainable pixel robustness by about 8.56 percentage points.
 
 ## Visualizations
 
-- Evaluation Curves: [`po_eval_results_curves.png`](po_eval_results_curves.png)
-- Training Dynamics: [`po_train_results_curves.png`](po_train_results_curves.png)
+- [Five-seed evaluation curves](po_eval_results_curves.pdf)
+- [Five-seed training dynamics](po_train_results_curves.pdf)
 
+Shaded bands show sample standard deviation across seeds. The TensorBoard test-robust curve uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.

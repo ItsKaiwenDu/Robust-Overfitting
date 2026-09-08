@@ -2,18 +2,27 @@
 
 ## Numbers
 
-- The run evaluates 40 checkpoints from epoch 5 through epoch 200.
-- At epoch 200, clean accuracy is **89.87%**, pixel-PGD-20 robust accuracy is **16.48%**, low-frequency-PGD-20 robust accuracy is **84.34%**, and union robust accuracy is **16.48%**.
-- Peak clean accuracy is 90.71% and peak low-frequency robustness is 86.16%, both at epoch 165; their final declines are **0.84 pp** and **1.82 pp**.
-- Pixel and union robustness peak at 43.32% at epoch 110, then decline **26.84 pp** by epoch 200.
+- Evaluated 40 checkpoints at five-epoch intervals from epoch 5 through epoch 200.
+- Epoch 200: clean **91.78%**, pixel-PGD-20 **15.93%**, low-frequency-PGD-20 **87.19%**, and joint robustness **15.93%**.
+- Peaks: clean **92.83%** at epoch 165; pixel **47.79%** at epoch 115; low-frequency **89.17%** at epoch 165; joint **47.79%** at epoch 115.
+- Peak-to-final declines: pixel **31.86 pp**, low-frequency **1.98 pp**, and joint **31.86 pp**.
+- Minimum losses occur at epoch 165 for clean (0.223), epoch 115 for pixel (1.368), and epoch 165 for low-frequency (0.348).
 
-## Lines
+## Trajectory
 
-- Clean and low-frequency robustness rise to epoch 165 and remain near their peaks at end.
-- Pixel and union robustness reach 37.81% at epoch 100, fall near zero at epoch 150, and end at 16.48%.
-- The broad swings in pixel and union robustness contrast with stable late low-frequency line.
+- Of the 40 evaluated checkpoints, 20 immediately follow a pixel-training epoch and 20 follow a low-frequency-training epoch; epoch 200 uses **low-frequency** training.
+- Mean pixel robustness is **43.93%** after pixel epochs versus **5.00%** after low-frequency epochs.
+- Joint robustness peaks at epoch 115 and ends 31.86 pp lower, while low-frequency robustness ends 1.98 pp below its peak.
 
-## What this indicates
+## Interpretation
 
-- This seed preserves clean and low-frequency performance well, but its pixel and joint robustness exhibit strong late-training instability and decline.
-- Its best checkpoint for low-frequency robustness is not same as its best checkpoint for pixel or joint robustness.
+- Mixed training shows strong short-term specialization to the attack domain used in the immediately preceding epoch.
+- Because the domain alternates once per epoch, the peak-to-final joint decline is schedule-confounded and cannot be attributed to robust overfitting alone.
+- The run does not maintain stable joint robustness to both attacks; a finer-grained mixing strategy would be needed to test whether this is avoidable.
+
+## Visualizations
+
+- [Evaluation curves](mdo_eval_results_curves.pdf)
+- [Training dynamics](mdo_train_results_curves.pdf)
+
+The TensorBoard test-robust curve in the training-dynamics figure uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.

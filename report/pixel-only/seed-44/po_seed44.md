@@ -2,18 +2,26 @@
 
 ## Numbers
 
-- The run evaluates 40 checkpoints from epoch 5 through epoch 200.
-- At epoch 200, clean accuracy is **82.32%**, pixel-PGD-20 robust accuracy is **35.35%**, low-frequency-PGD-20 robust accuracy is **72.97%**, and union robust accuracy is **35.35%**.
-- Peak clean accuracy is 82.77% at epoch 160; peak pixel and union robustness is 44.43% at epoch 105; peak low-frequency robustness is 75.19% at epoch 105.
-- From peak to epoch 200, pixel and union robustness each decline **9.08 pp**, while low-frequency robustness declines **2.22 pp**.
+- Evaluated 40 checkpoints at five-epoch intervals from epoch 5 through epoch 200.
+- Epoch 200: clean **84.48%**, pixel-PGD-20 **42.88%**, low-frequency-PGD-20 **76.46%**, and joint robustness **42.88%**.
+- Peaks: clean **85.01%** at epoch 155; pixel **51.18%** at epoch 105; low-frequency **78.42%** at epoch 155; joint **51.18%** at epoch 105.
+- Peak-to-final declines: pixel **8.30 pp**, low-frequency **1.96 pp**, and joint **8.30 pp**.
+- Minimum losses occur at epoch 155 for clean (0.468), epoch 105 for pixel (1.299), and epoch 115 for low-frequency (0.654).
 
-## Lines
+## Trajectory
 
-- Clean accuracy improves from 56.27% to epoch 160, then remains close to that level through final checkpoint.
-- Pixel and union robustness peak at epoch 105 and gradually decline to 35.35%.
-- Low-frequency robustness peaks at same epoch and shows smallest low-frequency post-peak decline among 5 seeded pixel-only runs.
+- Pixel and joint robustness peak at epochs 105 and 105, then finish 8.30 pp and 8.30 pp below their peaks.
+- Joint robustness nearly equals pixel robustness throughout, so pixel-PGD is the limiting attack for this model.
+- Pixel robust loss falls to 1.299, then rises to 3.277 at epoch 200.
 
-## What this indicates
+## Interpretation
 
-- This run reproduces robust overfitting under pixel PGD, with a much larger pixel/union decline than low-frequency decline.
-- It still has strong final low-frequency robustness, but joint robustness remains constrained by pixel-PGD performance.
+- This run shows the classic robust-overfitting pattern: adversarial test accuracy deteriorates after its best checkpoint even as training continues.
+- Checkpoint selection matters: the best pixel-robust checkpoint is preferable to the final checkpoint for the pixel threat model.
+
+## Visualizations
+
+- [Evaluation curves](po_eval_results_curves.pdf)
+- [Training dynamics](po_train_results_curves.pdf)
+
+The TensorBoard test-robust curve in the training-dynamics figure uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.
