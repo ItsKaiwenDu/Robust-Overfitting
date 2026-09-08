@@ -131,85 +131,36 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 11 (Upcoming)
-* **Objective:** Run and analyze pixel-only experiment across 5 seeds.
+## Week 11 (In Progress)
+* **Objective:** Run and analyze pixel-only and mixed-domain experiments, then verify and compare all three conditions.
 
-  1. Run 5 full pixel-only training experiments on Lambda Labs using same 5 random seeds as low-frequency-only runs. Run in parallel (5x NVIDIA A10 GPUs) to save time.
-  2. Download completed checkpoints and TensorBoard logs.
-  3. Evaluate each saved checkpoint on: clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness (both domains).
-  4. Save resulting evaluation CSV files and plots, then identify each metric’s peak epoch and peak-to-final decline and average results across 5 seeds.
+  1. Run 5 parallel pixel-only training experiments on Lambda Labs (same 5 seeds as low-frequency-only runs, 5x NVIDIA A10 GPUs), same procedure as week 10.
+  2. Run 5 parallel mixed-domain training experiments on Lambda Labs (same 5 seeds, seeded epoch-level attack schedule, 5x NVIDIA A10 GPUs), same procedure as week 10 except for using mixed-domain schedule.
+  3. Verify attack evaluations and union calculation (worst-case per image); compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three conditions.
+  4. Summarize into one note per condition (low-frequency-only, pixel-only, mixed-domain), each covering peak epoch, peak accuracy, and peak-to-final decline for overall and each of 5 seeds; identify mixed-domain training's effect on robust-overfitting.
 
-* **Note:** Keep baseline pixel-only run as a reference (Rice et al. robust overfitting behavior is reproducible), but do not count it as one of 5 new seeded runs.
+* **Note:** Keep baseline pixel-only run as a reference (Rice et al. robust overfitting behavior is reproducible), but do not count it as one of 5 new seeded runs. Record chosen attack domain for every epoch to ensure mixed-domain schedule reproducibility.
 
-* **Expectations:** A complete 5-seed pixel-only control with paired evaluation curves and a documented summary.
+* **Expectations:** Complete 5-seed pixel-only and mixed-domain results, verified result quality, paired evaluation curves, and a defensible explanation of observed robust-overfitting behavior.
 
 ---
 
 ## Week 12 (Upcoming)
-* **Objective:** Run and analyze mixed-domain experiment across 5 seeds.
+* **Objective:** Start writing final research report and building presentation slides.
 
-  1. Run 5 full mixed-domain training experiments on Lambda Labs using same 5 random seeds and seeded epoch-level attack schedule. Run in parallel (5x NVIDIA A10 GPUs) to save time.
-  2. Download completed checkpoints and TensorBoard logs.
-  3. Evaluate each saved checkpoint on: clean images, pixel-space PGD-20, low-frequency DCT-masked PGD-20, and union robustness (both domains).
-  4. Save resulting evaluation CSV files and plots, then identify each metric’s peak epoch and peak-to-final decline and average results across 5 seeds.
-
-* **Note:** Record chosen attack domain for every epoch to ensure schedule reproducibility. Save full comparison until next week.
-
-* **Expectations:** A complete 5-seed mixed-domain result with reproducible schedules and paired evaluation curves.
-
----
-
-## Week 13 (Upcoming)
-* **Objective:** Verify and compare pixel-only, low-frequency-only, and mixed-domain results.
-
-  1. Check that two attack evaluations are sufficiently strong and that union calculation uses worst result for each test image.
-  2. Rerun selected diagnostics or full conditions only if a configuration, evaluation, or reproducibility problem is identified.
-  3. Compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three training conditions.
-  4. Summarize each condition's peak epoch, peak accuracy, and peak-to-final decline. Identify whether mixed-domain training shifted, flattened, or removed any robust-overfitting peak.
-  5. Consider adversarial training-loss distributions by attack domain if robust-overfitting curves differ substantially.
-
-* **Expectations:** Verified result quality and a defensible explanation of observed robust-overfitting behavior.
-
----
-
-## Week 14 (Upcoming)
-* **Objective:** Synthesize pixel-only, low-frequency-only, and mixed-domain findings and set up final report skeleton.
-
-  1. Compare clean, pixel-PGD, low-frequency-PGD, and union robust-accuracy curves across all three training conditions.
-  2. Summarize each condition's peak epoch, peak accuracy, and peak-to-final decline. Identify whether mixed-domain training shifted, flattened, or removed any robust-overfitting peak.
-  3. Create final report skeleton, including motivation, related work, methodology, results, limitations, and conclusions.
-
-* **Expectations:** A defensible interpretation of mixed-domain robust-overfitting study and a report structure ready for writing.
-
----
-
-## Week 15 (Upcoming)
-* **Objective:** Make progress on final report and consortium slides in parallel.
-
-  1. Write sections of final report (motivation, related work, methodology, results, limitations, conclusions) and incorporate figures, tables, and citations.
-  2. Build consortium presentation slides and write speaker notes, covering research gap, method, results, and contribution.
+  1. Set up report skeleton and begin writing all sections (motivation, related work, methodology, results, limitations, conclusions); incorporate figures, tables, and citations.
+  2. Build consortium presentation slides and speaker notes covering research gap, method, results, and contribution.
 
 * **Expectations:** Meaningful progress on both report and slides.
 
 ---
 
-## Week 16 (Upcoming)
-* **Objective:** Continue and complete final report and consortium slides in parallel.
+## Week 13 (Upcoming)
+* **Objective:** Continue and finish final report and slides; verify everything is submission-ready.
 
-  1. Continue writing and finishing remaining sections of final report.
-  2. Continue building and polishing consortium slides and speaker notes.
+  1. Finish remaining report sections and polish slides and speaker notes.
+  2. Review report and slides for accuracy, clarity, and consistency; confirm everything is submission-ready.
 
-* **Expectations:** A complete written draft of final report and a complete set of consortium slides with speaker notes.
+* **Expectations:** A complete, polished final report and presentation-ready slides ready for submission.
 
----
-
-## Week 17 (Upcoming)
-* **Objective:** Verify all materials and prepare for submission.
-
-  1. Review repository and final report for accuracy and clarity. Fix any typos, unclear phrasing, or inconsistencies.
-  2. Review consortium slides to ensure content matches final report, potential audience questions are addressed, and presentation is clear and easy to follow. Fix if needed.
-  3. Confirm everything is submission-ready.
-
-* **Expectations:** A verified, polished final report, clean repository, and presentation-ready consortium slides ready for submission.
-
-*Note: Because research schedule has been extended through November, we intentionally left several unassigned weeks as a flexible buffer; if any week overruns, needs a rerun, or encounters unexpected problems, we can simply expand schedule into those weeks without disrupting overall timeline.*
+*Note: Because research schedule has been extended, we intentionally left several unassigned weeks as a flexible buffer; if any week overruns, needs a rerun, or encounters unexpected problems, we can simply expand schedule into those weeks without disrupting overall timeline.*
