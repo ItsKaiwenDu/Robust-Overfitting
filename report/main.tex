@@ -40,8 +40,10 @@
 \newcommand{\E}{\mathcal{E}}
 
 \title{Robust Overfitting Across Pixel-Space and Low-Frequency Adversarial Training}
-\author{Kaiwen Du \and \TBD{confirm all author names, affiliations, and acknowledgments}}
-\date{\TBD{Month Year}}
+\author{Kaiwen Du, Nicholas Tran\\
+  \normalsize Department of Mathematics and Computer Science\\
+  \normalsize Santa Clara University}
+\date{September 2026}
 
 \begin{document}
 \maketitle
@@ -55,15 +57,20 @@ PreActResNet-18 models on CIFAR-10 for 200 epochs under pixel-only,
 low-frequency-only, and epoch-wise mixed-domain projected gradient descent
 (PGD) training. Each condition is evaluated across five seeds using clean,
 pixel-PGD-20, low-frequency DCT-masked PGD-20, and per-example conjunction
-metrics. \TBD{State the final central result in one or two quantitative
-sentences after confirming the analysis protocol and statistical claims.}
+metrics. Under pixel-only training, mean pixel robustness peaked at 51.22\%
+at epoch 105 and fell by 8.56 percentage points by epoch 200. In contrast,
+matched-domain robustness under low-frequency-only training declined by just
+0.05 points from its 92.74\% peak, although pixel and conjunction accuracy
+remained at 0.00\%. Mixed-domain training produced schedule-dependent
+oscillations: mean pixel robustness was 42.36\% after pixel-training epochs
+and 3.53\% after low-frequency-training epochs. These results show that the
+observed robust-overfitting trajectory depends strongly on the perturbation
+domain and that once-per-epoch random mixing yields domain-specialized states
+rather than stable robustness across both evaluated attacks.
 \end{abstract}
 
-\noindent\textbf{Drafting convention.} This is a complete report structure,
-not a final claims document. Red \TBD{TBD markers} identify prose, analysis,
-or presentation choices that require author confirmation. The numerical
-aggregate table in \cref{tab:main-results} is transcribed from the current
-five-seed summaries and should be independently checked before submission.
+% DRAFTING NOTE: Red TBD markers identify items requiring author confirmation.
+% Independently verify Table 3 against the five-seed summaries before submission.
 
 \section{Introduction}
 \label{sec:introduction}
@@ -127,9 +134,12 @@ attack \cite{goodfellow2015,madry2018}. In adversarial training, the model is
 optimized on such attacked examples rather than treating the attack only as a
 post-hoc evaluation.
 
-\TBD{Add a short sentence here explaining why PGD-10 is used for training and
-PGD-20 for the primary checkpoint evaluation, including an appropriately
-careful statement about attack strength.}
+We use PGD-10 during training to keep the cost of adversarial-example
+generation manageable across 200 epochs, while PGD-20 allocates more attack
+iterations to the primary checkpoint evaluation. The additional iterations
+are intended to provide a more thorough finite-step search under the same
+perturbation budget, but they do not guarantee a worst-case perturbation or
+certify robustness.
 
 \subsection{Robust overfitting}
 Rice et al.~\cite{rice2020} documented robust overfitting across data sets and
@@ -152,10 +162,17 @@ remain weak for another \cite{tramer2019,maini2020}. Recent work also relates
 heterogeneous threat models to distinct spectral signatures and possible
 negative transfer \cite{xie2026}.
 
-\TBD{Use this subsection to distinguish the present experiment from prior
-multi-attack objectives such as AVG, MAX, and MSD. The mixed-domain condition
-chooses one domain for an entire epoch; it is not a per-batch or per-step
-worst-case union-training objective.}
+Tram\`er and Boneh's AVG and MAX strategies generate adversarial examples from
+each threat model for every training input, then respectively train on all of
+them or only on the example with the greatest loss \cite{tramer2019}. Maini
+et al.'s Multi Steepest Descent (MSD) instead incorporates the threat-model
+choice into the inner maximization by selecting the highest-loss candidate
+direction at every attack step \cite{maini2020}. The mixed-domain condition in
+this report does neither: a seeded random choice selects pixel-space or
+low-frequency PGD once per epoch, and every batch in that epoch uses the
+selected attack. It is therefore a stochastic alternation between
+single-domain training objectives, not a per-example worst-case optimization
+over the union of the two threat models.
 
 \section{Methods}
 \label{sec:methods}
