@@ -328,21 +328,25 @@ formal repeated-measures comparison will be included.}
 
 \subsection{Aggregate checkpoint summaries}
 \label{sec:aggregate-results}
-\Cref{tab:main-results} provides a compact transcription of the current
-five-seed aggregate summaries. It is included now to anchor the planned
-results narrative; retain only values regenerated directly from the final CSVs.
-For pixel and conjunction metrics, the peak rows are identical or nearly
-identical in the present aggregate outputs. That observation should be
-described as an empirical result of this evaluation protocol, not as a general
-equivalence between the metrics.
+\Cref{tab:main-results} summarizes the trajectories obtained from five seeds
+per training condition. Each run contributed 40 checkpoints, evaluated every
+five epochs from epoch 5 through epoch 200. The three conditions exhibit
+distinct behavior. Pixel-only training shows a clear post-peak decline under
+pixel-PGD-20, whereas low-frequency-only training remains stable under its
+matched low-frequency evaluation but provides no measured pixel-PGD-20
+robustness. Epoch-wise mixed-domain training does not converge to stable
+robustness across both evaluations; instead, its measurements depend strongly
+on the domain used in the most recent training epoch.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Current five-seed aggregate results. Accuracy values are percentages
-(mean $\pm$ one standard deviation) at epoch 200. Peak and decline are based
-on the mean trajectory. \TBD{Regenerate and verify every entry from the final
-CSV files before submission.}}
+\caption{Five-seed checkpoint-evaluation results. Epoch-200 accuracy values
+are means $\pm$ sample standard deviations in percentage points. Peak values
+and robust-overfitting gaps (ROGs) are calculated from the mean trajectory;
+the parenthesized value is the peak epoch, with the earliest checkpoint used
+to resolve ties. All evaluations use the finite-step attacks defined in
+\cref{sec:attacks}.}
 \label{tab:main-results}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lrrrrrrrr@{}}
@@ -350,111 +354,177 @@ CSV files before submission.}}
 & \multicolumn{4}{c}{Epoch-200 accuracy (\%)}
 & \multicolumn{2}{c}{Pixel robustness} & \multicolumn{2}{c}{Low-frequency robustness} \\
 \cmidrule(lr){2-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
-Condition & Clean & Pixel & Low freq. & Conjunction & Peak (epoch) & Decline & Peak (epoch) & Decline \\
+Condition & Clean & Pixel & Low freq. & Conjunction & Peak (epoch) & ROG & Peak (epoch) & ROG \\
 \midrule
-Pixel-only & $82.01\pm0.30$ & $35.22\pm0.67$ & $72.74\pm0.25$ & $35.22\pm0.67$ & $44.73$ (105) & $9.51$ & $75.44$ (105) & $2.70$ \\
-Low-frequency-only & $88.11\pm0.33$ & $0.00\pm0.00$ & $84.50\pm0.56$ & $0.00\pm0.00$ & $0.01$ (100) & $0.01$ & $84.50$ (200) & $0.00$ \\
-Mixed-domain & $88.34\pm3.34$ & $17.80\pm12.79$ & $82.97\pm3.93$ & $17.80\pm12.79$ & $37.93$ (85) & $20.13$ & $84.39$ (195) & $1.42$ \\
+Pixel-only & $84.40\pm0.09$ & $42.66\pm0.22$ & $76.48\pm0.26$ & $42.66\pm0.22$ & $51.22$ (105) & $8.56$ & $78.36$ (155) & $1.88$ \\
+Low-frequency-only & $94.28\pm0.22$ & $0.00\pm0.00$ & $92.70\pm0.28$ & $0.00\pm0.00$ & $0.00$ (5) & $0.00$ & $92.74$ (195) & $0.05$ \\
+Mixed-domain & $90.33\pm3.45$ & $19.33\pm14.28$ & $85.20\pm4.29$ & $19.33\pm14.27$ & $40.80$ (85) & $21.47$ & $86.92$ (195) & $1.72$ \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\paragraph{Results narrative to complete.}
-\TBD{Write a concise paragraph that answers the research question from the
-table and curves. It should distinguish observed trajectory differences from
-causal explanation, report the large late-training variation in mixed-domain
-pixel robustness, and avoid calling the pixel-PGD measurement a robustness
-certificate.}
+The results therefore answer the research question descriptively: the observed
+robust-overfitting trajectory depends on the training and evaluation domains.
+The conventional post-peak decline appears consistently in the pixel-only
+condition, while matched-domain low-frequency accuracy changes by only
+0.05 percentage points after its aggregate peak. The mixed condition displays
+large domain-conditioned oscillations rather than stable simultaneous
+robustness. These values characterize the specified PGD-20 evaluations and are
+not robustness certificates or evidence of a causal mechanism.
 
 \subsection{Pixel-only control}
 \label{sec:pixel-results}
 The pixel-only control displays the expected signature of robust overfitting
 under pixel-PGD-20: aggregate pixel robustness peaks at epoch 105 and falls by
-9.51 percentage points by epoch 200. Low-frequency robustness is higher and
-has a smaller aggregate decline. Pixel robust test loss reaches its reported
-minimum near the pixel-robustness peak and increases strongly later in training,
-whereas clean loss remains low.
+8.56 percentage points, from 51.22\% to 42.66\%, by epoch 200. Every seed
+reaches its individual pixel-robustness peak at epoch 105. Low-frequency
+robustness peaks later, at 78.36\% at epoch 155, and ends at 76.48\%, a smaller
+1.88-point decline. Mean pixel robust loss reaches its minimum of 1.291 at
+epoch 105 and rises to 3.223 by epoch 200, while the final clean accuracy
+remains 84.40\%. Pixel and conjunction accuracy are effectively identical
+throughout this condition, indicating that pixel-PGD-20 is the binding one of
+the two attacks under this evaluation protocol.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{pixel-only/overall/po_eval_results_curves.pdf}
-  \caption{Pixel-only five-seed evaluation trajectories. \TBD{Replace this
-  caption with a self-contained description of each panel, uncertainty shading,
-  the checkpoint cadence, and the substantive comparison the reader should
-  take from the figure.}}
+  \caption{Pixel-only five-seed checkpoint evaluation. The left panel shows
+  mean clean, pixel-PGD-20, low-frequency-PGD-20, and conjunction accuracy;
+  the right panel shows the corresponding clean and attacked cross-entropy
+  losses. Shaded bands denote one sample standard deviation across seeds at
+  each of the 40 checkpoints evaluated at five-epoch intervals. Pixel
+  robustness peaks at epoch 105 and subsequently declines by 8.56 percentage
+  points, while low-frequency robustness declines by 1.88 points from its
+  later peak.}
   \label{fig:pixel-eval}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{pixel-only/overall/po_train_results_curves.pdf}
-  \caption{Pixel-only training dynamics from logged PGD-10 training metrics.
-  \TBD{Clarify which quantities are averaged and why training-time PGD-10
-  metrics should not be directly equated with checkpoint PGD-20 evaluation.}}
+  \caption{Pixel-only training dynamics averaged across five seeds; shaded
+  bands denote one sample standard deviation. The left panel reports training
+  and in-training test accuracy, and the right reports training robust loss and
+  in-training test loss. Training robustness is measured against the pixel
+  PGD-10 attack used for optimization, and the logged test-robust quantity also
+  uses pixel-PGD-10. These logged quantities illustrate optimization dynamics
+  but are not directly comparable to the separately computed checkpoint
+  PGD-20 results in \cref{fig:pixel-eval}.}
   \label{fig:pixel-training}
 \end{figure}
 
 \subsection{Low-frequency-only condition}
 \label{sec:low-frequency-results}
-The low-frequency-only condition reaches its highest reported low-frequency
-robust accuracy at the final checkpoint and exhibits essentially zero observed
-pixel-PGD-20 and conjunction accuracy. Its clean and low-frequency robust
-losses decline through epoch 200, while pixel robust loss remains high.
+The low-frequency-only condition produces high and stable matched-domain
+accuracy. Mean low-frequency robustness reaches 92.74\% at epoch 195 and ends
+at 92.70\%, a decline of only 0.05 percentage points; its final clean accuracy
+is 94.28\%. By contrast, pixel-PGD-20 and conjunction accuracy are 0.00\% at
+every evaluated checkpoint for every seed. Low-frequency robust loss reaches
+its minimum of 0.266 at epoch 105 and ends at 0.318. Thus, under these
+finite-step evaluations, robustness learned against the restricted attack
+does not transfer to the pixel-space attack.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_eval_results_curves.pdf}
-  \caption{Low-frequency-only five-seed evaluation trajectories. \TBD{Explain
-  the sustained low-frequency robustness, near-zero observed pixel-PGD-20
-  robustness, and what this does and does not establish about transfer between
-  the two finite-step evaluations.}}
+  \caption{Low-frequency-only five-seed checkpoint evaluation, using the same
+  panel definitions, checkpoint cadence, and sample-standard-deviation bands
+  as \cref{fig:pixel-eval}. Low-frequency-PGD-20 accuracy remains high and
+  peaks at 92.74\% at epoch 195, whereas pixel-PGD-20 and conjunction accuracy
+  remain at 0.00\% throughout. This establishes a lack of measured transfer
+  under the specified finite-step attacks, not a certified set-wise separation
+  between the threat models.}
   \label{fig:lfo-eval}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_train_results_curves.pdf}
-  \caption{Low-frequency-only training dynamics. \TBD{Add the key comparison
-  with \cref{fig:pixel-training} and define any loss or accuracy labels whose
-  training-domain meaning could be ambiguous.}}
+  \caption{Low-frequency-only training dynamics averaged across five seeds;
+  shaded bands denote one sample standard deviation. Panels and line types
+  follow \cref{fig:pixel-training}, but the training robust accuracy and loss
+  use the active low-frequency PGD-10 attack. The in-training test-robust curves
+  use pixel-PGD-10 in every condition, explaining their sharp contrast with
+  the matched-domain training curves and with the low-frequency-PGD-20
+  checkpoint results in \cref{fig:lfo-eval}.}
   \label{fig:lfo-training}
 \end{figure}
 
 \subsection{Mixed-domain condition}
 \label{sec:mixed-results}
-The mixed-domain aggregate maintains high low-frequency robustness late in
-training but has an earlier pixel-robustness peak at epoch 85 and a larger
-20.13 percentage-point post-peak pixel decline. The epoch-200 standard
-deviation of mixed-domain pixel robustness is 12.79 percentage points, so the
-aggregate curve should be interpreted alongside the individual seed curves.
+The mixed-domain condition yields an apparent aggregate pixel-robustness peak
+of 40.80\% and conjunction peak of 40.79\% at epoch 85. By epoch 200, these
+metrics fall to 19.33\% and 19.33\%, respectively, corresponding to raw gaps
+of 21.47 and 21.46 percentage points. These gaps are confounded by the
+epoch-wise attack schedule. All five seeds used pixel training at epoch 85,
+whereas only seed 42 used pixel training at epoch 200. Across the 200
+seed--checkpoint observations, mean pixel robustness is 42.36\% immediately
+after pixel-training epochs and 3.53\% after low-frequency-training epochs;
+the point-biserial correlation between the most recent domain and pixel
+robustness is $r=0.971$. Moreover, individual seeds reach their conjunction
+peaks between epochs 115 and 160, not at the aggregate peak of epoch 85.
+
+This recency effect also accounts for the large epoch-200 variation:
+pixel-PGD-20 and conjunction accuracy have sample standard deviations of
+14.28 and 14.27 percentage points. Low-frequency robustness is higher and
+more stable in aggregate, peaking at 86.92\% at epoch 195 and ending at
+85.20\%. The mixed condition therefore demonstrates alternation between
+domain-specialized states, rather than providing evidence that conventional
+robust overfitting alone caused the raw 21.46-point conjunction gap.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_results_curves.pdf}
-  \caption{Mixed-domain five-seed evaluation trajectories. \TBD{Describe the
-  mixed schedule and emphasize the large seed-to-seed variation in pixel and
-  conjunction robustness. Do not attribute the pattern to a mechanism not
-  tested in this study.}}
+  \caption{Mixed-domain five-seed checkpoint evaluation, using the same panel
+  definitions, checkpoint cadence, and sample-standard-deviation bands as
+  \cref{fig:pixel-eval}. Each seed selects one attack domain per epoch by a
+  seeded fair random choice. Consequently, the aggregate pixel and conjunction
+  curves combine seeds whose most recent attack domains can differ. Their wide
+  bands and apparent peak-to-final gaps primarily reflect this schedule-linked
+  recency effect; the figure does not isolate conventional robust overfitting
+  as the cause.}
   \label{fig:mixed-eval}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_train_results_curves.pdf}
-  \caption{Mixed-domain training dynamics. \TBD{State whether the logged
-  training robustness is stratified by the epoch's selected domain; if not,
-  explain why it is not a like-for-like comparison across all epochs.}}
+  \caption{Mixed-domain training dynamics averaged across five seeds; shaded
+  bands denote one sample standard deviation. Training robust accuracy and
+  loss are measured using whichever PGD-10 domain is selected for that seed
+  and epoch, while the in-training test-robust curves always use pixel-PGD-10.
+  The training robust curve is therefore neither stratified by domain nor a
+  like-for-like metric across epochs or seeds; it should be read as an
+  optimization trace rather than simultaneous robustness to both attacks.}
   \label{fig:mixed-training}
 \end{figure}
 
 \subsection{Cross-condition comparison}
 \label{sec:cross-condition}
-\TBD{Use this subsection for the final comparison rather than repeating three
-figure captions. Address: (i) peak timing, (ii) best-versus-final gaps, (iii)
-clean-versus-robust behavior, (iv) seed variability, and (v) the intended
-scope of any claim about frequency domain. A single combined figure or a
-compact comparison table can be added here if it makes the answer clearer.}
+The comparison reveals a trade-off between matched-domain performance and
+measured coverage across attacks. Pixel-only training attains the highest
+final measured pixel and conjunction robustness, but both metrics peak at
+epoch 105 and decline by 8.56 percentage points. The
+low-frequency-only condition attains the highest final clean and
+low-frequency robustness and shows no practically meaningful matched-domain
+overfitting, but it never correctly classifies a test example under both
+attacks. Thus, strong robustness to the restricted low-frequency attack does
+not by itself provide robustness to pixel-PGD-20.
+
+Epoch-wise mixed training does not resolve this trade-off. Its final mean
+clean and low-frequency accuracies lie between the two single-domain
+conditions, but its pixel and conjunction results vary sharply with the most
+recent training domain. Unlike the pixel-only condition, whose five seeds all
+peak at the same epoch and have tightly clustered final accuracies, the mixed
+condition's aggregate peak does not represent the individual seeds' peak
+epochs and its final pixel standard deviation reaches 14.28 points. Under the
+protocol studied here, the frequency restriction therefore changes both the
+apparent robust-overfitting trajectory and cross-domain transfer, while
+once-per-epoch random mixing produces rapid specialization rather than stable
+joint robustness. These conclusions are limited to the specified PGD-20
+measurements and do not establish robustness against adaptive or stronger
+attacks.
 
 \section{Discussion}
 \label{sec:discussion}
