@@ -82,7 +82,7 @@ can change every image coordinate within an $\linf$ budget, whereas a
 frequency-restricted attack constrains its perturbation to smooth,
 low-frequency patterns. Prior work links frequency content to robust features
 and shows that robustness can trade off across heterogeneous perturbation
-models \cite{guo2019,bu2023,tramer2019,maini2020}. It is therefore useful to
+models \cite{guo2020,bu2023,tramer2019,maini2020}. It is therefore useful to
 ask not only whether robustness overfits, but also under which evaluated threat
 model it does so.
 
@@ -144,7 +144,7 @@ and its epoch-200 value; \cref{sec:analysis-plan} gives the precise definition.
 \subsection{Frequency-restricted and multi-threat robustness}
 The discrete cosine transform (DCT) represents images with spatial-frequency
 coefficients. Restricting a perturbation to low-frequency coefficients produces
-smooth, broad image changes \cite{guo2019}. Frequency-aware work suggests that
+smooth, broad image changes \cite{guo2020}. Frequency-aware work suggests that
 frequency components can make different contributions to prediction and robust
 learning \cite{chen2022,bu2023}. Meanwhile, robustness against multiple
 perturbation models can be imbalanced: a model trained for one threat may
@@ -233,7 +233,8 @@ pixel-versus-low-frequency epoch counts and schedules for all five mixed runs.}
 
 \subsection{Optimization and implementation details}
 \label{sec:implementation}
-Models are PreActResNet-18 classifiers trained on CIFAR-10. Training uses
+Models are PreActResNet-18 classifiers \cite{he2016} trained on CIFAR-10
+\cite{krizhevsky2009}. Training uses
 random $32\times32$ crops with four-pixel padding and random horizontal flips;
 test images receive tensor conversion only. Inputs are normalized with CIFAR-10
 channel means $(0.4914,0.4822,0.4465)$ and standard deviations
@@ -639,58 +640,72 @@ or restart ablations. State explicitly if a planned check was not run.}
 \bibitem{goodfellow2015}
 I. J. Goodfellow, J. Shlens, and C. Szegedy.
 \newblock Explaining and Harnessing Adversarial Examples.
-\newblock In \emph{International Conference on Learning Representations}, 2015.
+\newblock In \emph{International Conference on Learning Representations
+(ICLR)}, 2015.
 
 \bibitem{madry2018}
 A. Madry, A. Makelov, L. Schmidt, D. Tsipras, and A. Vladu.
 \newblock Towards Deep Learning Models Resistant to Adversarial Attacks.
-\newblock In \emph{International Conference on Learning Representations}, 2018.
-\newblock \TBD{Confirm whether this foundational PGD citation is required by
-the final bibliography style and add its persistent identifier if desired.}
+\newblock In \emph{International Conference on Learning Representations
+(ICLR)}, 2018.
 
 \bibitem{rice2020}
 L. Rice, E. Wong, and J. Z. Kolter.
 \newblock Overfitting in Adversarially Robust Deep Learning.
-\newblock In \emph{International Conference on Machine Learning}, 2020.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine
+Learning}, PMLR 119:8093--8104, 2020.
 
 \bibitem{yu2022}
 C. Yu, B. Han, L. Shen, J. Yu, C. Gong, M. Gong, and T. Liu.
 \newblock Understanding Robust Overfitting of Adversarial Training and Beyond.
-\newblock In \emph{International Conference on Machine Learning}, 2022.
+\newblock In \emph{Proceedings of the 39th International Conference on Machine
+Learning}, PMLR 162:25595--25610, 2022.
 
-\bibitem{guo2019}
+\bibitem{guo2020}
 C. Guo, J. S. Frank, and K. Q. Weinberger.
 \newblock Low Frequency Adversarial Perturbation.
-\newblock In \emph{Conference on Uncertainty in Artificial Intelligence}, 2019.
+\newblock In \emph{Proceedings of the 35th Uncertainty in Artificial
+Intelligence Conference}, PMLR 115:1127--1137, 2020.
 
 \bibitem{chen2022}
 Y. Chen, Q. Ren, and J. Yan.
 \newblock Rethinking and Improving Robustness of Convolutional Neural Networks:
 A Shapley Value-based Approach in Frequency Domain.
-\newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
+\newblock In \emph{Advances in Neural Information Processing Systems 35}, 2022.
 
 \bibitem{bu2023}
 Q. Bu, D. Huang, and H. Cui.
 \newblock Towards Building More Robust Models with Frequency Bias.
-\newblock In \emph{International Conference on Computer Vision}, 2023.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on
+Computer Vision}, pages 4402--4411, 2023.
 
 \bibitem{tramer2019}
 F. Tram\`er and D. Boneh.
 \newblock Adversarial Training and Robustness for Multiple Perturbations.
-\newblock In \emph{Advances in Neural Information Processing Systems}, 2019.
+\newblock In \emph{Advances in Neural Information Processing Systems 32}, 2019.
 
 \bibitem{maini2020}
 P. Maini, E. Wong, and J. Z. Kolter.
 \newblock Adversarial Robustness Against the Union of Multiple Perturbation
 Models.
-\newblock In \emph{International Conference on Machine Learning}, 2020.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine
+Learning}, PMLR 119:6640--6650, 2020.
 
 \bibitem{xie2026}
 M. Xie, Y. He, and M. Fang.
 \newblock TaFD: Threat-Aware Frequency Decoupling for Adversarial Robustness
 against Heterogeneous Attacks.
-\newblock arXiv preprint arXiv:2606.17540, 2026.
-\newblock \TBD{Verify the final bibliographic metadata and availability date.}
+\newblock arXiv:2606.17540 [cs.CV], 2026.
+
+\bibitem{he2016}
+K. He, X. Zhang, S. Ren, and J. Sun.
+\newblock Identity Mappings in Deep Residual Networks.
+\newblock In \emph{Computer Vision---ECCV 2016}, pages 630--645, 2016.
+
+\bibitem{krizhevsky2009}
+A. Krizhevsky.
+\newblock Learning Multiple Layers of Features from Tiny Images.
+\newblock Technical report, University of Toronto, 2009.
 
 \end{thebibliography}
 
