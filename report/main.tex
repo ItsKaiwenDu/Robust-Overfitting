@@ -789,16 +789,17 @@ threat-model caveat.
 
 \begin{table}[htbp]
 \centering
-\caption{Pixel attack-strength diagnostic on a fixed 256-image test subset.
-For PGD-50, the per-example candidate with the highest cross-entropy loss
-among three random restarts is used. Accuracy is in percent.}
+\caption{Pixel attack-strength diagnostic for pixel-only seed 42 on a fixed
+256-image test subset. PGD-20 uses one random restart; for PGD-50, the
+per-example candidate with the highest cross-entropy loss among three random
+restarts is used. Accuracy is in percent.}
 \label{tab:attack-strength}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-Checkpoint & PGD-20 (one restart) & PGD-50 (three restarts) & Difference & PGD-50 loss \\
+Checkpoint & PGD-20 & PGD-50 & $\Delta$ & PGD-50 loss \\
 \midrule
-Pixel-only seed 42, epoch 105 & 49.22 & 48.83 & $-0.39$ & 1.319 \\
-Pixel-only seed 42, epoch 200 & 38.67 & 38.28 & $-0.39$ & 3.529 \\
+Epoch 105 & 49.22 & 48.83 & $-0.39$ & 1.319 \\
+Epoch 200 & 38.67 & 38.28 & $-0.39$ & 3.529 \\
 \bottomrule
 \end{tabular}
 \end{table}
