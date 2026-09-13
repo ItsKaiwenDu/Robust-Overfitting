@@ -1,4 +1,4 @@
-% Final report draft skeleton for the Robust-Overfitting project.
+% Final report for the Robust-Overfitting project.
 % Compile from the report directory so the figure paths resolve as written.
 \documentclass[11pt]{article}
 
@@ -173,8 +173,9 @@ over the union of the two threat models.
 \subsection{Notation and threat models}
 Images are $x\in[0,1]^{3\times32\times32}$ with labels $y\in\{1,\ldots,10\}$.
 Let $\mathcal{B}_\infty(\epsilon)=\{\delta:\lVert\delta\rVert_\infty
-\leq\epsilon\}$, where $\epsilon=8/255$. The pixel-space threat model allows
-any $\delta\in\mathcal{B}_\infty(\epsilon)$. The low-frequency threat model
+\leq\epsilon\}$, where $\epsilon=8/255$. The pixel-space threat set is
+$\mathcal{S}_x=\{\delta\in\mathcal{B}_\infty(\epsilon):x+\delta\in[0,1]^{3\times32\times32}\}$.
+The low-frequency threat model
 applies a two-dimensional DCT to the perturbation, retains an $8\times8$
 top-left block of coefficients per channel, and transforms the result back to
 pixel space. Thus it retains $64$ of the $1{,}024$ coefficients per channel
@@ -193,9 +194,9 @@ the resulting image is then clipped to $[0,1]$.
 \subsection{Attack generation}
 \label{sec:attacks}
 For pixel-space PGD, the attack begins from a uniformly random perturbation in
-the $\linf$ ball and iterates
+the $\linf$ ball, clips the perturbed image to $[0,1]$, and iterates
 \begin{equation}
-  \delta_{t+1}=\Pi_{\mathcal{B}_\infty(\epsilon)}
+  \delta_{t+1}=\Pi_{\mathcal{S}_x}
   \left(\delta_t+\alpha\,\mathrm{sign}\left(\nabla_\delta
   \ell(f_\theta(x+\delta_t),y)\right)\right),
   \qquad \alpha=2/255.
@@ -204,8 +205,12 @@ the $\linf$ ball and iterates
 For low-frequency PGD, the random start and gradient direction are projected
 with $P_8$. The projected direction is normalized by its per-example maximum
 absolute value before its $\alpha$-sized update, then the perturbation is
-uniformly rescaled if it exceeds $\epsilon$. Both attacks are white-box,
-untargeted cross-entropy attacks.
+uniformly rescaled if it exceeds $\epsilon$. At every step, the loss is
+computed on the image clipped to $[0,1]$, while the stored low-frequency
+perturbation remains unclipped. Both attacks are white-box, untargeted
+cross-entropy attacks; $f_\theta$ includes the input normalization described
+below. Attack generation uses evaluation-mode BatchNorm statistics.
+Each primary evaluation uses one random start and returns the final iterate.
 
 The implementation checks in \cref{app:checks} confirm that the DCT
 round-trip and masked projection are numerically accurate before final image
@@ -220,8 +225,12 @@ budget to floating-point precision.
 \subsection{Training conditions}
 \label{sec:conditions}
 All conditions use the same model, data, optimizer, learning-rate schedule,
-and $\linf$ budget. The only intended treatment difference is the attack domain
-used to generate adversarial training examples.
+and $\linf$ budget. They differ in the attack used to generate training
+examples. The low-frequency attack changes both the search domain and the
+update rule: it uses normalized projected gradients and uniform rescaling,
+whereas pixel PGD uses signed gradients and coordinate-wise clipping. The
+comparison therefore evaluates these attack procedures together, rather than
+isolating frequency restriction from attack optimization.
 
 \begin{table}[htbp]
 \centering
@@ -243,10 +252,8 @@ batches in that epoch use the selected attack. \\
 The mixed-domain random-number generator is deliberately separate from data
 shuffling, augmentation, and PGD random starts. Checkpoints save the current
 domain, the complete domain schedule so far, the seed, and DCT cutoff.
-The realized schedule counts and the domains at the two checkpoints most
-relevant to the aggregate pixel result are reported in
-\cref{app:schedules}; no 200-epoch timeline is needed to establish the
-schedule imbalance at epoch 200.
+\Cref{app:schedules} reports the realized domain counts and the domains at
+the aggregate pixel peak and final checkpoint.
 
 \subsection{Optimization and implementation details}
 \label{sec:implementation}
@@ -261,8 +268,7 @@ decays by a factor of $0.1$ after epochs 100 and 150.
 
 \begin{table}[htbp]
 \centering
-\caption{Fixed experimental configuration. Confirm this table against the
-exact commands and environment used for the final runs.}
+\caption{Experimental configuration reported for the full runs.}
 \label{tab:configuration}
 \begin{tabular}{@{}ll@{}}
 \toprule
@@ -274,7 +280,7 @@ Full training duration & 200 epochs \\
 Seeds & 42, 43, 44, 45, 46 \\
 Batch size & 128 \\
 Optimizer & SGD, momentum $0.9$, weight decay $5\times10^{-4}$ \\
-Learning rate & $0.1$, multiplied by $0.1$ at epochs 100 and 150 \\
+Learning rate & $0.1$, multiplied by $0.1$ after epochs 100 and 150 \\
 Training attacks & PGD-10, $\epsilon=8/255$, $\alpha=2/255$ \\
 Evaluation attacks & PGD-20, $\epsilon=8/255$, $\alpha=2/255$ \\
 Low-frequency mask & $8\times8$ retained DCT block per channel \\
@@ -283,8 +289,8 @@ Checkpoint schedule & Every 5 epochs: 40 checkpoints from 5 through 200 \\
 \end{tabular}
 \end{table}
 
-Project records identify NVIDIA A10 (24~GB PCIe) Lambda Labs instances as the
-full-training platform. The retained TensorBoard logs for all 15 full runs
+We used NVIDIA A10 (24~GB PCIe) instances on Lambda Labs for all full
+training runs. The retained TensorBoard logs for all 15 full runs
 span 5.83 to 5.91 hours from their first to final scalar event; this is a
 logging-time measure, not a complete cloud-billing or end-to-end wall-clock
 measure. The source code seeds Python, NumPy, and PyTorch for every run, seeds
@@ -294,7 +300,7 @@ deterministic-algorithms mode. Exact cloud OS, CUDA-driver, Python, PyTorch,
 and torchvision versions were not preserved in a run manifest and are not
 inferred from the current local checking environment.
 
-\section{Evaluation and Analysis Plan}
+\section{Evaluation and Analysis}
 \label{sec:analysis-plan}
 
 \subsection{Checkpoint evaluation}
@@ -311,15 +317,19 @@ Cross-entropy loss is additionally recorded for clean, pixel-PGD, and
 low-frequency-PGD inputs. Values in the overall CSVs are the arithmetic mean
 and sample standard deviation across five seeds at each checkpoint.
 
-\paragraph{Important terminology.}
-The code's fourth quantity is a per-example \emph{conjunction} of correctness
-under two separately generated attacks. It is a useful strict summary, but it
-is not itself a single adaptive optimization over the union of threat sets.
-Because a low-frequency, $\linf$-bounded perturbation is structurally
-restricted relative to the pixel $\linf$ threat set, this comparison also
-requires care: finite-step PGD measurements should not be interpreted as a
-certificate of set-wise robustness. This distinction should be retained in the
-final report and captions.
+\Cref{app:checks} compares single-start PGD-20 with three-restart PGD-50
+on two pixel-only checkpoints using a fixed 256-image subset. This diagnostic
+does not assess the strength of the primary low-frequency attack.
+
+\paragraph{Metric interpretation.}
+Conjunction accuracy measures per-example correctness under both generated
+attacks; it does not require a correct clean prediction. The CSVs and plot
+legends call this quantity ``union robustness.'' It is an empirical two-attack
+summary, not exact worst-case accuracy over a threat set. Every final
+low-frequency perturbation remains within the pixel $\linf$ threat set even
+after image clipping, so the union of the two threat sets is the pixel threat
+set itself. Differences between their measured accuracies reflect restricted
+search and finite-step attack optimization.
 
 \subsection{Robust-overfitting measures}
 Let $A_m(e)$ denote mean test accuracy for metric $m$ at evaluated checkpoint
@@ -329,43 +339,25 @@ epoch $e\in\E=\{5,10,\ldots,200\}$. Define
   \mathrm{ROG}_m &= A_m(e_m^*)-A_m(200),
   \label{eq:robust-overfitting-gap}
 \end{align}
-where ROG denotes the robust-overfitting gap in percentage points. Ties must
-be resolved using a predeclared rule; this draft uses the earliest evaluated
-epoch. Aggregate peaks and ROGs in \cref{tab:main-results} are calculated
-from the condition mean trajectory, whereas \cref{app:per-seed} reports each
-seed's own earliest peak. The five-seed summaries use mean $\pm$ sample
+where ROG denotes the robust-overfitting gap in percentage points. Ties are
+resolved by choosing the earliest evaluated epoch. Aggregate peaks and ROGs
+in \cref{tab:main-results} are calculated
+from the condition mean trajectory using unrounded values, whereas
+\cref{app:per-seed} reports each seed's own earliest peak. For mixed-domain
+training, ROG is a descriptive gap that also reflects the attack schedule.
+The five-seed summaries use mean $\pm$ sample
 standard deviation descriptively; this study does not report confidence
 intervals or formal hypothesis tests.
 
-\subsection{Planned reporting checks}
-\begin{itemize}
-  \item Report means and standard deviations across seeds, plus individual
-  seed trajectories in an appendix or supplement.
-  \item Keep model selection separate from test reporting: the test curve is
-  descriptive here and must not be presented as an unbiased validation-based
-  early-stopping procedure.
-  \item An attack-strength diagnostic is reported in \cref{app:checks}. It
-  compares the primary single-restart PGD-20 attack with a three-restart
-  PGD-50 attack on two selected pixel-only checkpoints. It is a limited check,
-  not a comprehensive robustness evaluation or certificate.
-  \item Uncertainty is descriptive only: mean $\pm$ sample standard deviation
-  summarizes the five seeds, without a preregistered or inferential test.
-\end{itemize}
+Test-set peaks describe the observed trajectories; they are not
+validation-selected early-stopping estimates.
 
 \section{Results}
 \label{sec:results}
 
-\subsection{Aggregate checkpoint summaries}
-\label{sec:aggregate-results}
-\Cref{tab:main-results} summarizes the trajectories obtained from five seeds
-per training condition. Each run contributed 40 checkpoints, evaluated every
-five epochs from epoch 5 through epoch 200. The three conditions exhibit
-distinct behavior. Pixel-only training shows a clear post-peak decline under
-pixel-PGD-20, whereas low-frequency-only training remains stable under its
-matched low-frequency evaluation but provides no measured pixel-PGD-20
-robustness. Epoch-wise mixed-domain training does not converge to stable
-robustness across both evaluations; instead, its measurements depend strongly
-on the domain used in the most recent training epoch.
+\Cref{tab:main-results} summarizes checkpoint accuracy across five seeds for
+each training condition. The following sections examine the trajectories and
+the relationship between mixed-domain performance and the training schedule.
 
 \begin{table}[htbp]
 \centering
@@ -394,15 +386,6 @@ Mixed-domain & $90.33\pm3.45$ & $19.33\pm14.28$ & $85.20\pm4.29$ & $19.33\pm14.2
 \end{tabular}%
 }
 \end{table}
-
-The results therefore answer the research question descriptively: the observed
-robust-overfitting trajectory depends on the training and evaluation domains.
-The conventional post-peak decline appears consistently in the pixel-only
-condition, while matched-domain low-frequency accuracy changes by only
-0.05 percentage points after its aggregate peak. The mixed condition displays
-large domain-conditioned oscillations rather than stable simultaneous
-robustness. These values characterize the specified PGD-20 evaluations and are
-not robustness certificates or evidence of a causal mechanism.
 
 \subsection{Pixel-only control}
 \label{sec:pixel-results}
@@ -463,9 +446,7 @@ does not transfer to the pixel-space attack.
   panel definitions, checkpoint cadence, and sample-standard-deviation bands
   as \cref{fig:pixel-eval}. Low-frequency-PGD-20 accuracy remains high and
   peaks at 92.74\% at epoch 195, whereas pixel-PGD-20 and conjunction accuracy
-  remain at 0.00\% throughout. This establishes a lack of measured transfer
-  under the specified finite-step attacks, not a certified set-wise separation
-  between the threat models.}
+  remain at 0.00\% throughout, showing no measured transfer to pixel-PGD-20.}
   \label{fig:lfo-eval}
 \end{figure}
 
@@ -492,11 +473,14 @@ epoch-wise attack schedule. All five seeds used pixel training at epoch 85,
 whereas only seed 42 used pixel training at epoch 200. Across the 200
 seed--checkpoint observations, mean pixel robustness is 42.36\% immediately
 after pixel-training epochs and 3.53\% after low-frequency-training epochs;
-the point-biserial correlation between the most recent domain and pixel
-robustness is $r=0.971$. Moreover, individual seeds reach their conjunction
+the point-biserial correlation is $r=0.971$, coding pixel training as 1
+and low-frequency training as 0. These pooled observations comprise 102
+pixel-training and 98 low-frequency-training checkpoints and include repeated
+measurements from each seed; the correlation is descriptive and does not
+adjust for epoch or training history. Individual seeds reach their conjunction
 peaks between epochs 115 and 160, not at the aggregate peak of epoch 85.
 
-This recency effect also accounts for the large epoch-200 variation:
+This schedule dependence is also consistent with the large epoch-200 variation:
 pixel-PGD-20 and conjunction accuracy have sample standard deviations of
 14.28 and 14.27 percentage points. Low-frequency robustness is higher and
 more stable in aggregate, peaking at 86.92\% at epoch 195 and ending at
@@ -509,8 +493,11 @@ robust overfitting alone caused the raw 21.46-point conjunction gap.
   \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_stratified.pdf}
   \caption{Mixed-domain checkpoint evaluation stratified by the attack domain
   used in the immediately preceding training epoch. Each point averages the
-  seeds with the indicated preceding domain; shaded bands show their sample
-  standard deviation. Pixel-PGD-20 robustness is consistently much higher
+  seeds with the indicated preceding domain. Group sizes vary from one to
+  five; shaded bands show sample standard deviation when at least two seeds
+  contribute. Singleton groups have zero-width bands, and epochs with no
+  contributing seeds are omitted. Pixel-PGD-20 robustness is consistently
+  much higher
   after pixel-training epochs, whereas low-frequency-PGD-20 robustness is
   higher after low-frequency-training epochs. This schedule-linked recency
   effect reveals alternating domain-specialized states rather than stable
@@ -531,57 +518,27 @@ robust overfitting alone caused the raw 21.46-point conjunction gap.
   \label{fig:mixed-training}
 \end{figure}
 
-\subsection{Cross-condition comparison}
-\label{sec:cross-condition}
-The comparison reveals a trade-off between matched-domain performance and
-measured coverage across attacks. Pixel-only training attains the highest
-final measured pixel and conjunction robustness, but both metrics peak at
-epoch 105 and decline by 8.56 percentage points. The
-low-frequency-only condition attains the highest final clean and
-low-frequency robustness and shows no practically meaningful matched-domain
-overfitting, but it never correctly classifies a test example under both
-attacks. Thus, strong robustness to the restricted low-frequency attack does
-not by itself provide robustness to pixel-PGD-20.
-
-Epoch-wise mixed training does not resolve this trade-off. Its final mean
-clean and low-frequency accuracies lie between the two single-domain
-conditions, but its pixel and conjunction results vary sharply with the most
-recent training domain. Unlike the pixel-only condition, whose five seeds all
-peak at the same epoch and have tightly clustered final accuracies, the mixed
-condition's aggregate peak does not represent the individual seeds' peak
-epochs and its final pixel standard deviation reaches 14.28 points. Under the
-protocol studied here, the frequency restriction therefore changes both the
-apparent robust-overfitting trajectory and cross-domain transfer, while
-once-per-epoch random mixing produces rapid specialization rather than stable
-joint robustness. These conclusions are limited to the specified PGD-20
-measurements and do not establish robustness against adaptive or stronger
-attacks.
-
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{Interpretation}
-The present trajectories are consistent with robust overfitting being
-evaluation-domain dependent in this experimental setting: pixel robustness
-shows a sizable best-versus-final gap in the pixel-only and mixed-domain
-aggregates, while low-frequency robustness declines less or remains highest at
-the end of training. The experiments alone do not identify why this happens.
-Possible explanations involving frequency bias, optimization dynamics, or
-negative transfer should be presented as hypotheses grounded in prior work,
-not as causal findings.
+Pixel-only training achieves the highest final pixel and conjunction accuracy,
+while low-frequency-only training achieves the highest final clean and
+low-frequency accuracy. Epoch-wise mixing does not provide stable robustness
+across both evaluated attacks.
 
-The hypothesis is supported in its deliberately narrow, descriptive form:
-changing the training domain changed the observed robust-accuracy trajectories.
-Pixel-only training produced a 51.22\% aggregate pixel-robustness peak at
-epoch 105 followed by an 8.56-point decline, whereas low-frequency-only
-training's matched low-frequency accuracy declined only 0.05 points from its
-peak. Mixed-domain training was distinct from both baselines, but not because
-it established stable coverage across attacks: pixel robustness averaged
-42.36\% after pixel-training epochs and 3.53\% after low-frequency-training
-epochs, with a point-biserial correlation of $r=0.971$ between the preceding
-domain and pixel robustness. Thus the results support evaluation-domain
-dependence and schedule sensitivity, but do not support a claim that epoch-wise
-mixing mitigates robust overfitting or reveals its causal mechanism.
+\subsection{Interpretation}
+The results support the hypothesis descriptively: the training attack changes
+the timing and shape of measured robustness. The small low-frequency accuracy
+gap does not imply that every
+measure remains stable: low-frequency test loss rises after its epoch-105
+minimum.
+
+These experiments do not isolate a causal mechanism. Frequency bias,
+optimization dynamics, and negative transfer are possible explanations,
+but distinguishing them requires further controls. In particular, the
+mixed-domain results do not show that epoch-wise mixing mitigates robust
+overfitting, and the high low-frequency accuracy still needs stronger
+matched-domain attack checks.
 
 \subsection{Practical implications}
 The control condition suggests that the final checkpoint can be substantially
@@ -596,24 +553,27 @@ every candidate checkpoint under the intended finite-step attack configuration,
 and select the checkpoint using a predeclared validation criterion. For a
 pixel-only deployment, that criterion can be pixel-PGD validation accuracy;
 for a multi-threat deployment, it should be a predeclared joint criterion,
-such as the lower of the two per-attack validation accuracies, rather than a
-post-hoc choice from test curves. The test set should then be evaluated once
+such as per-example conjunction accuracy under the chosen attacks. The
+minimum of the two aggregate accuracies can overstate this joint accuracy
+when the attacks trick different examples. The test set should then be evaluated
+once
 for the selected checkpoint, with each component attack reported separately.
 
 \section{Limitations and Threats to Validity}
 \label{sec:limitations}
 \begin{itemize}
   \item \textbf{Attack evaluation.} PGD-20 with one reported configuration is
-  not a proof of robustness. Stronger steps, restarts, adaptive attacks, and
-  broader attack suites may change measured accuracy.
+  not a proof of robustness. More iterations, additional restarts, adaptive
+  attacks, and broader attack suites may change measured accuracy. The
+  stronger-attack diagnostic covers only two pixel-only checkpoints; the
+  low-frequency and mixed-domain results have no comparable check.
   \item \textbf{Conjunction versus union attack.} The conjunction metric is
   calculated after two independently generated attacks; it is not an adaptive
-  inner maximization over their union. This must not be labeled an exact
-  worst-case union robustness result.
+  inner maximization over their union or an exact worst-case robustness result.
   \item \textbf{Nested threat structure.} With the same $\linf$ budget, the
-  low-frequency construction is a restricted perturbation family before
-  image-range clipping. Differences between finite-step attacks therefore need
-  an attack-optimization interpretation as well as a threat-family one.
+  final low-frequency perturbations lie within the pixel threat set despite
+  clipping-induced spectral leakage. Frequency restriction and the different
+  attack update rules are not isolated experimentally.
   \item \textbf{Scope.} The study uses one architecture, CIFAR-10, a single
   cutoff ($8$), one 200-epoch schedule, and five seeds. It does not establish
   generality across data sets, architectures, budgets, or frequency bands.
@@ -640,8 +600,8 @@ by 8.56 percentage points by epoch 200. Low-frequency-only training instead
 maintained 92.70\% final low-frequency robustness with a 0.05-point
 best-versus-final decline, while exhibiting 0.00\% measured pixel and
 conjunction robustness. Once-per-epoch mixed-domain training did not yield
-stable simultaneous robustness; its pixel robustness was strongly determined
-by the most recent training domain. These findings are limited to
+stable simultaneous robustness; its pixel robustness was strongly associated
+with the most recent training domain. These findings are limited to
 PreActResNet-18, CIFAR-10, the selected DCT cutoff, and the specified
 finite-step attacks; the most useful next experiment is a validation-selected,
 batch- or example-level multi-threat training objective evaluated under a
@@ -670,7 +630,7 @@ reproduction instructions are available at
 \url{https://github.com/ItsKaiwenDu/Robust-Overfitting}.
 
 \appendix
-\section{Per-seed Results and Additional Figures}
+\section{Per-seed Results}
 \label{app:per-seed}
 \Cref{tab:per-seed-pixel,tab:per-seed-low-frequency,tab:per-seed-mixed}
 provide the seed-level counterpart to the aggregate trajectories. The reported
@@ -683,8 +643,8 @@ conventional robust overfitting.
 
 \begin{table}[htbp]
 \centering
-\caption{Per-seed pixel-PGD-20 results for pixel-only training. Accuracy and
-gaps are percentage points.}
+\caption{Per-seed pixel-PGD-20 results for pixel-only training. Accuracy is in percent;
+gaps are in percentage points.}
 \label{tab:per-seed-pixel}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -702,7 +662,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \begin{table}[htbp]
 \centering
 \caption{Per-seed low-frequency-PGD-20 results for low-frequency-only
-training. Accuracy and gaps are percentage points.}
+training. Accuracy is in percent; gaps are in percentage points.}
 \label{tab:per-seed-low-frequency}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -720,7 +680,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \begin{table}[htbp]
 \centering
 \caption{Per-seed pixel-PGD-20 results for mixed-domain training. Accuracy
-and gaps are percentage points; unlike the pixel-only values, these raw gaps
+is in percent; gaps are in percentage points. These raw gaps
 are confounded by the epoch-level attack schedule.}
 \label{tab:per-seed-mixed}
 \begin{tabular}{@{}lrrrr@{}}
@@ -743,9 +703,7 @@ metadata stored in each epoch-200 checkpoint. Every schedule has 200 entries,
 matches the saved final attack domain, and uses the recorded cutoff of $8$.
 \Cref{tab:mixed-schedules} reports the realized balance. The schedules are
 near-balanced but not constrained to be exactly balanced, as intended by the
-independent seeded random choice. A full 200-epoch timeline is omitted because
-the counts and the two checkpoints relevant to the aggregate pixel peak make
-the reporting point more directly: all five runs ended epoch 85 with pixel
+independent seeded random choice. All five runs ended epoch 85 with pixel
 training, whereas only seed 42 did so at epoch 200.
 
 \begin{table}[htbp]
@@ -768,9 +726,9 @@ Seed & Pixel epochs & Low-frequency epochs & Epoch-85 domain & Epoch-200 domain 
 
 \section{Attack-Strength and Implementation Checks}
 \label{app:checks}
-All checks in this appendix use a fixed, approximately class-balanced
-256-image subset of the CIFAR-10 test set (selection seed 20260912). They are
-diagnostic checks only; the primary results remain the full-test-set,
+The attack checks use a fixed, approximately class-balanced 256-image subset
+of the CIFAR-10 test set (selection seed 20260912); the DCT algebra checks use
+random tensors. These are diagnostic checks only; the primary results remain the full-test-set,
 single-restart PGD-20 measurements reported in \cref{sec:results}.
 
 \paragraph{DCT and perturbation checks.}
@@ -784,8 +742,7 @@ clipping, the mean, 95th-percentile, and maximum fractions were 0.70\%,
 4.75\%, and 17.56\%, respectively. The maximum final perturbation norm was
 $0.03137258$, equal to $8/255$ to floating-point precision. Thus projection
 and budget enforcement behave as intended, while final image clipping creates
-some nonzero high-frequency leakage that should be retained in the
-threat-model caveat.
+some high-frequency leakage.
 
 \begin{table}[htbp]
 \centering
