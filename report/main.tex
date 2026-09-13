@@ -296,7 +296,7 @@ decays by a factor of $0.1$ after epochs 100 and 150.
 \centering
 \caption{Experimental configuration reported for the full runs.}
 \label{tab:configuration}
-\begin{tabular}{@{}ll@{}}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
 \toprule
 Item & Setting \\
 \midrule
@@ -312,7 +312,7 @@ Evaluation attacks & PGD-20, $\epsilon=8/255$, $\alpha=2/255$ \\
 Low-frequency mask & $8\times8$ retained DCT block per channel \\
 Checkpoint schedule & Every 5 epochs: 40 checkpoints from 5 through 200 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 We used NVIDIA A10 GPUs with 24~GB of memory on cloud instances rented from
@@ -344,13 +344,14 @@ low-frequency-PGD inputs. Values in the overall CSVs are the arithmetic mean
 and sample standard deviation across five seeds at each checkpoint.
 
 Appendix~\ref{app:checks} compares single-start PGD-20 with three-restart PGD-50
-on two pixel-only checkpoints using a fixed 256-image subset. This diagnostic
-does not assess the strength of the primary low-frequency attack.
+on two pixel-only checkpoints using a fixed 256-image subset. This check
+covers only pixel-space PGD. We did not perform a corresponding comparison
+using more iterations and restarts for low-frequency PGD.
 
 \paragraph{Metric interpretation.}
 Joint accuracy measures per-example correctness under both generated
-attacks; it does not require a correct clean prediction. The CSVs and plot
-legends call this quantity ``union robustness.'' It is an empirical two-attack
+attacks; it does not require a correct clean prediction. We label this metric
+``union robustness'' in the CSV files and plot legends.'' It is an empirical two-attack
 summary, not exact worst-case accuracy over a threat set. Every final
 low-frequency perturbation remains within the pixel $\linf$ threat set even
 after image clipping, so the union of the two threat sets is the pixel threat
@@ -358,18 +359,23 @@ set itself. Differences between their measured accuracies reflect restricted
 search and finite-step attack optimization.
 
 \subsection{Robust-overfitting measures}
-Let $A_m(e)$ denote mean test accuracy for metric $m$ at evaluated checkpoint
-epoch $e\in\E=\{5,10,\ldots,200\}$. Define
+For a given training condition, let $A_m(e)$ denote the mean test accuracy
+across five seeds for metric $m$ at checkpoint epoch $e$. The evaluated epochs
+are $\E=\{5,10,\ldots,200\}$. We define the peak epoch and robust-overfitting
+gap as follows:
 \begin{align}
   e_m^* &= \underset{e\in\E}{\arg\max}\;A_m(e), \\
   \mathrm{ROG}_m &= A_m(e_m^*)-A_m(200),
   \label{eq:robust-overfitting-gap}
 \end{align}
-where ROG denotes the robust-overfitting gap in percentage points. Ties are
-resolved by choosing the earliest evaluated epoch. Aggregate peaks and ROGs
+Here, $e_m^*$ is the evaluated epoch with the highest mean accuracy for
+metric $m$; the $\arg\max$ operation selects that epoch. If multiple epochs
+share the maximum, we choose the earliest. The robust-overfitting gap,
+$\mathrm{ROG}_m$, is the difference in percentage points between this peak
+accuracy and the accuracy at epoch 200. Aggregate peaks and ROGs
 in \cref{tab:main-results} are calculated
 from the condition mean trajectory using unrounded values, whereas
-\cref{app:per-seed} reports each seed's own earliest peak. For mixed-domain
+Appendix~\ref{app:per-seed} reports each seed's own earliest peak. For mixed-domain
 training, ROG is a descriptive gap that also reflects the attack schedule.
 The five-seed summaries use mean $\pm$ sample
 standard deviation descriptively; this study does not report confidence
@@ -387,29 +393,41 @@ the relationship between mixed-domain performance and the training schedule.
 
 \begin{table}[htbp]
 \centering
-\caption{Five-seed checkpoint-evaluation results. Epoch-200 accuracy values
-are means $\pm$ sample standard deviations in percentage points. Peak values
-and robust-overfitting gaps (ROGs) are calculated from the mean trajectory;
+\caption{Five-seed checkpoint-evaluation results. Panel A reports epoch-200
+accuracy (\%) as mean $\pm$ sample standard deviation across seeds. Panel B
+reports peak accuracy (\%) and robust-overfitting gaps (ROGs, in percentage
+points), calculated from the mean trajectory;
 the parenthesized value is the peak epoch, with the earliest checkpoint used
 to resolve ties. All evaluations use the finite-step attacks defined in
 \cref{sec:attacks}.}
 \label{tab:main-results}
-\setlength{\tabcolsep}{2.5pt}
+\setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.12}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lrrrrrrrr@{}}
+\textbf{Panel A: Final accuracy}\par\smallskip
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
 \toprule
-& \multicolumn{4}{c}{Epoch-200 accuracy (\%)}
-& \multicolumn{2}{c}{Pixel robustness} & \multicolumn{2}{c}{Low-frequency robustness} \\
-\cmidrule(lr){2-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
-Condition & Clean & Pixel & Low freq. & Joint & Peak (epoch) & ROG & Peak (epoch) & ROG \\
+Condition & Clean & Pixel & Low freq. & Joint \\
 \midrule
-Pixel-only & $84.40\pm0.09$ & $42.66\pm0.22$ & $76.48\pm0.26$ & $42.66\pm0.22$ & $51.22$ (105) & $8.56$ & $78.36$ (155) & $1.88$ \\
-Low-frequency-only & $94.28\pm0.22$ & $0.00\pm0.00$ & $92.70\pm0.28$ & $0.00\pm0.00$ & $0.00$ (5) & $0.00$ & $92.74$ (195) & $0.05$ \\
-Mixed-domain & $90.33\pm3.45$ & $19.33\pm14.28$ & $85.20\pm4.29$ & $19.33\pm14.27$ & $40.80$ (85) & $21.47$ & $86.92$ (195) & $1.72$ \\
+Pixel-only & $84.40\pm0.09$ & $42.66\pm0.22$ & $76.48\pm0.26$ & $42.66\pm0.22$ \\
+Low-frequency-only & $94.28\pm0.22$ & $0.00\pm0.00$ & $92.70\pm0.28$ & $0.00\pm0.00$ \\
+Mixed-domain & $90.33\pm3.45$ & $19.33\pm14.28$ & $85.20\pm4.29$ & $19.33\pm14.27$ \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular*}
+
+\medskip
+\textbf{Panel B: Peaks and declines}\par\smallskip
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{Pixel robustness}
+& \multicolumn{2}{c}{Low-frequency robustness} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Condition & Peak (epoch) & ROG & Peak (epoch) & ROG \\
+\midrule
+Pixel-only & $51.22$ (105) & $8.56$ & $78.36$ (155) & $1.88$ \\
+Low-frequency-only & $0.00$ (5) & $0.00$ & $92.74$ (195) & $0.05$ \\
+Mixed-domain & $40.80$ (85) & $21.47$ & $86.92$ (195) & $1.72$ \\
+\bottomrule
+\end{tabular*}
 \end{table}
 
 \subsection{Pixel-only control}
@@ -493,8 +511,8 @@ does not transfer to the pixel-space attack.
 The mixed-domain condition yields an apparent aggregate pixel-robustness peak
 of 40.80\% and joint peak of 40.79\% at epoch 85. By epoch 200, these
 metrics fall to 19.33\% and 19.33\%, respectively, corresponding to raw gaps
-of 21.47 and 21.46 percentage points. These gaps are confounded by the
-epoch-wise attack schedule. All five seeds used pixel training at epoch 85,
+of 21.47 and 21.46 percentage points. These peak-to-final gaps also reflect changes in the training attack, so
+they cannot be attributed to robust overfitting alone. All five seeds used pixel training at epoch 85,
 whereas only seed 42 used pixel training at epoch 200. Across the 200
 seed--checkpoint observations, mean pixel robustness is 42.36\% immediately
 after pixel-training epochs and 3.53\% after low-frequency-training epochs;
