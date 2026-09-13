@@ -58,12 +58,12 @@ phenomenon known as robust overfitting. This report studies how the perturbation
 domain used during adversarial training affects that trajectory. We train
 PreActResNet-18 models on CIFAR-10 for 200 epochs under pixel-only,
 low-frequency-only, and epoch-wise mixed-domain projected gradient descent
-(PGD) training. Each condition is evaluated across five seeds using clean,
-pixel-PGD-20, low-frequency DCT-masked PGD-20, and per-example conjunction
-metrics. Under pixel-only training, mean pixel robustness peaked at 51.22\%
+(PGD) training. Each condition is evaluated across five seeds using four accuracy metrics:
+clean, pixel-PGD-20, low-frequency DCT-masked PGD-20, and joint. Joint accuracy
+is the fraction of test images correctly classified under both attacks. Under pixel-only training, mean pixel robustness peaked at 51.22\%
 at epoch 105 and fell by 8.56 percentage points by epoch 200. In contrast,
 matched-domain robustness under low-frequency-only training declined by just
-0.05 points from its 92.74\% peak, although pixel and conjunction accuracy
+0.05 points from its 92.74\% peak, although pixel and joint accuracy
 remained at 0.00\%. Mixed-domain training produced schedule-dependent
 oscillations: mean pixel robustness was 42.36\% after pixel-training epochs
 and 3.53\% after low-frequency-training epochs. These results show that the
@@ -84,14 +84,14 @@ maximum during training and later decline even as the training objective
 continues to improve \cite{rice2020,yu2022}. This gap between the best and
 final robust checkpoint is the practical and empirical focus of this study.
 
-The threat model is an important part of that story. Standard pixel-space PGD
+To study robust overfitting, we must specify which perturbations the training
+and evaluation attacks can use. Standard pixel-space PGD
 can change every image coordinate within an $\linf$ budget, whereas a
 frequency-restricted attack constrains its perturbation to smooth,
 low-frequency patterns. Prior work links frequency content to robust features
 and shows that robustness can trade off across heterogeneous perturbation
-models \cite{guo2020,bu2023,tramer2019,maini2020}. It is therefore useful to
-ask not only whether robustness overfits, but also under which evaluated threat
-model it does so.
+models \cite{guo2020,bu2023,tramer2019,maini2020}. We therefore examine how the training attack affects when robust test accuracy
+peaks and how far it subsequently declines under each evaluation attack.
 
 \paragraph{Research question.}
 During PGD adversarial training of PreActResNet-18 on CIFAR-10, how does
@@ -101,8 +101,8 @@ pixel-only and low-frequency-only training?
 
 \paragraph{Hypothesis.}
 With architecture, dataset, optimization schedule, perturbation budget, and
-checkpoint-evaluation schedule held fixed, mixed-domain training will yield
-robust-accuracy trajectories that differ from the single-domain conditions. In
+checkpoint-evaluation schedule held fixed, mixed-domain training will produce
+robust-accuracy curves that differ from those of the single-domain conditions. In
 particular, the peak epoch, peak shape, or post-peak decline may change under
 pixel-space and/or low-frequency evaluation.
 
@@ -113,7 +113,7 @@ This report makes the following scoped contributions:
   conditions using standard pixel PGD, DCT-masked low-frequency PGD, or a
   seeded epoch-wise choice between them.
   \item It tracks each saved checkpoint under clean, pixel-PGD-20,
-  low-frequency-PGD-20, and per-example conjunction evaluation, rather than
+  low-frequency-PGD-20, and per-example joint evaluation, rather than
   reporting only the threat model used for training.
   \item It characterizes robust-overfitting timing and best-versus-final
   decline over five independent seeds for each condition.
@@ -148,9 +148,9 @@ threat models: robust test performance can improve near a learning-rate change
 and subsequently fall despite continued training. They emphasize selection of
 an early checkpoint using a held-out validation set. Yu et al.~\cite{yu2022}
 further connect robust overfitting to the treatment of small-loss adversarial
-examples. In this report, robust overfitting is operationalized separately for
-each evaluation metric as the difference between its best observed checkpoint
-and its epoch-200 value; \cref{sec:analysis-plan} gives the precise definition.
+examples. For each robustness metric, we measure the decline from its highest observed
+test accuracy to its accuracy at epoch 200; \cref{sec:analysis-plan} gives the
+formal definition.
 
 \subsection{Frequency-restricted and multi-threat robustness}
 The discrete cosine transform (DCT) represents images with spatial-frequency
@@ -220,7 +220,7 @@ cross-entropy attacks; $f_\theta$ includes the input normalization described
 below. Attack generation uses evaluation-mode BatchNorm statistics.
 Each primary evaluation uses one random start and returns the final iterate.
 
-The implementation checks in \cref{app:checks} confirm that the DCT
+The implementation checks in Appendix~\ref{app:checks} confirm that the DCT
 round-trip and masked projection are numerically accurate before final image
 clipping. Clipping to $[0,1]$ does introduce nonzero out-of-mask energy: in a
 256-image diagnostic low-frequency-PGD-20 run, its mean fraction was 0.70\%,
@@ -318,19 +318,19 @@ quantities:
   \item clean accuracy, without an attack;
   \item pixel robust accuracy, after pixel-space PGD-20;
   \item low-frequency robust accuracy, after DCT-masked low-frequency PGD-20;
-  \item conjunction accuracy, where an image counts as correct only if it is
+  \item joint accuracy, where an image counts as correct only if it is
   correctly classified after both independently generated attacks.
 \end{enumerate}
 Cross-entropy loss is additionally recorded for clean, pixel-PGD, and
 low-frequency-PGD inputs. Values in the overall CSVs are the arithmetic mean
 and sample standard deviation across five seeds at each checkpoint.
 
-\Cref{app:checks} compares single-start PGD-20 with three-restart PGD-50
+Appendix~\ref{app:checks} compares single-start PGD-20 with three-restart PGD-50
 on two pixel-only checkpoints using a fixed 256-image subset. This diagnostic
 does not assess the strength of the primary low-frequency attack.
 
 \paragraph{Metric interpretation.}
-Conjunction accuracy measures per-example correctness under both generated
+Joint accuracy measures per-example correctness under both generated
 attacks; it does not require a correct clean prediction. The CSVs and plot
 legends call this quantity ``union robustness.'' It is an empirical two-attack
 summary, not exact worst-case accuracy over a threat set. Every final
@@ -384,7 +384,7 @@ to resolve ties. All evaluations use the finite-step attacks defined in
 & \multicolumn{4}{c}{Epoch-200 accuracy (\%)}
 & \multicolumn{2}{c}{Pixel robustness} & \multicolumn{2}{c}{Low-frequency robustness} \\
 \cmidrule(lr){2-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
-Condition & Clean & Pixel & Low freq. & Conjunction & Peak (epoch) & ROG & Peak (epoch) & ROG \\
+Condition & Clean & Pixel & Low freq. & Joint & Peak (epoch) & ROG & Peak (epoch) & ROG \\
 \midrule
 Pixel-only & $84.40\pm0.09$ & $42.66\pm0.22$ & $76.48\pm0.26$ & $42.66\pm0.22$ & $51.22$ (105) & $8.56$ & $78.36$ (155) & $1.88$ \\
 Low-frequency-only & $94.28\pm0.22$ & $0.00\pm0.00$ & $92.70\pm0.28$ & $0.00\pm0.00$ & $0.00$ (5) & $0.00$ & $92.74$ (195) & $0.05$ \\
@@ -403,7 +403,7 @@ reaches its individual pixel-robustness peak at epoch 105. Low-frequency
 robustness peaks later, at 78.36\% at epoch 155, and ends at 76.48\%, a smaller
 1.88-point decline. Mean pixel robust loss reaches its minimum of 1.291 at
 epoch 105 and rises to 3.223 by epoch 200, while the final clean accuracy
-remains 84.40\%. Pixel and conjunction accuracy are effectively identical
+remains 84.40\%. Pixel and joint accuracy are effectively identical
 throughout this condition, indicating that pixel-PGD-20 is the binding one of
 the two attacks under this evaluation protocol.
 
@@ -411,7 +411,7 @@ the two attacks under this evaluation protocol.
   \centering
   \includegraphics[width=\linewidth]{pixel-only/overall/po_eval.pdf}
   \caption{Pixel-only five-seed checkpoint evaluation. The left panel shows
-  mean clean, pixel-PGD-20, low-frequency-PGD-20, and conjunction accuracy;
+  mean clean, pixel-PGD-20, low-frequency-PGD-20, and joint accuracy;
   the right panel shows the corresponding clean and attacked cross-entropy
   losses. Shaded bands denote one sample standard deviation across seeds at
   each of the 40 checkpoints evaluated at five-epoch intervals. Pixel
@@ -440,7 +440,7 @@ the two attacks under this evaluation protocol.
 The low-frequency-only condition produces high and stable matched-domain
 accuracy. Mean low-frequency robustness reaches 92.74\% at epoch 195 and ends
 at 92.70\%, a decline of only 0.05 percentage points; its final clean accuracy
-is 94.28\%. By contrast, pixel-PGD-20 and conjunction accuracy are 0.00\% at
+is 94.28\%. By contrast, pixel-PGD-20 and joint accuracy are 0.00\% at
 every evaluated checkpoint for every seed. Low-frequency robust loss reaches
 its minimum of 0.266 at epoch 105 and ends at 0.318. Thus, under these
 finite-step evaluations, robustness learned against the restricted attack
@@ -452,7 +452,7 @@ does not transfer to the pixel-space attack.
   \caption{Low-frequency-only five-seed checkpoint evaluation, using the same
   panel definitions, checkpoint cadence, and sample-standard-deviation bands
   as \cref{fig:pixel-eval}. Low-frequency-PGD-20 accuracy remains high and
-  peaks at 92.74\% at epoch 195, whereas pixel-PGD-20 and conjunction accuracy
+  peaks at 92.74\% at epoch 195, whereas pixel-PGD-20 and joint accuracy
   remain at 0.00\% throughout, showing no measured transfer to pixel-PGD-20.}
   \label{fig:lfo-eval}
 \end{figure}
@@ -473,7 +473,7 @@ does not transfer to the pixel-space attack.
 \subsection{Mixed-domain condition}
 \label{sec:mixed-results}
 The mixed-domain condition yields an apparent aggregate pixel-robustness peak
-of 40.80\% and conjunction peak of 40.79\% at epoch 85. By epoch 200, these
+of 40.80\% and joint peak of 40.79\% at epoch 85. By epoch 200, these
 metrics fall to 19.33\% and 19.33\%, respectively, corresponding to raw gaps
 of 21.47 and 21.46 percentage points. These gaps are confounded by the
 epoch-wise attack schedule. All five seeds used pixel training at epoch 85,
@@ -484,16 +484,16 @@ the point-biserial correlation is $r=0.971$, coding pixel training as 1
 and low-frequency training as 0. These pooled observations comprise 102
 pixel-training and 98 low-frequency-training checkpoints and include repeated
 measurements from each seed; the correlation is descriptive and does not
-adjust for epoch or training history. Individual seeds reach their conjunction
+adjust for epoch or training history. Individual seeds reach their joint
 peaks between epochs 115 and 160, not at the aggregate peak of epoch 85.
 
 This schedule dependence is also consistent with the large epoch-200 variation:
-pixel-PGD-20 and conjunction accuracy have sample standard deviations of
+pixel-PGD-20 and joint accuracy have sample standard deviations of
 14.28 and 14.27 percentage points. Low-frequency robustness is higher and
 more stable in aggregate, peaking at 86.92\% at epoch 195 and ending at
 85.20\%. The mixed condition therefore demonstrates alternation between
 domain-specialized states, rather than providing evidence that conventional
-robust overfitting alone caused the raw 21.46-point conjunction gap.
+robust overfitting alone caused the raw 21.46-point joint gap.
 
 \begin{figure}[htbp]
   \centering
@@ -528,7 +528,7 @@ robust overfitting alone caused the raw 21.46-point conjunction gap.
 \section{Discussion}
 \label{sec:discussion}
 
-Pixel-only training achieves the highest final pixel and conjunction accuracy,
+Pixel-only training achieves the highest final pixel and joint accuracy,
 while low-frequency-only training achieves the highest final clean and
 low-frequency accuracy. Epoch-wise mixing does not provide stable robustness
 across both evaluated attacks.
@@ -560,7 +560,7 @@ every candidate checkpoint under the intended finite-step attack configuration,
 and select the checkpoint using a predeclared validation criterion. For a
 pixel-only deployment, that criterion can be pixel-PGD validation accuracy;
 for a multi-threat deployment, it should be a predeclared joint criterion,
-such as per-example conjunction accuracy under the chosen attacks. The
+such as per-example joint accuracy under the chosen attacks. The
 minimum of the two aggregate accuracies can overstate this joint accuracy
 when the attacks trick different examples. The test set should then be evaluated
 once
@@ -574,7 +574,7 @@ for the selected checkpoint, with each component attack reported separately.
   attacks, and broader attack suites may change measured accuracy. The
   stronger-attack diagnostic covers only two pixel-only checkpoints; the
   low-frequency and mixed-domain results have no comparable check.
-  \item \textbf{Conjunction versus union attack.} The conjunction metric is
+  \item \textbf{Joint accuracy versus union attack.} The joint metric is
   calculated after two independently generated attacks; it is not an adaptive
   inner maximization over their union or an exact worst-case robustness result.
   \item \textbf{Nested threat structure.} With the same $\linf$ budget, the
@@ -606,7 +606,7 @@ pixel-PGD-20: mean pixel robustness peaked at 51.22\% at epoch 105 and fell
 by 8.56 percentage points by epoch 200. Low-frequency-only training instead
 maintained 92.70\% final low-frequency robustness with a 0.05-point
 best-versus-final decline, while exhibiting 0.00\% measured pixel and
-conjunction robustness. Once-per-epoch mixed-domain training did not yield
+joint accuracy. Once-per-epoch mixed-domain training did not yield
 stable simultaneous robustness; its pixel robustness was strongly associated
 with the most recent training domain. These findings are limited to
 PreActResNet-18, CIFAR-10, the selected DCT cutoff, and the specified
@@ -627,7 +627,7 @@ The implementation and report artifacts are organized as follows:
   \item \texttt{scripts/dct\_pgd.py}: DCT, masking, projection, and
   low-frequency PGD implementation;
   \item Checkpoint evaluation: \texttt{scripts/evaluate.py} reports clean,
-  pixel-PGD-20, low-frequency-PGD-20, and conjunction metrics;
+  pixel-PGD-20, low-frequency-PGD-20, and joint metrics;
   \item \texttt{scripts/plot\_results.py}: per-seed and overall plots;
   \item Aggregate evaluation data: each condition's \texttt{overall} directory
   contains its current five-seed mean and standard-deviation checkpoint summary.
@@ -851,7 +851,7 @@ against Heterogeneous Attacks.
 \bibitem{he2016}
 K. He, X. Zhang, S. Ren, and J. Sun.
 \newblock Identity Mappings in Deep Residual Networks.
-\newblock In \emph{Computer Vision---ECCV 2016}, pages 630--645, 2016.
+\newblock In \emph{Computer Vision: ECCV 2016}, pages 630--645, 2016.
 
 \bibitem{krizhevsky2009}
 A. Krizhevsky.
