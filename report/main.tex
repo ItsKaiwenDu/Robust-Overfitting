@@ -1,6 +1,5 @@
 % Final report draft skeleton for the Robust-Overfitting project.
 % Compile from the report directory so the figure paths resolve as written.
-% Every remaining author decision or claim to verify is marked with ``TBD''.
 \documentclass[11pt]{article}
 
 \usepackage[margin=1in]{geometry}
@@ -30,10 +29,6 @@
 \setlist[itemize]{leftmargin=*,nosep}
 \setlist[enumerate]{leftmargin=*,nosep}
 
-% Keep this macro until the final editing pass. It makes unfinished prose
-% easy to locate without preventing this skeleton from compiling.
-\newcommand{\TBD}[1]{\textcolor{red!70!black}{\textbf{[TBD: #1]}}}
-\newcommand{\TBDcell}[1]{\textcolor{red!70!black}{\textit{TBD: #1}}}
 \newcommand{\method}[1]{\textsc{#1}}
 \newcommand{\acc}{\mathrm{Acc}}
 \newcommand{\linf}{\ell_\infty}
@@ -68,9 +63,6 @@ observed robust-overfitting trajectory depends strongly on the perturbation
 domain and that once-per-epoch random mixing yields domain-specialized states
 rather than stable robustness across both evaluated attacks.
 \end{abstract}
-
-% DRAFTING NOTE: Red TBD markers identify items requiring author confirmation.
-% Independently verify Table 3 against the five-seed summaries before submission.
 
 \section{Introduction}
 \label{sec:introduction}
@@ -117,8 +109,9 @@ This report makes the following scoped contributions:
   reporting only the threat model used for training.
   \item It characterizes robust-overfitting timing and best-versus-final
   decline over five independent seeds for each condition.
-  \item \TBD{Replace this item with the final, narrowly worded empirical
-  conclusion after the limitations in \cref{sec:limitations} are resolved.}
+  \item It shows that once-per-epoch random domain mixing yields
+  schedule-dependent domain specialization under the specified finite-step
+  evaluations, rather than stable simultaneous robustness to both attacks.
 \end{itemize}
 
 \section{Background and Related Work}
@@ -577,9 +570,18 @@ Possible explanations involving frequency bias, optimization dynamics, or
 negative transfer should be presented as hypotheses grounded in prior work,
 not as causal findings.
 
-\TBD{Write the final interpretation in relation to the hypothesis. State
-clearly whether the hypothesis was supported, partially supported, or revised,
-and point to the exact statistics supporting that conclusion.}
+The hypothesis is supported in its deliberately narrow, descriptive form:
+changing the training domain changed the observed robust-accuracy trajectories.
+Pixel-only training produced a 51.22\% aggregate pixel-robustness peak at
+epoch 105 followed by an 8.56-point decline, whereas low-frequency-only
+training's matched low-frequency accuracy declined only 0.05 points from its
+peak. Mixed-domain training was distinct from both baselines, but not because
+it established stable coverage across attacks: pixel robustness averaged
+42.36\% after pixel-training epochs and 3.53\% after low-frequency-training
+epochs, with a point-biserial correlation of $r=0.971$ between the preceding
+domain and pixel robustness. Thus the results support evaluation-domain
+dependence and schedule sensitivity, but do not support a claim that epoch-wise
+mixing mitigates robust overfitting or reveals its causal mechanism.
 
 \subsection{Practical implications}
 The control condition suggests that the final checkpoint can be substantially
@@ -589,9 +591,14 @@ also illustrates that strong performance under a restricted perturbation model
 does not imply observed robustness to unrestricted pixel PGD. For a deployment
 claim, model selection and evaluation must match the intended threat model.
 
-\TBD{Decide whether this report will make only methodological implications or
-also include a concrete checkpoint-selection recommendation. If the latter,
-specify a validation protocol that does not select on the test set.}
+A concrete protocol is to reserve a validation split before training, evaluate
+every candidate checkpoint under the intended finite-step attack configuration,
+and select the checkpoint using a predeclared validation criterion. For a
+pixel-only deployment, that criterion can be pixel-PGD validation accuracy;
+for a multi-threat deployment, it should be a predeclared joint criterion,
+such as the lower of the two per-attack validation accuracies, rather than a
+post-hoc choice from test curves. The test set should then be evaluated once
+for the selected checkpoint, with each component attack reported separately.
 
 \section{Limitations and Threats to Validity}
 \label{sec:limitations}
@@ -627,12 +634,18 @@ specify a validation protocol that does not select on the test set.}
 
 \section{Conclusion}
 \label{sec:conclusion}
-This study provides a controlled, multi-seed comparison of pixel-only,
-low-frequency-only, and epoch-wise mixed-domain adversarial training on
-CIFAR-10. \TBD{Replace this sentence with a 3--5 sentence conclusion that
-directly answers the research question, gives the most important verified
-numbers, states the narrow scope of the conclusion, and names the most useful
-next experiment. Do not introduce any new result here.}
+Across five seeds, pixel-only training reproduced robust overfitting under
+pixel-PGD-20: mean pixel robustness peaked at 51.22\% at epoch 105 and fell
+by 8.56 percentage points by epoch 200. Low-frequency-only training instead
+maintained 92.70\% final low-frequency robustness with a 0.05-point
+best-versus-final decline, while exhibiting 0.00\% measured pixel and
+conjunction robustness. Once-per-epoch mixed-domain training did not yield
+stable simultaneous robustness; its pixel robustness was strongly determined
+by the most recent training domain. These findings are limited to
+PreActResNet-18, CIFAR-10, the selected DCT cutoff, and the specified
+finite-step attacks; the most useful next experiment is a validation-selected,
+batch- or example-level multi-threat training objective evaluated under a
+broader attack suite.
 
 \section*{Acknowledgments}
 The author gratefully acknowledges Nicholas Tran for mentorship and
