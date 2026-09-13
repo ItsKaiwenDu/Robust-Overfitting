@@ -40,7 +40,7 @@
 \newcommand{\E}{\mathcal{E}}
 
 \title{Robust Overfitting Across Pixel-Space and Low-Frequency Adversarial Training}
-\author{Kaiwen Du, Nicholas Tran\\
+\author{Kaiwen Du\\
   \normalsize Department of Mathematics and Computer Science\\
   \normalsize Santa Clara University}
 \date{September 2026}
@@ -610,6 +610,10 @@ directly answers the research question, gives the most important verified
 numbers, states the narrow scope of the conclusion, and names the most useful
 next experiment. Do not introduce any new result here.}
 
+\section*{Acknowledgments}
+The author gratefully acknowledges Nicholas Tran for mentorship and
+constructive feedback on the research design, analysis, and presentation.
+
 \section*{Reproducibility and Artifact Map}
 \addcontentsline{toc}{section}{Reproducibility and Artifact Map}
 The implementation and report artifacts are organized as follows:
@@ -618,11 +622,11 @@ The implementation and report artifacts are organized as follows:
   mixed-domain scheduling, and TensorBoard logging;
   \item \texttt{scripts/dct\_pgd.py}: DCT, masking, projection, and
   low-frequency PGD implementation;
-  \item \texttt{scripts/evaluate.py}: checkpoint evaluation under clean,
+  \item Checkpoint evaluation: \texttt{scripts/evaluate.py} reports clean,
   pixel-PGD-20, low-frequency-PGD-20, and conjunction metrics;
   \item \texttt{scripts/plot\_results.py}: per-seed and overall plots;
-  \item \texttt{report/\allowbreak<condition>/\allowbreak overall/\allowbreak evaluation\_results.csv}: current
-  five-seed mean and standard-deviation checkpoint summaries.
+  \item Aggregate evaluation data: each condition's \texttt{overall} directory
+  contains its current five-seed mean and standard-deviation checkpoint summary.
 \end{itemize}
 \TBD{Add a stable repository URL, commit hash or release tag, exact commands,
 hardware/software environment, data availability statement, and a statement
