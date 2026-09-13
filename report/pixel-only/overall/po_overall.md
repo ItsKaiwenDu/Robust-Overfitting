@@ -21,7 +21,7 @@
 
 ## Visualizations
 
-- [Five-seed evaluation curves](po_eval_results_curves.pdf)
-- [Five-seed training dynamics](po_train_results_curves.pdf)
+- [Five-seed evaluation curves](po_eval.pdf)
+- [Five-seed training dynamics](po_train.pdf)
 
 Shaded bands show sample standard deviation across seeds. The TensorBoard test-robust curve uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.

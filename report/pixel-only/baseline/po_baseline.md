@@ -23,6 +23,5 @@
 
 ## Visualizations
 
-- Evaluation Curves: [`po_eval_results_curves.png`](po_eval_results_curves.png)
-- Training Dynamics: [`po_train_results_curves.png`](po_train_results_curves.png)
-
+- Evaluation Curves: [`po_eval.pdf`](po_eval.pdf)
+- Training Dynamics: [`po_train.pdf`](po_train.pdf)

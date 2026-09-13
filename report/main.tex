@@ -406,7 +406,7 @@ the two attacks under this evaluation protocol.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{pixel-only/overall/po_eval_results_curves.pdf}
+  \includegraphics[width=\linewidth]{pixel-only/overall/po_eval.pdf}
   \caption{Pixel-only five-seed checkpoint evaluation. The left panel shows
   mean clean, pixel-PGD-20, low-frequency-PGD-20, and conjunction accuracy;
   the right panel shows the corresponding clean and attacked cross-entropy
@@ -420,7 +420,7 @@ the two attacks under this evaluation protocol.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{pixel-only/overall/po_train_results_curves.pdf}
+  \includegraphics[width=\linewidth]{pixel-only/overall/po_train.pdf}
   \caption{Pixel-only training dynamics averaged across five seeds; shaded
   bands denote one sample standard deviation. The left panel reports training
   and in-training test accuracy, and the right reports training robust loss and
@@ -445,7 +445,7 @@ does not transfer to the pixel-space attack.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_eval_results_curves.pdf}
+  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_eval.pdf}
   \caption{Low-frequency-only five-seed checkpoint evaluation, using the same
   panel definitions, checkpoint cadence, and sample-standard-deviation bands
   as \cref{fig:pixel-eval}. Low-frequency-PGD-20 accuracy remains high and
@@ -458,7 +458,7 @@ does not transfer to the pixel-space attack.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_train_results_curves.pdf}
+  \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_train.pdf}
   \caption{Low-frequency-only training dynamics averaged across five seeds;
   shaded bands denote one sample standard deviation. Panels and line types
   follow \cref{fig:pixel-training}, but the training robust accuracy and loss
@@ -493,21 +493,21 @@ robust overfitting alone caused the raw 21.46-point conjunction gap.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_results_curves.pdf}
-  \caption{Mixed-domain five-seed checkpoint evaluation, using the same panel
-  definitions, checkpoint cadence, and sample-standard-deviation bands as
-  \cref{fig:pixel-eval}. Each seed selects one attack domain per epoch by a
-  seeded fair random choice. Consequently, the aggregate pixel and conjunction
-  curves combine seeds whose most recent attack domains can differ. Their wide
-  bands and apparent peak-to-final gaps primarily reflect this schedule-linked
-  recency effect; the figure does not isolate conventional robust overfitting
-  as the cause.}
+  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_stratified.pdf}
+  \caption{Mixed-domain checkpoint evaluation stratified by the attack domain
+  used in the immediately preceding training epoch. Each point averages the
+  seeds with the indicated preceding domain; shaded bands show their sample
+  standard deviation. Pixel-PGD-20 robustness is consistently much higher
+  after pixel-training epochs, whereas low-frequency-PGD-20 robustness is
+  higher after low-frequency-training epochs. This schedule-linked recency
+  effect reveals alternating domain-specialized states rather than stable
+  simultaneous robustness.}
   \label{fig:mixed-eval}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_train_results_curves.pdf}
+  \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_train.pdf}
   \caption{Mixed-domain training dynamics averaged across five seeds; shaded
   bands denote one sample standard deviation. Training robust accuracy and
   loss are measured using whichever PGD-10 domain is selected for that seed

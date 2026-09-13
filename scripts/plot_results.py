@@ -15,6 +15,7 @@ import argparse
 import csv
 import glob
 import os
+import random
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import matplotlib.pyplot as plt
@@ -519,6 +520,105 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mod
     print(f"Aggregated evaluation chart saved successfully as {output_path}")
 
 
+def plot_mixed_domain_stratified_evaluation_results(report_mode_dir, output_path):
+    """Plot mixed-domain evaluation metrics by the preceding training domain.
+
+    Mixed-domain training makes a seeded random domain choice at each epoch.
+    Therefore, checkpoints at the same nominal epoch can have just completed
+    either a pixel-PGD or a low-frequency-PGD training epoch.  This plot keeps
+    those observations separate instead of connecting them into one
+    schedule-confounded curve.
+    """
+    seed_dirs = sorted(glob.glob(os.path.join(report_mode_dir, 'seed-*')))
+    if not seed_dirs:
+        raise FileNotFoundError(f"No seed-* directories found in {report_mode_dir}")
+
+    metrics = {
+        'pixel_accs': ('Pixel-PGD-20 Test Accuracy', 'Accuracy (%)'),
+        'low_frequency_accs': ('Low-Frequency-PGD-20 Test Accuracy', 'Accuracy (%)'),
+        'pixel_losses': ('Pixel-PGD-20 Test Loss', 'Cross Entropy Loss'),
+        'low_frequency_losses': ('Low-Frequency-PGD-20 Test Loss', 'Cross Entropy Loss'),
+    }
+    grouped = {
+        domain: {metric: {} for metric in metrics}
+        for domain in ('pixel', 'low-frequency')
+    }
+
+    for seed_dir in seed_dirs:
+        seed_name = os.path.basename(seed_dir)
+        try:
+            seed = int(seed_name.removeprefix('seed-'))
+        except ValueError as exc:
+            raise ValueError(f"Expected a seed directory named seed-<integer>, found {seed_name}") from exc
+
+        csv_path = os.path.join(seed_dir, 'evaluation_results.csv')
+        if not os.path.exists(csv_path):
+            continue
+        data = load_evaluation_data(csv_path)
+
+        # This reproduces train.py's private, per-seed schedule exactly.
+        schedule_rng = random.Random(seed)
+        schedule = [schedule_rng.choice(('pixel', 'low-frequency')) for _ in range(max(data['epochs']))]
+        for idx, epoch in enumerate(data['epochs']):
+            preceding_domain = schedule[epoch - 1]
+            for metric in metrics:
+                grouped[preceding_domain][metric].setdefault(epoch, []).append(data[metric][idx])
+
+    if not any(grouped['pixel']['pixel_accs'].values()):
+        raise ValueError('No mixed-domain evaluation observations were available to plot.')
+
+    plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
+    fig, axes = plt.subplots(2, 2, figsize=(15, 10), dpi=300, sharex=True)
+    domain_styles = {
+        'pixel': {'label': 'After pixel-training epoch', 'color': '#1f77b4', 'marker': 'o'},
+        'low-frequency': {'label': 'After low-frequency-training epoch', 'color': '#ff7f0e', 'marker': '^'},
+    }
+
+    for ax, (metric, (title, y_label)) in zip(axes.flat, metrics.items()):
+        for domain, style in domain_styles.items():
+            values_by_epoch = grouped[domain][metric]
+            epochs = np.array(sorted(values_by_epoch))
+            means = np.array([np.mean(values_by_epoch[epoch]) for epoch in epochs])
+            stds = np.array([
+                np.std(values_by_epoch[epoch], ddof=1) if len(values_by_epoch[epoch]) > 1 else 0.0
+                for epoch in epochs
+            ])
+            ax.plot(
+                epochs, means, label=style['label'], color=style['color'],
+                linewidth=2.2, marker=style['marker'], markersize=5,
+            )
+            ax.fill_between(epochs, means - stds, means + stds, color=style['color'], alpha=0.16)
+
+        ax.set_title(title, fontsize=12, fontweight='bold')
+        ax.set_xlabel('Checkpoint Epoch', fontsize=11, fontweight='bold')
+        ax.set_ylabel(y_label, fontsize=11, fontweight='bold')
+        ax.grid(True, linestyle='--', alpha=0.55)
+        if metric.endswith('_accs'):
+            ax.set_ylim(-2, 100)
+        else:
+            ax.set_ylim(bottom=0)
+
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.01), ncol=2, frameon=False, fontsize=10)
+    fig.suptitle(
+        'Mixed-Domain Evaluation Stratified by the Preceding Training Domain',
+        fontsize=15, fontweight='bold', y=0.98,
+    )
+    fig.text(
+        0.5, 0.04,
+        'Each point is the mean across seeds whose checkpoint ended in the indicated domain; shaded bands show sample SD.',
+        ha='center', fontsize=9,
+    )
+    plt.tight_layout(rect=[0, 0.08, 1, 0.95])
+
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+    stem, extension = os.path.splitext(output_path)
+    pdf_path = output_path if extension.lower() == '.pdf' else f'{stem}.pdf'
+    plt.savefig(pdf_path, bbox_inches='tight')
+    plt.close(fig)
+    print(f"Mixed-domain stratified evaluation chart saved as {pdf_path}")
+
+
 def aggregate_training_data(runs_mode_dir):
     """Aggregates TensorBoard training scalars across all seed runs in a mode."""
     seed_dirs = sorted(glob.glob(os.path.join(runs_mode_dir, 'seed-*')))
@@ -635,7 +735,8 @@ def plot_aggregate_training_results(runs_mode_dir, output_path, training_mode='p
 
 def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False,
                        plot_type='both', aggregate=False, all_seeds=False,
-                       csv_path=None, output_path=None, runs_dir=None):
+                       csv_path=None, output_path=None, runs_dir=None,
+                       stratify_mixed_domain=False):
     """Processes plotting workflows for a specific mode."""
     report_mode_dir = os.path.join('report', training_mode)
     runs_mode_dir = os.path.join('runs', training_mode)
@@ -646,16 +747,25 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
     }
     mode_prefix = mode_prefixes[training_mode]
 
+    if stratify_mixed_domain:
+        if training_mode != 'mixed-domain':
+            raise ValueError('--stratify-mixed-domain requires --training-mode mixed-domain')
+        stratified_output = output_path or os.path.join(
+            report_mode_dir, 'overall', 'mdo_eval_stratified.pdf'
+        )
+        plot_mixed_domain_stratified_evaluation_results(report_mode_dir, stratified_output)
+        return
+
     # 1. Overall plotting if requested or if all_seeds is requested
     if aggregate or all_seeds:
         print(f"\n--- Generating Overall Results for {training_mode} ---")
         agg_report_dir = os.path.join(report_mode_dir, 'overall')
         if plot_type in ('both', 'eval'):
-            agg_eval_pdf = os.path.join(agg_report_dir, f'{mode_prefix}_eval_results_curves.pdf')
+            agg_eval_pdf = os.path.join(agg_report_dir, f'{mode_prefix}_eval.pdf')
             agg_eval_csv = os.path.join(agg_report_dir, 'evaluation_results.csv')
             plot_aggregate_evaluation_results(report_mode_dir, agg_eval_pdf, training_mode=training_mode, output_csv_path=agg_eval_csv)
         if plot_type in ('both', 'train'):
-            agg_train_pdf = os.path.join(agg_report_dir, f'{mode_prefix}_train_results_curves.pdf')
+            agg_train_pdf = os.path.join(agg_report_dir, f'{mode_prefix}_train.pdf')
             plot_aggregate_training_results(runs_mode_dir, agg_train_pdf, training_mode=training_mode)
 
     # 2. Identify target runs to plot
@@ -682,9 +792,9 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
         run_rel = os.path.join(*run_parts)
 
         cur_csv = csv_path or os.path.join('report', run_rel, 'evaluation_results.csv')
-        cur_eval_pdf = output_path or os.path.join('report', run_rel, f'{mode_prefix}_eval_results_curves.pdf')
+        cur_eval_pdf = output_path or os.path.join('report', run_rel, f'{mode_prefix}_eval.pdf')
         cur_runs_dir = runs_dir or os.path.join('runs', run_rel)
-        cur_train_pdf = os.path.join('report', run_rel, f'{mode_prefix}_train_results_curves.pdf')
+        cur_train_pdf = os.path.join('report', run_rel, f'{mode_prefix}_train.pdf')
 
         seed_label = r_name.replace('seed-', 'Seed ') if r_name.startswith('seed-') else r_name
         if plot_type in ('both', 'eval') and os.path.exists(cur_csv):
@@ -712,6 +822,8 @@ def main():
     parser.add_argument('--csv-path', default=None, help='override the default evaluation CSV path')
     parser.add_argument('--output-path', default=None, help='override the default evaluation chart path')
     parser.add_argument('--runs-dir', default=None, help='override the default TensorBoard runs directory')
+    parser.add_argument('--stratify-mixed-domain', action='store_true',
+                        help='split mixed-domain checkpoint results by the preceding training attack domain')
     args = parser.parse_args()
 
     if args.all_modes:
@@ -727,7 +839,8 @@ def main():
                 all_seeds=True,
                 csv_path=args.csv_path,
                 output_path=args.output_path,
-                runs_dir=args.runs_dir
+                runs_dir=args.runs_dir,
+                stratify_mixed_domain=args.stratify_mixed_domain
             )
     else:
         process_mode_plots(
@@ -740,7 +853,8 @@ def main():
             all_seeds=args.all_seeds,
             csv_path=args.csv_path,
             output_path=args.output_path,
-            runs_dir=args.runs_dir
+            runs_dir=args.runs_dir,
+            stratify_mixed_domain=args.stratify_mixed_domain
         )
 
 

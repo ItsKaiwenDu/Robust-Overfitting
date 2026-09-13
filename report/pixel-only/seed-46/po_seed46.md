@@ -21,7 +21,7 @@
 
 ## Visualizations
 
-- [Evaluation curves](po_eval_results_curves.pdf)
-- [Training dynamics](po_train_results_curves.pdf)
+- [Evaluation curves](po_eval.pdf)
+- [Training dynamics](po_train.pdf)
 
 The TensorBoard test-robust curve in the training-dynamics figure uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.
