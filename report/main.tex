@@ -245,8 +245,10 @@ batches in that epoch use the selected attack. \\
 The mixed-domain random-number generator is deliberately separate from data
 shuffling, augmentation, and PGD random starts. Checkpoints save the current
 domain, the complete domain schedule so far, the seed, and DCT cutoff.
-\TBD{Decide whether to include a table or appendix plot of the realized
-pixel-versus-low-frequency epoch counts and schedules for all five mixed runs.}
+The realized schedule counts and the domains at the two checkpoints most
+relevant to the aggregate pixel result are reported in
+\cref{app:schedules}; no 200-epoch timeline is needed to establish the
+schedule imbalance at epoch 200.
 
 \subsection{Optimization and implementation details}
 \label{sec:implementation}
@@ -358,7 +360,6 @@ on the domain used in the most recent training epoch.
 
 \begin{table}[htbp]
 \centering
-\small
 \caption{Five-seed checkpoint-evaluation results. Epoch-200 accuracy values
 are means $\pm$ sample standard deviations in percentage points. Peak values
 and robust-overfitting gaps (ROGs) are calculated from the mean trajectory;
@@ -366,6 +367,9 @@ the parenthesized value is the peak epoch, with the earliest checkpoint used
 to resolve ties. All evaluations use the finite-step attacks defined in
 \cref{sec:attacks}.}
 \label{tab:main-results}
+\vspace{0.55em}
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.12}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
@@ -637,18 +641,99 @@ publishing this report.}
 \appendix
 \section{Per-seed Results and Additional Figures}
 \label{app:per-seed}
-\TBD{Insert one compact table for each condition listing each seed's peak epoch,
-peak accuracy, epoch-200 accuracy, and robust-overfitting gap. Use the
-per-seed CSVs in \texttt{report/<condition>/seed-42} through
-\texttt{seed-46}. If space is limited, move the complete curves to a
-supplement and retain the five-row tables here.}
+\Cref{tab:per-seed-pixel,tab:per-seed-low-frequency,tab:per-seed-mixed}
+provide the seed-level counterpart to the aggregate trajectories. The reported
+metric is pixel-PGD-20 accuracy for the pixel-only and mixed-domain conditions
+and low-frequency-PGD-20 accuracy for the low-frequency-only condition. Peak
+epochs use the first evaluated epoch attaining the seed-level maximum. The
+mixed-domain gaps remain schedule-confounded and are included to make the
+seed-level variation transparent rather than as standalone estimates of
+conventional robust overfitting.
+
+\begin{table}[htbp]
+\centering
+\caption{Per-seed pixel-PGD-20 results for pixel-only training. Accuracy and
+gaps are percentage points.}
+\label{tab:per-seed-pixel}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
+\midrule
+42 & 105 & 51.30 & 42.57 & 8.73 \\
+43 & 105 & 51.45 & 42.56 & 8.89 \\
+44 & 105 & 51.18 & 42.88 & 8.30 \\
+45 & 105 & 51.41 & 42.89 & 8.52 \\
+46 & 105 & 50.76 & 42.40 & 8.36 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Per-seed low-frequency-PGD-20 results for low-frequency-only
+training. Accuracy and gaps are percentage points.}
+\label{tab:per-seed-low-frequency}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
+\midrule
+42 & 200 & 92.94 & 92.94 & 0.00 \\
+43 & 195 & 92.79 & 92.70 & 0.09 \\
+44 & 200 & 92.99 & 92.99 & 0.00 \\
+45 & 195 & 92.51 & 92.33 & 0.18 \\
+46 & 170 & 92.65 & 92.53 & 0.12 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Per-seed pixel-PGD-20 results for mixed-domain training. Accuracy
+and gaps are percentage points; unlike the pixel-only values, these raw gaps
+are confounded by the epoch-level attack schedule.}
+\label{tab:per-seed-mixed}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
+\midrule
+42 & 160 & 46.16 & 43.71 & 2.45 \\
+43 & 115 & 47.79 & 15.93 & 31.86 \\
+44 & 155 & 46.83 & 5.96 & 40.87 \\
+45 & 125 & 46.27 & 14.58 & 31.69 \\
+46 & 130 & 45.58 & 16.48 & 29.10 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Mixed-Domain Schedules}
 \label{app:schedules}
-\TBD{Extract the saved attack-domain schedules from checkpoints, report the
-per-seed count of pixel and low-frequency epochs, and include a readable
-timeline only if it helps explain seed variation. Do not reconstruct schedules
-from memory.}
+The complete schedules were read from the \texttt{attack\_domain\_schedule}
+metadata stored in each epoch-200 checkpoint. Every schedule has 200 entries,
+matches the saved final attack domain, and uses the recorded cutoff of $8$.
+\Cref{tab:mixed-schedules} reports the realized balance. The schedules are
+near-balanced but not constrained to be exactly balanced, as intended by the
+independent seeded random choice. A full 200-epoch timeline is omitted because
+the counts and the two checkpoints relevant to the aggregate pixel peak make
+the reporting point more directly: all five runs ended epoch 85 with pixel
+training, whereas only seed 42 did so at epoch 200.
+
+\begin{table}[htbp]
+\centering
+\caption{Realized mixed-domain attack schedules extracted from saved
+epoch-200 checkpoint metadata.}
+\label{tab:mixed-schedules}
+\begin{tabular}{@{}lrrll@{}}
+\toprule
+Seed & Pixel epochs & Low-frequency epochs & Epoch-85 domain & Epoch-200 domain \\
+\midrule
+42 & 113 & 87 & Pixel & Pixel \\
+43 & 106 & 94 & Pixel & Low-frequency \\
+44 & 101 & 99 & Pixel & Low-frequency \\
+45 & 98 & 102 & Pixel & Low-frequency \\
+46 & 100 & 100 & Pixel & Low-frequency \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Attack-Strength and Implementation Checks}
 \label{app:checks}
