@@ -290,9 +290,16 @@ Checkpoint schedule & Every 5 epochs: 40 checkpoints from 5 through 200 \\
 \end{tabular}
 \end{table}
 
-\TBD{Record software versions, hardware/GPU model, runtime, and any
-determinism caveats. The repository notes cloud execution, but the final report
-should state only details that can be verified from run records.}
+Project records identify NVIDIA A10 (24~GB PCIe) Lambda Labs instances as the
+full-training platform. The retained TensorBoard logs for all 15 full runs
+span 5.83 to 5.91 hours from their first to final scalar event; this is a
+logging-time measure, not a complete cloud-billing or end-to-end wall-clock
+measure. The source code seeds Python, NumPy, and PyTorch for every run, seeds
+all CUDA devices when available, and sets \texttt{cudnn.deterministic=True}
+and \texttt{cudnn.benchmark=False}. It does not enable PyTorch's global
+deterministic-algorithms mode. Exact cloud OS, CUDA-driver, Python, PyTorch,
+and torchvision versions were not preserved in a run manifest and are not
+inferred from the current local checking environment.
 
 \section{Evaluation and Analysis Plan}
 \label{sec:analysis-plan}
@@ -610,8 +617,12 @@ specify a validation protocol that does not select on the test set.}
   \item \textbf{Model selection.} Checkpoint peaks are found on the test set
   for descriptive analysis; they are not validation-selected estimates of
   deployable early-stopping performance.
-  \item \TBD{Add any run-specific limitations, such as incomplete artifacts,
-  environment uncertainty, or deviations from intended training commands.}
+  \item \textbf{Execution provenance.} Checkpoint metadata verifies each
+  condition, seed, cutoff, and mixed-domain schedule, and TensorBoard logs
+  verify the recorded training traces. However, immutable command transcripts
+  and an exact cloud software/driver manifest were not retained. The reported
+  configuration can be rerun from the source, but bitwise reproduction across
+  machines and library versions is not established.
 \end{itemize}
 
 \section{Conclusion}
@@ -641,11 +652,9 @@ The implementation and report artifacts are organized as follows:
   \item Aggregate evaluation data: each condition's \texttt{overall} directory
   contains its current five-seed mean and standard-deviation checkpoint summary.
 \end{itemize}
-\TBD{Add a stable repository URL, commit hash or release tag, exact commands,
-hardware/software environment, data availability statement, and a statement
-about checkpoint availability. Resolve the stale README wording that calls
-completed pixel-only and mixed-domain five-seed results ``planned'' before
-publishing this report.}
+Code, committed evaluation results, report-check artifacts, and current
+reproduction instructions are available at
+\url{https://github.com/ItsKaiwenDu/Robust-Overfitting}.
 
 \appendix
 \section{Per-seed Results and Additional Figures}
