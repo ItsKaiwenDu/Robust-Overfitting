@@ -12,6 +12,14 @@
 \usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{placeins}
+\captionsetup[table]{position=top,skip=0.55em}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{18pt plus 2pt minus 2pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage[nameinlink,capitalise]{cleveref}
@@ -368,7 +376,6 @@ the parenthesized value is the peak epoch, with the earliest checkpoint used
 to resolve ties. All evaluations use the finite-step attacks defined in
 \cref{sec:attacks}.}
 \label{tab:main-results}
-\vspace{0.55em}
 \setlength{\tabcolsep}{2.5pt}
 \renewcommand{\arraystretch}{1.12}
 \resizebox{\linewidth}{!}{%
@@ -629,7 +636,15 @@ Code, committed evaluation results, report-check artifacts, and current
 reproduction instructions are available at
 \url{https://github.com/ItsKaiwenDu/Robust-Overfitting}.
 
+\FloatBarrier
 \appendix
+\setcounter{topnumber}{5}
+\setcounter{bottomnumber}{5}
+\setcounter{totalnumber}{5}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.7}
 \section{Per-seed Results}
 \label{app:per-seed}
 \Cref{tab:per-seed-pixel,tab:per-seed-low-frequency,tab:per-seed-mixed}
@@ -641,7 +656,7 @@ mixed-domain gaps remain schedule-confounded and are included to make the
 seed-level variation transparent rather than as standalone estimates of
 conventional robust overfitting.
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
 \caption{Per-seed pixel-PGD-20 results for pixel-only training. Accuracy is in percent;
 gaps are in percentage points.}
@@ -659,7 +674,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \end{tabular}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
 \caption{Per-seed low-frequency-PGD-20 results for low-frequency-only
 training. Accuracy is in percent; gaps are in percentage points.}
@@ -677,7 +692,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \end{tabular}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
 \caption{Per-seed pixel-PGD-20 results for mixed-domain training. Accuracy
 is in percent; gaps are in percentage points. These raw gaps
@@ -696,6 +711,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \end{tabular}
 \end{table}
 
+\FloatBarrier
 \section{Mixed-Domain Schedules}
 \label{app:schedules}
 The complete schedules were read from the \texttt{attack\_domain\_schedule}
@@ -706,7 +722,7 @@ near-balanced but not constrained to be exactly balanced, as intended by the
 independent seeded random choice. All five runs ended epoch 85 with pixel
 training, whereas only seed 42 did so at epoch 200.
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
 \caption{Realized mixed-domain attack schedules extracted from saved
 epoch-200 checkpoint metadata.}
@@ -724,6 +740,7 @@ Seed & Pixel epochs & Low-frequency epochs & Epoch-85 domain & Epoch-200 domain 
 \end{tabular}
 \end{table}
 
+\FloatBarrier
 \section{Attack-Strength and Implementation Checks}
 \label{app:checks}
 The attack checks use a fixed, approximately class-balanced 256-image subset
@@ -744,7 +761,7 @@ $0.03137258$, equal to $8/255$ to floating-point precision. Thus projection
 and budget enforcement behave as intended, while final image clipping creates
 some high-frequency leakage.
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
 \caption{Pixel attack-strength diagnostic for pixel-only seed 42 on a fixed
 256-image test subset. PGD-20 uses one random restart; for PGD-50, the
@@ -768,6 +785,7 @@ large PGD-20 weakness in the selected control checkpoints, but it does not
 substitute for multiple full-test restarts, adaptive attacks, or a broader
 attack suite.
 
+\FloatBarrier
 \begin{thebibliography}{99}
 
 \bibitem{goodfellow2015}
