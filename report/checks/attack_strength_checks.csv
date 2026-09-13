@@ -1,0 +1,3 @@
+examples,primary_accuracy,primary_loss,strong_accuracy,strong_loss,strong_final_linf_max,label,checkpoint,primary_steps,strong_steps,strong_restarts,elapsed_seconds
+256,0.4921875,1.312144160270691,0.48828125,1.3187910169363022,0.03137257695198059,pixel-seed42-peak,checkpoints/pixel-only/seed-42/epoch_105.pt,20,50,3,480.13055533298757
+256,0.38671875,3.486143857240677,0.3828125,3.5288780331611633,0.03137257695198059,pixel-seed42-final,checkpoints/pixel-only/seed-42/epoch_200.pt,20,50,3,478.86118049995275

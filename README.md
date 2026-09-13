@@ -1,7 +1,7 @@
 # Investigating Robust Overfitting in Adversarial Training
 
 This is GitHub repository for research on robust overfitting in adversarial training.
-Last updated: September 5, 2026
+Last updated: September 12, 2026
 
 ---
 
@@ -22,27 +22,27 @@ The project reproduced robust overfitting with pixel-space PGD adversarial train
 
 ### Model and Dataset
 
-* **Model:** PreActResNet-18: Standard deep residual network used in adversarial training research, sourced from the Rice et al. (2020) codebase.
+* **Model:** PreActResNet-18: Standard deep residual network used in adversarial training research, sourced from Rice et al. (2020) codebase.
 * **Dataset:** CIFAR-10: Contains 50,000 training images and 10,000 test images across 10 classes, each 32×32 pixels.
 
 ### Training Configurations
 
-All conditions use the same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, 200 epochs, 10-step training PGD, perturbation budget, and random-seed policy.
+All conditions use same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, 200 epochs, 10-step training PGD, perturbation budget, and random-seed policy.
 
-1. **Pixel-only:** Train with standard pixel-space PGD in every epoch. This is the completed Rice et al. replication.
+1. **Pixel-only:** Train with standard pixel-space PGD in every epoch. This is completed Rice et al. replication.
 2. **Low-frequency-only:** Train with low-frequency DCT-masked PGD in every epoch. The adversarial perturbation is restricted by a predefined low-frequency mask before being transformed back to image space.
-3. **Mixed-domain (pixel or low-frequency):** At the start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-masked PGD. Every batch in that epoch uses the selected attack domain.
+3. **Mixed-domain (pixel or low-frequency):** At start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-masked PGD. Every batch in that epoch uses selected attack domain.
 
 ### Evaluation Configurations
 
-For each new full run, all 40 saved checkpoints (epochs 5–200, every 5 epochs) are evaluated against the full 10,000-image CIFAR-10 test set using four metrics:
+For each new full run, all 40 saved checkpoints (epochs 5–200, every 5 epochs) are evaluated against full 10,000-image CIFAR-10 test set using four metrics:
 
-1. **Clean accuracy:** test the model on unmodified images with no attack.
-2. **Pixel-space robustness:** attack each test image with pixel-space PGD-20 (20 steps, epsilon = 8/255) and measure how often the model still predicts correctly.
-3. **Low-frequency robustness:** attack each test image with DCT-masked PGD-20 using the same budget and measure robustness.
-4. **Union robustness:** per image, count it as correct only if the model resisted *both* the pixel-space and low-frequency attacks. This means measuring whether the model is robust to both attack domains for the same image.
+1. **Clean accuracy:** test model on unmodified images with no attack.
+2. **Pixel-space robustness:** attack each test image with pixel-space PGD-20 (20 steps, epsilon = 8/255) and measure how often model still predicts correctly.
+3. **Low-frequency robustness:** attack each test image with DCT-masked PGD-20 using same budget and measure robustness.
+4. **Union robustness:** per image, count it as correct only if model resisted *both* pixel-space and low-frequency attacks. This means measuring whether model is robust to both attack domains for same image.
 
-For each applicable metric, we record the **peak epoch** (when accuracy was highest) and the **post-peak decline** (how much it dropped by epoch 200). These are the primary numbers compared across conditions. The completed legacy pixel-only replication has clean and pixel-PGD-20 measurements only; low-frequency and union metrics were added for the new multi-condition runs.
+For each applicable metric, we record **peak epoch** (when accuracy was highest) and **post-peak decline** (how much it dropped by epoch 200). These are primary numbers compared across conditions. The completed legacy pixel-only replication has clean and pixel-PGD-20 measurements only; low-frequency and union metrics were added for new multi-condition runs.
 
 ---
 
@@ -67,7 +67,7 @@ pip install -r requirements.txt
 ```bash
 python3 scripts/verify_setup.py
 ```
-5. Run a quick diagnostic (1 epoch, 10% of data) to confirm the training pipeline:
+5. Run a quick diagnostic (1 epoch, 10% of data) to confirm training pipeline:
 ```bash
 python3 scripts/train.py --diagnostic
 ```
@@ -86,7 +86,7 @@ python3 scripts/train.py --training-mode mixed-domain --seed 42 --dct-cutoff 8
 ```
 
 By default, each run uses a separate directory named after its condition and
-seed. Diagnostics add a `diagnostic/` level, so the three one-epoch checks do
+seed. Diagnostics add a `diagnostic/` level, so three one-epoch checks do
 not overwrite one another:
 
 ```text
@@ -96,19 +96,19 @@ report/<training-mode>/[diagnostic/]<run-name>/evaluation_results.csv
 ```
 
 `<run-name>` defaults to `seed-<seed>` and can be changed with `--run-name`.
-For example, run the low-frequency diagnostic and then its matching evaluation:
+For example, run low-frequency diagnostic and then its matching evaluation:
 
 ```bash
 python3 scripts/train.py --training-mode low-frequency-only --diagnostic --seed 42
 python3 scripts/evaluate.py --training-mode low-frequency-only --diagnostic --seed 42
 ```
 
-Mixed-domain checkpoints record the selected domain for the checkpoint epoch
-and the complete schedule so far, together with the seed and DCT cutoff.
+Mixed-domain checkpoints record selected domain for checkpoint epoch
+and complete schedule so far, together with seed and DCT cutoff.
 
 **Option A: Lambda Labs (Cloud)**
 
-6a. See [`setup_lambda_labs.md`](setup_lambda_labs.md) for the complete step-by-step guide, including instance provisioning, SSH access, code syncing, running training in the background, monitoring with TensorBoard, downloading results, and terminating the instance.
+6a. See [`setup_lambda_labs.md`](setup_lambda_labs.md) for complete step-by-step guide, including instance provisioning, SSH access, code syncing, running training in background, monitoring with TensorBoard, downloading results, and terminating instance.
 
 **Option B: Local**
 
@@ -120,7 +120,7 @@ python3 scripts/train.py
 ```bash
 python3 scripts/evaluate.py
 ```
-8b. Plot the matching run's results (replace the mode and seed as needed):
+8b. Plot matching run's results (replace mode and seed as needed):
 ```bash
 # Plot a single seed run (generates vector PDF figures)
 python3 scripts/plot_results.py --training-mode pixel-only --seed 42
@@ -133,7 +133,33 @@ python3 scripts/plot_results.py --training-mode pixel-only --overall
 
 ### Pretrained Checkpoints
 
-To inspect the completed legacy pixel-space PGD training run without reproducing all 200 epochs, download the 40 released checkpoints from [Hugging Face](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints). Its evaluation reports clean and pixel-PGD-20 metrics; the checkpoint at epoch 105 achieved the highest measured PGD-20 robust accuracy, and `epoch_200.pt` is the final checkpoint.
+To inspect completed legacy pixel-space PGD training run without reproducing all 200 epochs, download 40 released checkpoints from [Hugging Face](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints). Its evaluation reports clean and pixel-PGD-20 metrics; checkpoint at epoch 105 achieved highest measured PGD-20 robust accuracy, and `epoch_200.pt` is final checkpoint.
+
+### Report Implementation and Attack Checks
+
+After required checkpoints and CIFAR-10 test data are available locally,
+run report checks with:
+
+```bash
+python3 scripts/run_report_checks.py
+```
+
+The command performs three reproducible diagnostics without overwriting the
+primary checkpoint-evaluation CSVs:
+
+1. verifies DCT round-trip accuracy, masked projection, and perturbation budget;
+2. measures out-of-mask DCT energy introduced by final image clipping for a
+   low-frequency-PGD-20 attack; and
+3. compares primary one-restart pixel PGD-20 attack with a three-restart,
+   per-example maximum-loss PGD-50 attack at pixel-only seed-42 peak
+   (epoch 105) and final (epoch 200) checkpoints.
+
+By default, these are performed on a fixed, approximately class-balanced
+256-image CIFAR-10 test subset selected with seed `20260912`. They are
+diagnostic checks, not replacements for primary full-10,000-image,
+one-restart PGD-20 checkpoint evaluations. The generated results are saved in
+`report/checks/attack_strength_checks.csv` and
+`report/checks/implementation_checks.json`.
 
 ---
 
@@ -169,7 +195,11 @@ Robust-Overfitting/
 │   └── yu_et_al.md                    # Literature notes on understanding robust overfitting
 ├── report/                            # Research paper, presentations, and evaluation outputs
 │   ├── main.tex                       # LaTeX paper / technical report source
+│   ├── overleaf-version.tex           # Mirrored Overleaf source; differs only in figure paths
 │   ├── slides.pdf                     # Research presentation slides
+│   ├── checks/                        # Reproducible DCT/leakage and stronger-attack diagnostics
+│   │   ├── attack_strength_checks.csv
+│   │   └── implementation_checks.json
 │   ├── pixel-only/
 │   │   ├── baseline/                  # Completed legacy CSV, summary, and vector PDF plots
 │   │   ├── diagnostic/seed-42/        # Diagnostic evaluation CSV
@@ -187,6 +217,7 @@ Robust-Overfitting/
 │   ├── dct_pgd.py                     # Low-frequency DCT-masked PGD implementation
 │   ├── evaluate.py                    # Four-metric checkpoint evaluation script (PGD-20)
 │   ├── plot_results.py                # Evaluation & training plotting script (per-seed & aggregate vector PDF)
+│   ├── run_report_checks.py           # DCT, leakage, perturbation-budget, and stronger-attack checks
 │   ├── train.py                       # Core adversarial PGD training script
 │   └── verify_setup.py                # Setup verification script
 ├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)

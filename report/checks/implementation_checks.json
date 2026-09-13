@@ -1,0 +1,25 @@
+{
+  "dct_algebra": {
+    "dct_roundtrip_max_abs_error": 1.1086463928222656e-05,
+    "projected_out_of_mask_energy_max": 2.5295312719442187e-12,
+    "roundtrip_pass": true,
+    "projection_pass": true,
+    "device": "cpu",
+    "torch_version": "2.12.1",
+    "examples": 256,
+    "subset_seed": 20260912
+  },
+  "clipping_leakage": {
+    "examples": 256,
+    "preclip_leakage_mean": 1.7051465152503019e-12,
+    "preclip_leakage_max": 3.36276384342582e-12,
+    "final_leakage_mean": 0.007023603794934381,
+    "final_leakage_p95": 0.04752782266587019,
+    "final_leakage_max": 0.175615593791008,
+    "final_linf_max": 0.03137257695198059,
+    "checkpoint": "checkpoints/low-frequency-only/seed-42/epoch_200.pt",
+    "attack_steps": 20,
+    "epsilon": 0.03137254901960784,
+    "alpha": 0.00784313725490196
+  }
+}

@@ -214,10 +214,15 @@ absolute value before its $\alpha$-sized update, then the perturbation is
 uniformly rescaled if it exceeds $\epsilon$. Both attacks are white-box,
 untargeted cross-entropy attacks.
 
-\TBD{Verify the wording above against the final version of
-\texttt{scripts/dct\_pgd.py}, especially the effect of final image clipping
-on spectral leakage. If leakage measurements are reported, give their summary
-and describe whether they materially affect the threat-model interpretation.}
+The implementation checks in \cref{app:checks} confirm that the DCT
+round-trip and masked projection are numerically accurate before final image
+clipping. Clipping to $[0,1]$ does introduce nonzero out-of-mask energy: in a
+256-image diagnostic low-frequency-PGD-20 run, its mean fraction was 0.70\%,
+with a 95th percentile of 4.75\% and maximum of 17.56\%. We therefore use
+``DCT-masked low-frequency PGD'' to describe the attack-generation procedure,
+not a claim that every final, image-clipped perturbation is exactly
+band-limited. The final perturbations remained within the stated $\linf$
+budget to floating-point precision.
 
 \subsection{Training conditions}
 \label{sec:conditions}
@@ -326,9 +331,11 @@ epoch $e\in\E=\{5,10,\ldots,200\}$. Define
 \end{align}
 where ROG denotes the robust-overfitting gap in percentage points. Ties must
 be resolved using a predeclared rule; this draft uses the earliest evaluated
-epoch. \TBD{Confirm the tie rule, whether all reported peak epochs use
-aggregate means or seed-level peaks, and whether confidence intervals or a
-formal repeated-measures comparison will be included.}
+epoch. Aggregate peaks and ROGs in \cref{tab:main-results} are calculated
+from the condition mean trajectory, whereas \cref{app:per-seed} reports each
+seed's own earliest peak. The five-seed summaries use mean $\pm$ sample
+standard deviation descriptively; this study does not report confidence
+intervals or formal hypothesis tests.
 
 \subsection{Planned reporting checks}
 \begin{itemize}
@@ -337,10 +344,12 @@ formal repeated-measures comparison will be included.}
   \item Keep model selection separate from test reporting: the test curve is
   descriptive here and must not be presented as an unbiased validation-based
   early-stopping procedure.
-  \item \TBD{Run and report attack-strength checks, such as more PGD steps,
-  restarts, or an appropriate suite of attacks, before making security claims.}
-  \item \TBD{Specify whether statistical uncertainty is descriptive only or
-  whether a preregistered/inferential test is justified with five seeds.}
+  \item An attack-strength diagnostic is reported in \cref{app:checks}. It
+  compares the primary single-restart PGD-20 attack with a three-restart
+  PGD-50 attack on two selected pixel-only checkpoints. It is a limited check,
+  not a comprehensive robustness evaluation or certificate.
+  \item Uncertainty is descriptive only: mean $\pm$ sample standard deviation
+  summarizes the five seeds, without a preregistered or inferential test.
 \end{itemize}
 
 \section{Results}
@@ -737,9 +746,47 @@ Seed & Pixel epochs & Low-frequency epochs & Epoch-85 domain & Epoch-200 domain 
 
 \section{Attack-Strength and Implementation Checks}
 \label{app:checks}
-\TBD{Document diagnostic runs, DCT projection tests, perturbation-budget
-checks, spectral-leakage measurements after clipping, and any stronger-attack
-or restart ablations. State explicitly if a planned check was not run.}
+All checks in this appendix use a fixed, approximately class-balanced
+256-image subset of the CIFAR-10 test set (selection seed 20260912). They are
+diagnostic checks only; the primary results remain the full-test-set,
+single-restart PGD-20 measurements reported in \cref{sec:results}.
+
+\paragraph{DCT and perturbation checks.}
+On eight random $32\times32$ tensors, the maximum absolute DCT--inverse-DCT
+round-trip error was $1.11\times10^{-5}$. Projecting these tensors to the
+$8\times8$ mask left at most $2.53\times10^{-12}$ of DCT energy outside the
+mask. We then generated low-frequency PGD-20 examples with the
+low-frequency-only seed-42 epoch-200 checkpoint. Before final image clipping,
+the maximum out-of-mask energy fraction was $3.36\times10^{-12}$; after
+clipping, the mean, 95th-percentile, and maximum fractions were 0.70\%,
+4.75\%, and 17.56\%, respectively. The maximum final perturbation norm was
+$0.03137258$, equal to $8/255$ to floating-point precision. Thus projection
+and budget enforcement behave as intended, while final image clipping creates
+some nonzero high-frequency leakage that should be retained in the
+threat-model caveat.
+
+\begin{table}[htbp]
+\centering
+\caption{Pixel attack-strength diagnostic on a fixed 256-image test subset.
+For PGD-50, the per-example candidate with the highest cross-entropy loss
+among three random restarts is used. Accuracy is in percent.}
+\label{tab:attack-strength}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Checkpoint & PGD-20 (one restart) & PGD-50 (three restarts) & Difference & PGD-50 loss \\
+\midrule
+Pixel-only seed 42, epoch 105 & 49.22 & 48.83 & $-0.39$ & 1.319 \\
+Pixel-only seed 42, epoch 200 & 38.67 & 38.28 & $-0.39$ & 3.529 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The stronger attack reduces accuracy by one example out of 256 at each
+checkpoint and raises mean cross-entropy loss from 1.312 to 1.319 at epoch 105
+and from 3.486 to 3.529 at epoch 200. This small diagnostic does not reveal a
+large PGD-20 weakness in the selected control checkpoints, but it does not
+substitute for multiple full-test restarts, adaptive attacks, or a broader
+attack suite.
 
 \begin{thebibliography}{99}
 
