@@ -168,33 +168,42 @@ each threat model for every training input, then respectively train on all of
 them or only on the example with the greatest loss \cite{tramer2019}. Maini
 et al.'s Multi Steepest Descent (MSD) instead incorporates the threat-model
 choice into the inner maximization by selecting the highest-loss candidate
-direction at every attack step \cite{maini2020}. The mixed-domain condition in
-this report does neither: a seeded random choice selects pixel-space or
-low-frequency PGD once per epoch, and every batch in that epoch uses the
-selected attack. It is therefore a stochastic alternation between
-single-domain training objectives, not a per-example worst-case optimization
-over the union of the two threat models.
+direction at every attack step \cite{maini2020}. We instead use a
+seeded random choice to select pixel-space or low-frequency PGD once per
+epoch. Every batch in that epoch uses the selected attack. This alternates
+between two training objectives across epochs, without selecting the
+worst-case attack for each training example.
 
 \section{Methods}
 \label{sec:methods}
 
 \subsection{Notation and threat models}
-Images are $x\in[0,1]^{3\times32\times32}$ with labels $y\in\{1,\ldots,10\}$.
+Let $x\in[0,1]^{3\times32\times32}$ denote a color image with three channels
+and pixel values scaled to $[0,1]$, and let $y\in\{1,\ldots,10\}$ denote its
+class label. A perturbation $\delta$ is an additive change to the image. We
+use a perturbation budget of $\epsilon=8/255$, which limits the maximum
+absolute change to any pixel-channel value.
 Let $\mathcal{B}_\infty(\epsilon)=\{\delta:\lVert\delta\rVert_\infty
-\leq\epsilon\}$, where $\epsilon=8/255$. The pixel-space threat set is
+\leq\epsilon\}$. The pixel-space threat set is
 $\mathcal{S}_x=\{\delta\in\mathcal{B}_\infty(\epsilon):x+\delta\in[0,1]^{3\times32\times32}\}$.
+The set $\mathcal{B}_\infty(\epsilon)$ contains perturbations within this
+budget. The pixel-space threat set $\mathcal{S}_x$ additionally requires the
+perturbed image to remain within $[0,1]$.
 The low-frequency threat model
 applies a two-dimensional DCT to the perturbation, retains an $8\times8$
 top-left block of coefficients per channel, and transforms the result back to
 pixel space. Thus it retains $64$ of the $1{,}024$ coefficients per channel
 before the final image-range clipping step.
 
-Let $C$ be the orthonormal DCT-II matrix and $M_8$ the binary low-frequency
-mask. The low-frequency projection used in the implementation is
+The low-frequency projection used in the implementation is
 \begin{equation}
   P_8(\delta)=C^\top\bigl(M_8\odot(C\delta C^\top)\bigr)C.
   \label{eq:dct-projection}
 \end{equation}
+Here, $C$ is the $32\times32$ orthonormal DCT-II matrix, $C^\top$ is its
+transpose, and $\odot$ denotes element-wise multiplication. The mask $M_8$
+is one inside the top-left $8\times8$ block and zero elsewhere. The
+projection $P_8$ is applied separately to each color channel.
 The code uniformly rescales projected perturbations when necessary to enforce
 the $\linf$ budget, rather than clipping individual perturbation coordinates;
 the resulting image is then clipped to $[0,1]$.
@@ -210,6 +219,12 @@ the $\linf$ ball, clips the perturbed image to $[0,1]$, and iterates
   \qquad \alpha=2/255.
   \label{eq:pixel-pgd}
 \end{equation}
+Here, $\delta_t$ is the perturbation at attack step $t$, and $\alpha$ is the
+step size. The gradient $\nabla_\delta\ell$ describes how the loss changes
+with the perturbation, and $\mathrm{sign}$ takes its element-wise sign. The
+projection $\Pi_{\mathcal{S}_x}$ clips the updated perturbation to satisfy
+both the perturbation budget and the valid image range.
+
 For low-frequency PGD, the random start and gradient direction are projected
 with $P_8$. The projected direction is normalized by its per-example maximum
 absolute value before its $\alpha$-sized update, then the perturbation is
@@ -232,9 +247,10 @@ budget to floating-point precision.
 
 \subsection{Training conditions}
 \label{sec:conditions}
-All conditions use the same model, data, optimizer, learning-rate schedule,
-and $\linf$ budget. They differ in the attack used to generate training
-examples. The low-frequency attack changes both the search domain and the
+The pixel-only, low-frequency-only, and mixed-domain conditions share the
+model, dataset, optimizer, learning-rate schedule, and perturbation budget
+specified below. They differ in how adversarial training examples are
+generated. The low-frequency attack changes both the search domain and the
 update rule: it uses normalized projected gradients and uniform rescaling,
 whereas pixel PGD uses signed gradients and coordinate-wise clipping. The
 comparison therefore evaluates these attack procedures together, rather than
@@ -250,18 +266,20 @@ Condition & Adversarial examples used for every training batch in an epoch \\
 \midrule
 Pixel-only & Standard pixel-space PGD-10. \\
 Low-frequency-only & DCT-masked low-frequency PGD-10 with cutoff $8$. \\
-Mixed-domain & A private seeded random-number generator selects pixel or
-low-frequency PGD with equal probability once at the start of each epoch; all
+Mixed-domain & A dedicated, seeded random-number generator selects pixel-space or
+low-frequency PGD with equal probability at the start of each epoch; all
 batches in that epoch use the selected attack. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-The mixed-domain random-number generator is deliberately separate from data
-shuffling, augmentation, and PGD random starts. Checkpoints save the current
+Using a separate generator keeps the domain schedule reproducible for a given
+seed, regardless of random draws used for data shuffling, augmentation, or
+PGD initialization. Checkpoints save the current
 domain, the complete domain schedule so far, the seed, and DCT cutoff.
-\Cref{app:schedules} reports the realized domain counts and the domains at
-the aggregate pixel peak and final checkpoint.
+Appendix~\ref{app:schedules} reports the number of epochs assigned to each
+attack domain and the domains used at the aggregate pixel-accuracy peak and
+final checkpoint.
 
 \subsection{Optimization and implementation details}
 \label{sec:implementation}
@@ -297,8 +315,8 @@ Checkpoint schedule & Every 5 epochs: 40 checkpoints from 5 through 200 \\
 \end{tabular}
 \end{table}
 
-We used NVIDIA A10 (24~GB PCIe) instances on Lambda Labs for all full
-training runs. The retained TensorBoard logs for all 15 full runs
+We used NVIDIA A10 GPUs with 24~GB of memory on cloud instances rented from
+Lambda Labs for all full training runs and checkpoint evaluations. The retained TensorBoard logs for all 15 full runs
 span 5.83 to 5.91 hours from their first to final scalar event; this is a
 logging-time measure, not a complete cloud-billing or end-to-end wall-clock
 measure. The source code seeds Python, NumPy, and PyTorch for every run, seeds
