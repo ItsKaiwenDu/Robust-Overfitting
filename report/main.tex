@@ -465,9 +465,10 @@ the two attacks under this evaluation protocol.
   and in-training test accuracy, and the right reports training robust loss and
   in-training test loss. Training robustness is measured against the pixel
   PGD-10 attack used for optimization, and the logged test-robust quantity also
-  uses pixel-PGD-10. These logged quantities illustrate optimization dynamics
-  but are not directly comparable to the separately computed checkpoint
-  PGD-20 results in \cref{fig:pixel-eval}.}
+  uses pixel-PGD-10. These curves show how accuracy and loss change during training. Their
+  robust measurements use PGD-10, while the saved-checkpoint evaluations in
+  \cref{fig:pixel-eval} use PGD-20, so the attack settings differ between
+  the figures.}
   \label{fig:pixel-training}
 \end{figure}
 

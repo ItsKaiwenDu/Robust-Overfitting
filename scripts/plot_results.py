@@ -506,7 +506,13 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mod
         'mixed-domain': 'Mixed-Domain Adversarial Training'
     }
     condition_title = mode_titles.get(training_mode, training_mode)
-    plt.suptitle(f'Robust Overfitting Investigation: {condition_title} ({agg["num_seeds"]}-Seed Overall)', fontsize=15, fontweight='bold', y=0.98)
+    if training_mode in ('pixel-only', 'low-frequency-only'):
+        condition_title = condition_title.replace('Adversarial Training', 'Training')
+        seed_label = 'Five Seeds' if agg['num_seeds'] == 5 else f"{agg['num_seeds']} Seeds"
+        figure_title = f'{condition_title}: Checkpoint Evaluation ({seed_label})'
+    else:
+        figure_title = f'Robust Overfitting Investigation: {condition_title} ({agg["num_seeds"]}-Seed Overall)'
+    plt.suptitle(figure_title, fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
@@ -715,7 +721,13 @@ def plot_aggregate_training_results(runs_mode_dir, output_path, training_mode='p
         'mixed-domain': 'Mixed-Domain Adversarial Training'
     }
     condition_title = mode_titles.get(training_mode, training_mode)
-    plt.suptitle(f'Training Dynamics: {condition_title} ({agg["num_seeds"]}-Seed Overall)', fontsize=15, fontweight='bold', y=0.98)
+    if training_mode in ('pixel-only', 'low-frequency-only'):
+        condition_title = condition_title.replace('Adversarial Training', 'Training')
+        seed_label = 'Five Seeds' if agg['num_seeds'] == 5 else f"{agg['num_seeds']} Seeds"
+        figure_title = f'{condition_title}: Training Dynamics ({seed_label})'
+    else:
+        figure_title = f'Training Dynamics: {condition_title} ({agg["num_seeds"]}-Seed Overall)'
+    plt.suptitle(figure_title, fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.07), ncol=len(labels), frameon=False, fontsize=10)
