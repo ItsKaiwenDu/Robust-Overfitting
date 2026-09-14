@@ -283,7 +283,9 @@ final checkpoint.
 
 \subsection{Optimization and implementation details}
 \label{sec:implementation}
-Models are PreActResNet-18 classifiers \cite{he2016} trained on CIFAR-10
+We use PreActResNet-18, based on the pre-activation residual architecture of
+He et al.~\cite{he2016}, with the implementation provided by Rice
+et al.~\cite{rice2020}. Models are trained on CIFAR-10
 \cite{krizhevsky2009}. Training uses
 random $32\times32$ crops with four-pixel padding and random horizontal flips;
 test images receive tensor conversion only. Inputs are normalized with CIFAR-10
@@ -607,7 +609,7 @@ when the attacks trick different examples. The test set should then be evaluated
 once
 for the selected checkpoint, with each component attack reported separately.
 
-\section{Limitations and Threats to Validity}
+\section{Limitations}
 \label{sec:limitations}
 \begin{itemize}
   \item \textbf{Attack evaluation.} PGD-20 with one reported configuration is
@@ -647,13 +649,12 @@ pixel-PGD-20: mean pixel robustness peaked at 51.22\% at epoch 105 and fell
 by 8.56 percentage points by epoch 200. Low-frequency-only training instead
 maintained 92.70\% final low-frequency robustness with a 0.05-point
 best-versus-final decline, while exhibiting 0.00\% measured pixel and
-joint accuracy. Once-per-epoch mixed-domain training did not yield
+joint accuracy. Once-per-epoch mixed-domain training did not produce
 stable simultaneous robustness; its pixel robustness was strongly associated
-with the most recent training domain. These findings are limited to
-PreActResNet-18, CIFAR-10, the selected DCT cutoff, and the specified
-finite-step attacks; the most useful next experiment is a validation-selected,
-batch- or example-level multi-threat training objective evaluated under a
-broader attack suite.
+with the most recent training domain. These findings apply to PreActResNet-18 on CIFAR-10 with the selected DCT
+cutoff and attack settings. A useful next experiment would mix attacks at the
+batch or example level, select checkpoints using a validation set, and
+evaluate them with a broader attack suite.
 
 \section*{Acknowledgments}
 The author gratefully acknowledges Nicholas Tran for mentorship and
@@ -661,7 +662,10 @@ constructive feedback on the research design, analysis, and presentation.
 
 \section*{Reproducibility and Artifact Map}
 \addcontentsline{toc}{section}{Reproducibility and Artifact Map}
-The implementation and report artifacts are organized as follows:
+The source code, evaluation results, diagnostic checks, and reproduction
+instructions are available at
+\url{https://github.com/ItsKaiwenDu/Robust-Overfitting}.
+The main files and directories are organized as follows:
 \begin{itemize}
   \item \texttt{scripts/train.py}: adversarial training, checkpoints, seeded
   mixed-domain scheduling, and TensorBoard logging;
@@ -673,9 +677,6 @@ The implementation and report artifacts are organized as follows:
   \item Aggregate evaluation data: each condition's \texttt{overall} directory
   contains its current five-seed mean and standard-deviation checkpoint summary.
 \end{itemize}
-Code, committed evaluation results, report-check artifacts, and current
-reproduction instructions are available at
-\url{https://github.com/ItsKaiwenDu/Robust-Overfitting}.
 
 \FloatBarrier
 \appendix
@@ -702,7 +703,7 @@ conventional robust overfitting.
 \caption{Per-seed pixel-PGD-20 results for pixel-only training. Accuracy is in percent;
 gaps are in percentage points.}
 \label{tab:per-seed-pixel}
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
 \toprule
 Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \midrule
@@ -712,7 +713,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 45 & 105 & 51.41 & 42.89 & 8.52 \\
 46 & 105 & 50.76 & 42.40 & 8.36 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \begin{table}[!htbp]
@@ -720,7 +721,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \caption{Per-seed low-frequency-PGD-20 results for low-frequency-only
 training. Accuracy is in percent; gaps are in percentage points.}
 \label{tab:per-seed-low-frequency}
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
 \toprule
 Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \midrule
@@ -730,7 +731,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 45 & 195 & 92.51 & 92.33 & 0.18 \\
 46 & 170 & 92.65 & 92.53 & 0.12 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \begin{table}[!htbp]
@@ -739,7 +740,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 is in percent; gaps are in percentage points. These raw gaps
 are confounded by the epoch-level attack schedule.}
 \label{tab:per-seed-mixed}
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
 \toprule
 Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 \midrule
@@ -749,7 +750,7 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 45 & 125 & 46.27 & 14.58 & 31.69 \\
 46 & 130 & 45.58 & 16.48 & 29.10 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \FloatBarrier
@@ -768,7 +769,7 @@ training, whereas only seed 42 did so at epoch 200.
 \caption{Realized mixed-domain attack schedules extracted from saved
 epoch-200 checkpoint metadata.}
 \label{tab:mixed-schedules}
-\begin{tabular}{@{}lrrll@{}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrll@{}}
 \toprule
 Seed & Pixel epochs & Low-frequency epochs & Epoch-85 domain & Epoch-200 domain \\
 \midrule
@@ -778,7 +779,7 @@ Seed & Pixel epochs & Low-frequency epochs & Epoch-85 domain & Epoch-200 domain 
 45 & 98 & 102 & Pixel & Low-frequency \\
 46 & 100 & 100 & Pixel & Low-frequency \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 \FloatBarrier
@@ -807,16 +808,17 @@ some high-frequency leakage.
 \caption{Pixel attack-strength diagnostic for pixel-only seed 42 on a fixed
 256-image test subset. PGD-20 uses one random restart; for PGD-50, the
 per-example candidate with the highest cross-entropy loss among three random
-restarts is used. Accuracy is in percent.}
+restarts is used. Accuracy is in percent. $\Delta$ is PGD-50 accuracy minus
+PGD-20 accuracy, in percentage points.}
 \label{tab:attack-strength}
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
 \toprule
 Checkpoint & PGD-20 & PGD-50 & $\Delta$ & PGD-50 loss \\
 \midrule
 Epoch 105 & 49.22 & 48.83 & $-0.39$ & 1.319 \\
 Epoch 200 & 38.67 & 38.28 & $-0.39$ & 3.529 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
 The stronger attack reduces accuracy by one example out of 256 at each
