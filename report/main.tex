@@ -535,8 +535,8 @@ robust overfitting alone caused the raw 21.46-point joint gap.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_stratified.pdf}
-  \caption{Mixed-domain checkpoint evaluation stratified by the attack domain
-  used in the immediately preceding training epoch. Each point averages the
+  \caption{Mixed-domain checkpoint evaluation grouped by the attack used in
+  the final training epoch before each checkpoint. Each point averages the
   seeds with the indicated preceding domain. Group sizes vary from one to
   five; shaded bands show sample standard deviation when at least two seeds
   contribute. Singleton groups have zero-width bands, and epochs with no
@@ -556,9 +556,10 @@ robust overfitting alone caused the raw 21.46-point joint gap.
   bands denote one sample standard deviation. Training robust accuracy and
   loss are measured using whichever PGD-10 domain is selected for that seed
   and epoch, while the in-training test-robust curves always use pixel-PGD-10.
-  The training robust curve is therefore neither stratified by domain nor a
-  like-for-like metric across epochs or seeds; it should be read as an
-  optimization trace rather than simultaneous robustness to both attacks.}
+  The training curves combine measurements from different attack domains
+  across seeds and epochs. They show performance against the attack used for
+  training each model at that time; they do not measure joint accuracy under
+  both attacks.}
   \label{fig:mixed-training}
 \end{figure}
 
@@ -577,9 +578,12 @@ gap does not imply that every
 measure remains stable: low-frequency test loss rises after its epoch-105
 minimum.
 
-These experiments do not isolate a causal mechanism. Frequency bias,
-optimization dynamics, and negative transfer are possible explanations,
-but distinguishing them requires further controls. In particular, the
+These experiments show how robustness differs across the training conditions,
+but they do not determine why these differences occur. Possible explanations
+include which frequency components the models learn to use, how the attack
+updates affect learning, and whether training against one attack reduces
+robustness to the other. Further controlled experiments would be needed to
+distinguish these explanations. In particular, the
 mixed-domain results do not show that epoch-wise mixing mitigates robust
 overfitting, and the high low-frequency accuracy still needs stronger
 matched-domain attack checks.

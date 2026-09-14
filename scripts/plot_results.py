@@ -576,8 +576,8 @@ def plot_mixed_domain_stratified_evaluation_results(report_mode_dir, output_path
     plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
     fig, axes = plt.subplots(2, 2, figsize=(15, 10), dpi=300, sharex=True)
     domain_styles = {
-        'pixel': {'label': 'After pixel-training epoch', 'color': '#1f77b4', 'marker': 'o'},
-        'low-frequency': {'label': 'After low-frequency-training epoch', 'color': '#ff7f0e', 'marker': '^'},
+        'pixel': {'label': 'After pixel-training epoch', 'color': '#1f77b4', 'marker': 'o', 'linestyle': '-'},
+        'low-frequency': {'label': 'After low-frequency-training epoch', 'color': '#ff7f0e', 'marker': '^', 'linestyle': '-'},
     }
 
     for ax, (metric, (title, y_label)) in zip(axes.flat, metrics.items()):
@@ -592,6 +592,7 @@ def plot_mixed_domain_stratified_evaluation_results(report_mode_dir, output_path
             ax.plot(
                 epochs, means, label=style['label'], color=style['color'],
                 linewidth=2.2, marker=style['marker'], markersize=5,
+                linestyle=style['linestyle'],
             )
             ax.fill_between(epochs, means - stds, means + stds, color=style['color'], alpha=0.16)
 
@@ -607,15 +608,10 @@ def plot_mixed_domain_stratified_evaluation_results(report_mode_dir, output_path
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.01), ncol=2, frameon=False, fontsize=10)
     fig.suptitle(
-        'Mixed-Domain Evaluation Stratified by the Preceding Training Domain',
+        'Mixed-Domain Training: Evaluation by Last Training Attack',
         fontsize=15, fontweight='bold', y=0.98,
     )
-    fig.text(
-        0.5, 0.04,
-        'Each point is the mean across seeds whose checkpoint ended in the indicated domain; shaded bands show sample SD.',
-        ha='center', fontsize=9,
-    )
-    plt.tight_layout(rect=[0, 0.08, 1, 0.95])
+    plt.tight_layout(rect=[0, 0.04, 1, 0.95])
 
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
     stem, extension = os.path.splitext(output_path)
@@ -721,12 +717,9 @@ def plot_aggregate_training_results(runs_mode_dir, output_path, training_mode='p
         'mixed-domain': 'Mixed-Domain Adversarial Training'
     }
     condition_title = mode_titles.get(training_mode, training_mode)
-    if training_mode in ('pixel-only', 'low-frequency-only'):
-        condition_title = condition_title.replace('Adversarial Training', 'Training')
-        seed_label = 'Five Seeds' if agg['num_seeds'] == 5 else f"{agg['num_seeds']} Seeds"
-        figure_title = f'{condition_title}: Training Dynamics ({seed_label})'
-    else:
-        figure_title = f'Training Dynamics: {condition_title} ({agg["num_seeds"]}-Seed Overall)'
+    condition_title = condition_title.replace('Adversarial Training', 'Training')
+    seed_label = 'Five Seeds' if agg['num_seeds'] == 5 else f"{agg['num_seeds']} Seeds"
+    figure_title = f'{condition_title}: Training Dynamics ({seed_label})'
     plt.suptitle(figure_title, fontsize=15, fontweight='bold', y=0.98)
 
     handles, labels = ax1.get_legend_handles_labels()
