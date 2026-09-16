@@ -24,7 +24,7 @@
 ## Visualizations
 
 - [Five-seed evaluation curves](mdo_eval.pdf)
-- [Evaluation curves stratified by preceding training domain](mdo_eval_stratified.pdf)
+- [Evaluation curves grouped by preceding training domain](mdo_eval_grouped.pdf)
 - [Five-seed training dynamics](mdo_train.pdf)
 
-The domain-stratified figure separates checkpoints by the attack domain used in their immediately preceding training epoch. It makes the short-term domain specialization visible without treating the random epoch-level schedule as one continuous trajectory. Shaded bands show sample standard deviation across the available seeds in each group. The TensorBoard test-robust curve uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.
+The grouped figure separates checkpoints by the attack domain used in their immediately preceding training epoch. It makes the short-term domain specialization visible without treating the random epoch-level schedule as one continuous trajectory. Shaded bands show sample standard deviation across the available seeds in each group. The TensorBoard test-robust curve uses pixel-PGD-10 in every mode; the training-robust curve uses the mode's active training attack.

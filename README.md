@@ -127,13 +127,20 @@ python3 scripts/plot_results.py --training-mode pixel-only --seed 42
 
 # Generate aggregate 5-seed curves and summaries in overall/
 python3 scripts/plot_results.py --training-mode pixel-only --overall
+
+# Group mixed-domain checkpoint results by the most recent training attack
+python3 scripts/plot_results.py --training-mode mixed-domain --group-mixed-domain
 ```
 
 > **Note:** The **CIFAR-10** dataset (~170 MB) will be downloaded automatically to `data/` on first training run. No manual download is required.
 
 ### Pretrained Checkpoints
 
-To inspect completed legacy pixel-space PGD training run without reproducing all 200 epochs, download 40 released checkpoints from [Hugging Face](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints). Its evaluation reports clean and pixel-PGD-20 metrics; checkpoint at epoch 105 achieved highest measured PGD-20 robust accuracy, and `epoch_200.pt` is final checkpoint.
+All 600 checkpoints from the three training conditions are available on
+[Hugging Face](https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints).
+They are organized by condition, seed (42–46), and epoch, with 40 checkpoints
+per run from epochs 5 through 200. The original legacy pixel-only replication
+is documented separately under `report/pixel-only/baseline/`.
 
 ### Report Implementation and Attack Checks
 

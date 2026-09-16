@@ -109,7 +109,7 @@ def plot_loss_subplot(ax, data, best_epoch, peak_label, training_mode='pixel-onl
     max_idx = data['epochs'].index(best_epoch)
     if training_mode == 'low-frequency-only':
         loss_val = data['low_frequency_losses'][max_idx]
-        loss_label = 'Low-Freq Robust Loss'
+        loss_label = 'Low-Freq Loss at Accuracy Peak'
         xytext_loss = (best_epoch - 8, 3.2)
         ha = 'right'
     elif training_mode == 'mixed-domain':
@@ -466,7 +466,7 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mod
     if training_mode == 'low-frequency-only':
         loss_val_mean = agg['low_frequency_losses_mean'][max_idx]
         loss_val_std = agg['low_frequency_losses_std'][max_idx]
-        loss_label = 'Low-Freq Robust Loss'
+        loss_label = 'Low-Freq Loss at Accuracy Peak'
         xytext_loss = (best_epoch - 8, 3.2)
         ha = 'right'
     elif training_mode == 'mixed-domain':
@@ -526,7 +526,7 @@ def plot_aggregate_evaluation_results(report_mode_dir, output_path, training_mod
     print(f"Aggregated evaluation chart saved successfully as {output_path}")
 
 
-def plot_mixed_domain_stratified_evaluation_results(report_mode_dir, output_path):
+def plot_mixed_domain_grouped_evaluation_results(report_mode_dir, output_path):
     """Plot mixed-domain evaluation metrics by the preceding training domain.
 
     Mixed-domain training makes a seeded random domain choice at each epoch.
@@ -618,7 +618,7 @@ def plot_mixed_domain_stratified_evaluation_results(report_mode_dir, output_path
     pdf_path = output_path if extension.lower() == '.pdf' else f'{stem}.pdf'
     plt.savefig(pdf_path, bbox_inches='tight')
     plt.close(fig)
-    print(f"Mixed-domain stratified evaluation chart saved as {pdf_path}")
+    print(f"Mixed-domain grouped evaluation chart saved as {pdf_path}")
 
 
 def aggregate_training_data(runs_mode_dir):
@@ -741,7 +741,7 @@ def plot_aggregate_training_results(runs_mode_dir, output_path, training_mode='p
 def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False,
                        plot_type='both', aggregate=False, all_seeds=False,
                        csv_path=None, output_path=None, runs_dir=None,
-                       stratify_mixed_domain=False):
+                       group_mixed_domain=False):
     """Processes plotting workflows for a specific mode."""
     report_mode_dir = os.path.join('report', training_mode)
     runs_mode_dir = os.path.join('runs', training_mode)
@@ -752,13 +752,13 @@ def process_mode_plots(training_mode, seed=None, run_name=None, diagnostic=False
     }
     mode_prefix = mode_prefixes[training_mode]
 
-    if stratify_mixed_domain:
+    if group_mixed_domain:
         if training_mode != 'mixed-domain':
-            raise ValueError('--stratify-mixed-domain requires --training-mode mixed-domain')
-        stratified_output = output_path or os.path.join(
-            report_mode_dir, 'overall', 'mdo_eval_stratified.pdf'
+            raise ValueError('--group-mixed-domain requires --training-mode mixed-domain')
+        grouped_output = output_path or os.path.join(
+            report_mode_dir, 'overall', 'mdo_eval_grouped.pdf'
         )
-        plot_mixed_domain_stratified_evaluation_results(report_mode_dir, stratified_output)
+        plot_mixed_domain_grouped_evaluation_results(report_mode_dir, grouped_output)
         return
 
     # 1. Overall plotting if requested or if all_seeds is requested
@@ -827,8 +827,11 @@ def main():
     parser.add_argument('--csv-path', default=None, help='override the default evaluation CSV path')
     parser.add_argument('--output-path', default=None, help='override the default evaluation chart path')
     parser.add_argument('--runs-dir', default=None, help='override the default TensorBoard runs directory')
-    parser.add_argument('--stratify-mixed-domain', action='store_true',
-                        help='split mixed-domain checkpoint results by the preceding training attack domain')
+    parser.add_argument('--group-mixed-domain', action='store_true',
+                        help='group mixed-domain checkpoint results by the preceding training attack domain')
+    # Preserve existing commands while using "grouped" in documentation and output.
+    parser.add_argument('--stratify-mixed-domain', dest='group_mixed_domain',
+                        action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     if args.all_modes:
@@ -845,7 +848,7 @@ def main():
                 csv_path=args.csv_path,
                 output_path=args.output_path,
                 runs_dir=args.runs_dir,
-                stratify_mixed_domain=args.stratify_mixed_domain
+                group_mixed_domain=args.group_mixed_domain
             )
     else:
         process_mode_plots(
@@ -859,7 +862,7 @@ def main():
             csv_path=args.csv_path,
             output_path=args.output_path,
             runs_dir=args.runs_dir,
-            stratify_mixed_domain=args.stratify_mixed_domain
+            group_mixed_domain=args.group_mixed_domain
         )
 
 
