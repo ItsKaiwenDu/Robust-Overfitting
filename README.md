@@ -1,7 +1,7 @@
 # Investigating Robust Overfitting in Adversarial Training
 
 This is GitHub repository for research on robust overfitting in adversarial training.
-Last updated: September 12, 2026
+Last updated: September 17, 2026
 
 ---
 
@@ -30,7 +30,7 @@ The project reproduced robust overfitting with pixel-space PGD adversarial train
 All conditions use same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, 200 epochs, 10-step training PGD, perturbation budget, and random-seed policy.
 
 1. **Pixel-only:** Train with standard pixel-space PGD in every epoch. This is completed Rice et al. replication.
-2. **Low-frequency-only:** Train with low-frequency DCT-masked PGD in every epoch. The adversarial perturbation is restricted by a predefined low-frequency mask before being transformed back to image space.
+2. **Low-frequency-only:** Train with low-frequency DCT-masked PGD in every epoch. The attack generation projects perturbations through a predefined low-frequency DCT mask before transforming them back to image space. Final image-range clipping can introduce a small amount of out-of-mask frequency energy, so this describes the attack-generation procedure rather than exact band limitation of every final perturbation.
 3. **Mixed-domain (pixel or low-frequency):** At start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-masked PGD. Every batch in that epoch uses selected attack domain.
 
 ### Evaluation Configurations
@@ -42,7 +42,11 @@ For each new full run, all 40 saved checkpoints (epochs 5–200, every 5 epochs)
 3. **Low-frequency robustness:** attack each test image with DCT-masked PGD-20 using same budget and measure robustness.
 4. **Union robustness:** per image, count it as correct only if model resisted *both* pixel-space and low-frequency attacks. This means measuring whether model is robust to both attack domains for same image.
 
-For each applicable metric, we record **peak epoch** (when accuracy was highest) and **post-peak decline** (how much it dropped by epoch 200). These are primary numbers compared across conditions. The completed legacy pixel-only replication has clean and pixel-PGD-20 measurements only; low-frequency and union metrics were added for new multi-condition runs.
+For each applicable metric, we record **peak epoch** (when accuracy was highest) and **post-peak decline** (how much it dropped by epoch 200). These are primary numbers compared across conditions. For mixed-domain training, however, the peak-to-final gap is descriptive: it also reflects which attack domain was used most recently, rather than only robust overfitting. The completed legacy pixel-only replication has clean and pixel-PGD-20 measurements only; low-frequency and union metrics were added for new multi-condition runs.
+
+### Results Snapshot
+
+Across five seeds, pixel-only training reproduced robust overfitting under pixel-PGD-20: mean pixel robustness peaked at **51.22%** at epoch **105** and declined by **8.56 percentage points** by epoch 200. Low-frequency-only training retained **92.70%** final low-frequency-PGD-20 robustness, only **0.05 points** below its peak, but had **0.00%** measured pixel-PGD-20 and union robustness. Epoch-wise mixed-domain training did not yield stable simultaneous robustness: its mean pixel robustness was **42.36%** after pixel-training epochs and **3.53%** after low-frequency-training epochs, indicating schedule-dependent domain specialization.
 
 ---
 
@@ -202,8 +206,7 @@ Robust-Overfitting/
 │   └── yu_et_al.md                    # Literature notes on understanding robust overfitting
 ├── report/                            # Research paper, presentations, and evaluation outputs
 │   ├── main.tex                       # LaTeX paper / technical report source
-│   ├── overleaf-version.tex           # Mirrored Overleaf source; differs only in figure paths
-│   ├── slides.pdf                     # Research presentation slides
+│   ├── slides.pptx                    # Research presentation slides
 │   ├── checks/                        # Reproducible DCT/leakage and stronger-attack diagnostics
 │   │   ├── attack_strength_checks.csv
 │   │   └── implementation_checks.json
