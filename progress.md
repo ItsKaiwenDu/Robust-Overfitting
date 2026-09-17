@@ -150,3 +150,12 @@
   * [`report/low-frequency-only/overall/lfo_overall.md`](report/low-frequency-only/overall/lfo_overall.md): Consolidated low-frequency-only summary used for the three-condition comparison.
   * [`scripts/evaluate.py`](scripts/evaluate.py): Four-metric checkpoint evaluation with paired per-image union-robustness calculation.
   * [`report/main.tex`](report/main.tex): Early final-report draft with its skeleton and completed results section.
+
+---
+
+## Week 12 (Completed)
+* **Progress Report:** This week, I shifted the project from running experiments to communicating the completed study. I set up and expanded the final research report in [`report/main.tex`](report/main.tex), drafting the motivation, related work, methodology, evaluation protocol, results, discussion, limitations, and conclusion. The report incorporates the five-seed results from the pixel-only, low-frequency-only, and mixed-domain conditions, along with the corresponding figures, summary tables, citations, and implementation checks. In particular, the results explain that pixel-only training shows the familiar robust-overfitting decline, low-frequency-only training produces strong robustness only in its matched domain, and epoch-wise mixed-domain training produces schedule-dependent domain specialization rather than stable joint robustness. I also built the consortium presentation in [`report/slides.pptx`](report/slides.pptx), with speaker notes, to communicate the research gap, experimental setup, main findings, and contribution in a clearer narrative. The report and slides are now substantive working drafts and will receive final accuracy, clarity, consistency, and presentation-readiness checks before submission.
+
+* **Deliverables:**
+  * [`report/main.tex`](report/main.tex): Final-report working draft covering the complete study, including figures, tables, citations, results, limitations, and conclusion.
+  * [`report/slides.pptx`](report/slides.pptx): Consortium presentation deck with speaker notes covering the research gap, method, results, and contribution.

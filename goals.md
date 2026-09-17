@@ -131,7 +131,7 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 11 (In Progress)
+## Week 11 (Completed)
 * **Objective:** Run and analyze pixel-only and mixed-domain experiments, then verify and compare all three conditions.
 
   1. Run 5 parallel pixel-only training experiments on Lambda Labs (same 5 seeds as low-frequency-only runs, 5x NVIDIA A10 GPUs), same procedure as week 10.
@@ -145,22 +145,10 @@ This document tracks weekly goals, objectives, expectations, and deliverables fo
 
 ---
 
-## Week 12 (Upcoming)
-* **Objective:** Start writing final research report and building presentation slides.
+## Week 12 (Completed)
+* **Objective:** Write final research report and build presentation slides.
 
-  1. Set up report skeleton and begin writing all sections (motivation, related work, methodology, results, limitations, conclusions); incorporate figures, tables, and citations.
+  1. Set up report skeleton and complete all sections (motivation, related work, methodology, results, limitations, conclusions); incorporate figures, tables, and citations.
   2. Build consortium presentation slides and speaker notes covering research gap, method, results, and contribution.
 
-* **Expectations:** Meaningful progress on both report and slides.
-
----
-
-## Week 13 (Upcoming)
-* **Objective:** Continue and finish final report and slides; verify everything is submission-ready.
-
-  1. Finish remaining report sections and polish slides and speaker notes.
-  2. Review report and slides for accuracy, clarity, and consistency; confirm everything is submission-ready.
-
-* **Expectations:** A complete, polished final report and presentation-ready slides ready for submission.
-
-*Note: Because research schedule has been extended, we intentionally left several unassigned weeks as a flexible buffer; if any week overruns, needs a rerun, or encounters unexpected problems, we can simply expand schedule into those weeks without disrupting overall timeline.*
+* **Expectations:** Full drafts of both report and slides completed by end of week.

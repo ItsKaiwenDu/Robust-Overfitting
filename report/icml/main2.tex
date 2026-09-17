@@ -1,56 +1,67 @@
-% Final report for the Robust-Overfitting project.
-% Compile from the report directory so the figure paths resolve as written.
-\documentclass[11pt]{article}
+% ICML 2026 version of the Robust-Overfitting final report.
+% Compile from report/icml; figures are loaded from the report directories.
+% Keep the official icml2026.sty file in this directory.
+\documentclass{article}
 
-\usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{lmodern}
-\usepackage[nopatch=footnote]{microtype}
-\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage{graphicx}
+\graphicspath{{../}}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{multirow}
-\usepackage{graphicx}
-\usepackage{caption}
 \usepackage{placeins}
-\usepackage{needspace}
-\captionsetup[table]{position=top,skip=0.55em}
-\makeatletter
-\setlength{\@fptop}{0pt}
-\setlength{\@fpsep}{18pt plus 2pt minus 2pt}
-\setlength{\@fpbot}{0pt plus 1fil}
-\makeatother
-\usepackage{xcolor}
 \usepackage{hyperref}
-\usepackage[nameinlink,capitalise]{cleveref}
-\usepackage{enumitem}
-\usepackage{setspace}
+
+% Improves compatibility between hyperref and the algorithm package loaded
+% by the official ICML style.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Preprint mode shows author information without claiming ICML acceptance.
+% For anonymous ICML review, remove [preprint]. Use [accepted] only after acceptance.
+\usepackage[preprint]{icml2026}
+
+\usepackage{amsmath,amssymb}
+\usepackage[capitalize,noabbrev,nameinlink]{cleveref}
 
 \hypersetup{
-  colorlinks=true,
-  linkcolor=blue!55!black,
-  citecolor=blue!55!black,
-  urlcolor=blue!55!black,
   pdftitle={Robust Overfitting Across Pixel-Space and Low-Frequency Adversarial Training}
 }
 \setlength{\emergencystretch}{2em}
-\setlist[itemize]{leftmargin=*,nosep}
-\setlist[enumerate]{leftmargin=*,nosep}
+
+% Keep multiple double-column floats packed at the top of float-only pages.
+\makeatletter
+\setlength{\@dblfptop}{0pt}
+\setlength{\@dblfpsep}{16pt plus 2pt minus 2pt}
+\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
 
 \newcommand{\method}[1]{\textsc{#1}}
 \newcommand{\acc}{\mathrm{Acc}}
 \newcommand{\linf}{\ell_\infty}
 \newcommand{\E}{\mathcal{E}}
 
-\title{Robust Overfitting Across Pixel-Space and Low-Frequency Adversarial Training}
-\author{Kaiwen Du\\
-  \normalsize Department of Mathematics and Computer Science\\
-  \normalsize Santa Clara University}
-\date{September 2026}
+\icmltitlerunning{Robust Overfitting Across Adversarial Training Domains}
 
 \begin{document}
-\maketitle
+
+\twocolumn[
+  \icmltitle{Robust Overfitting Across Pixel-Space and Low-Frequency Adversarial Training}
+
+  \begin{icmlauthorlist}
+    \icmlauthor{Kaiwen Du}{scu}
+  \end{icmlauthorlist}
+
+  \icmlaffiliation{scu}{Department of Mathematics and Computer Science, Santa Clara University, Santa Clara, California, USA}
+  \icmlcorrespondingauthor{Kaiwen Du}{TheKaiwenDu@gmail.com}
+
+  \icmlkeywords{adversarial training, robust overfitting, projected gradient descent, low-frequency perturbations}
+
+  \vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
 
 \begin{abstract}
 Adversarial training can improve robustness to bounded input perturbations, but
@@ -79,12 +90,12 @@ rather than stable robustness across both evaluated attacks.
 
 Deep neural networks can be highly accurate on unmodified images while being
 vulnerable to small, deliberately chosen perturbations
-\cite{goodfellow2015,rice2020}. Adversarial training addresses this threat by
+\citep{goodfellow2015,rice2020}. Adversarial training addresses this threat by
 optimizing a model on adversarially perturbed examples. However, robust
 performance need not improve monotonically: robust test accuracy can peak and
-then decline even as robust training loss continues to decrease. Rice
-et al.~\cite{rice2020} describe this phenomenon as robust overfitting; Yu
-et al.~\cite{yu2022} further investigate its causes. This gap between the best and
+then decline even as robust training loss continues to decrease.
+\citet{rice2020} describe this phenomenon as robust overfitting;
+\citet{yu2022} further investigate its causes. This gap between the best and
 final robust checkpoint is the practical and empirical focus of this study.
 
 To study robust overfitting, we must specify which perturbations the training
@@ -93,7 +104,7 @@ can change every image coordinate within an $\linf$ budget, whereas a
 frequency-restricted attack constrains its perturbation to smooth,
 low-frequency patterns. Prior work links frequency content to robust features
 and shows that robustness can trade off across heterogeneous perturbation
-models \cite{guo2020,bu2023,tramer2019,maini2020}. We therefore examine how the training attack affects when robust test accuracy
+models \citep{tramer2019,guo2020,maini2020,bu2023}. We therefore examine how the training attack affects when robust test accuracy
 peaks and how far it subsequently declines under each evaluation attack.
 
 \paragraph{Research question.}
@@ -128,13 +139,13 @@ This report makes the following scoped contributions:
 \section{Background and Related Work}
 \label{sec:related-work}
 
-\subsection{Adversarial examples and PGD adversarial training}
+\subsection{Adversarial Examples and PGD Adversarial Training}
 For a classifier $f_\theta$, input $x$, label $y$, and loss
 $\ell(f_\theta(x),y)$, an $\linf$ adversary seeks a perturbation $\delta$
 that increases loss while satisfying $\lVert\delta\rVert_\infty\leq\epsilon$.
 Fast gradient sign attacks use a single gradient step; PGD repeats projected
 gradient ascent, often from a random start, to form a stronger first-order
-attack \cite{goodfellow2015,madry2018}. In adversarial training, the model is
+attack \citep{goodfellow2015,madry2018}. In adversarial training, the model is
 optimized on such attacked examples rather than treating the attack only as a
 post-hoc evaluation.
 
@@ -145,33 +156,33 @@ are intended to provide a more thorough finite-step search under the same
 perturbation budget, but they do not guarantee a worst-case perturbation or
 certify robustness.
 
-\subsection{Robust overfitting}
-Rice et al.~\cite{rice2020} documented robust overfitting across data sets and
+\subsection{Robust Overfitting}
+\citet{rice2020} documented robust overfitting across data sets and
 threat models: robust test performance can improve near a learning-rate change
 and subsequently fall despite continued training. They emphasize selection of
-an early checkpoint using a held-out validation set. Yu et al.~\cite{yu2022}
+an early checkpoint using a held-out validation set. \citet{yu2022}
 further connect robust overfitting to the treatment of small-loss adversarial
 examples. For each robustness metric, we measure the decline from its highest observed
 test accuracy to its accuracy at epoch 200; \cref{sec:overfitting-measures}
 defines the peak epoch and peak-to-final accuracy gap used in this study.
 
-\subsection{Frequency-restricted and multi-threat robustness}
+\subsection{Frequency-Restricted and Multi-Threat Robustness}
 The discrete cosine transform (DCT) represents images with spatial-frequency
 coefficients. Restricting a perturbation to low-frequency coefficients produces
-smooth, broad image changes \cite{guo2020}. Frequency-aware work suggests that
+smooth, broad image changes \citep{guo2020}. Frequency-aware work suggests that
 frequency components can make different contributions to prediction and robust
-learning \cite{chen2022,bu2023}. Meanwhile, robustness against multiple
+learning \citep{chen2022,bu2023}. Meanwhile, robustness against multiple
 perturbation models can be imbalanced: a model trained for one threat may
-remain weak for another \cite{tramer2019,maini2020}. Recent work also relates
+remain weak for another \citep{tramer2019,maini2020}. Recent work also relates
 heterogeneous threat models to distinct spectral signatures and possible
-negative transfer \cite{xie2026}.
+negative transfer \citep{xie2026}.
 
 Tram\`er and Boneh generate an adversarial example from each threat model for
 every training input. AVG trains on all of these examples, whereas MAX trains
-only on the example with the highest loss \cite{tramer2019}. Maini
+only on the example with the highest loss \citep{tramer2019}. Maini
 et al.'s Multi Steepest Descent (MSD) instead incorporates the threat-model
 choice into the inner maximization by selecting the highest-loss candidate
-direction at every attack step \cite{maini2020}. We instead use a
+direction at every attack step \citep{maini2020}. We instead use a
 seeded random choice to select pixel-space or low-frequency PGD once per
 epoch. Every batch in that epoch uses the selected attack. This alternates
 between two training objectives across epochs, without selecting the
@@ -180,7 +191,7 @@ worst-case attack for each training example.
 \section{Methods}
 \label{sec:methods}
 
-\subsection{Notation and threat models}
+\subsection{Notation and Threat Models}
 Let $x\in[0,1]^{3\times32\times32}$ denote a color image with three channels
 and pixel values scaled to $[0,1]$, and let $y\in\{1,\ldots,10\}$ denote its
 class label. A perturbation $\delta$ is an additive change to the image. We
@@ -218,16 +229,19 @@ The code uniformly rescales projected perturbations when necessary to enforce
 the $\linf$ budget, rather than clipping individual perturbation coordinates;
 the resulting image is then clipped to $[0,1]$.
 
-\Needspace{12\baselineskip}
-\subsection{Attack generation}
+\subsection{Attack Generation}
 \label{sec:attacks}
 For pixel-space PGD, the attack begins from a uniformly random perturbation in
 the $\linf$ ball, clips the perturbed image to $[0,1]$, and iterates
 \begin{equation}
-  \delta_{t+1}=\Pi_{\mathcal{S}_x}
-  \left(\delta_t+\alpha\,\mathrm{sign}\left(\nabla_\delta
-  \ell(f_\theta(x+\delta_t),y)\right)\right),
-  \qquad \alpha=2/255.
+  \begin{aligned}
+    \delta_{t+1}
+    &=\Pi_{\mathcal{S}_x}\left(\delta_t+\alpha\,
+      \mathrm{sign}\right. \\
+    &\quad\left.\left(\nabla_\delta
+      \ell(f_\theta(x+\delta_t),y)\right)\right), \\
+    &\quad \alpha=2/255.
+  \end{aligned}
   \label{eq:pixel-pgd}
 \end{equation}
 Here, $\delta_t$ is the perturbation at attack step $t$, and $\alpha$ is the
@@ -256,7 +270,7 @@ not a claim that every final, image-clipped perturbation is exactly
 band-limited. The final perturbations remained within the stated $\linf$
 budget to floating-point precision.
 
-\subsection{Training conditions}
+\subsection{Training Conditions}
 \label{sec:conditions}
 The pixel-only, low-frequency-only, and mixed-domain conditions share the
 model, dataset, optimizer, learning-rate schedule, and perturbation budget
@@ -267,7 +281,7 @@ whereas pixel PGD uses signed gradients and coordinate-wise clipping. The
 comparison therefore evaluates these attack procedures together, rather than
 isolating frequency restriction from attack optimization.
 
-\begin{table}[htbp]
+\begin{table*}[t]
 \centering
 \caption{Training conditions. All full experiments use seeds 42--46.}
 \label{tab:conditions}
@@ -282,7 +296,7 @@ low-frequency PGD with equal probability at the start of each epoch; all
 batches in that epoch use the selected attack. \\
 \bottomrule
 \end{tabularx}
-\end{table}
+\end{table*}
 
 Using a separate generator keeps the domain schedule reproducible for a given
 seed, regardless of random draws used for data shuffling, augmentation, or
@@ -292,13 +306,12 @@ Appendix~\ref{app:schedules} reports the number of epochs assigned to each
 attack domain and the domains used at the aggregate pixel-accuracy peak and
 final checkpoint.
 
-\Needspace{14\baselineskip}
-\subsection{Optimization and implementation details}
+\subsection{Optimization and Implementation Details}
 \label{sec:implementation}
 We use PreActResNet-18, based on the pre-activation residual architecture of
-He et al.~\cite{he2016}, with the implementation provided by Rice
-et al.~\cite{rice2020}. Models are trained on CIFAR-10
-\cite{krizhevsky2009}. Training uses
+\citet{he2016}, with the implementation provided by \citet{rice2020}. Models
+are trained on CIFAR-10
+\citep{krizhevsky2009}. Training uses
 random $32\times32$ crops with four-pixel padding and random horizontal flips;
 test images receive tensor conversion only. Inputs are normalized with CIFAR-10
 channel means $(0.4914,0.4822,0.4465)$ and standard deviations
@@ -306,7 +319,7 @@ $(0.2471,0.2435,0.2616)$. Optimization uses SGD with momentum $0.9$, initial
 learning rate $0.1$, weight decay $5\times10^{-4}$, and MultiStep learning-rate
 decays by a factor of $0.1$ after epochs 100 and 150.
 
-\begin{table}[htbp]
+\begin{table*}[t]
 \centering
 \caption{Experimental configuration reported for the full runs.}
 \label{tab:configuration}
@@ -327,8 +340,7 @@ Low-frequency mask & $8\times8$ retained DCT block per channel \\
 Checkpoint schedule & Every 5 epochs: 40 checkpoints from 5 through 200 \\
 \bottomrule
 \end{tabularx}
-\end{table}
-\FloatBarrier
+\end{table*}
 
 We used NVIDIA A10 GPUs with 24~GB of memory on cloud instances rented from
 Lambda Labs for all full training runs and checkpoint evaluations. The retained TensorBoard logs for all 15 full runs
@@ -347,7 +359,7 @@ inferred from the current local checking environment.
 \section{Evaluation and Analysis}
 \label{sec:analysis-plan}
 
-\subsection{Checkpoint evaluation}
+\subsection{Checkpoint Evaluation}
 Each saved checkpoint is evaluated on the full CIFAR-10 test set under four
 quantities:
 \begin{enumerate}
@@ -367,20 +379,19 @@ on two pixel-only checkpoints using a fixed 256-image subset. This check
 covers only pixel-space PGD. We did not perform a corresponding comparison
 using more iterations and restarts for low-frequency PGD.
 
-\Needspace{10\baselineskip}
 \paragraph{Metric interpretation.}
 Joint accuracy measures per-example correctness under both generated
 attacks; it does not require a correct clean prediction. We label this metric
-``union robustness'' in the CSV files and plot legends.'' It is an empirical two-attack
+``union robustness'' in the CSV files and plot legends. It is an empirical two-attack
 summary, not exact worst-case accuracy over a threat set. Every final
 low-frequency perturbation remains within the pixel $\linf$ threat set even
 after image clipping, so the union of the two threat sets is the pixel threat
 set itself. Differences between their measured accuracies reflect restricted
 search and finite-step attack optimization.
 
-\subsection{Robust-overfitting measures}
+\subsection{Robust-Overfitting Measures}
 \label{sec:overfitting-measures}
-Following Rice et al.'s description of robust overfitting \cite{rice2020},
+Following the description of robust overfitting by \citet{rice2020},
 we summarize each robustness trajectory by its peak epoch and its decline
 from peak accuracy to epoch 200.
 For a given training condition, let $A_m(e)$ denote the mean test accuracy
@@ -415,7 +426,7 @@ validation-selected early-stopping estimates.
 each training condition. The following sections examine the trajectories and
 the relationship between mixed-domain performance and the training schedule.
 
-\begin{table}[htbp]
+\begin{table*}[t]
 \centering
 \caption{Five-seed checkpoint-evaluation results. Panel A reports epoch-200
 accuracy (\%) as mean $\pm$ sample standard deviation across seeds. Panel B
@@ -452,10 +463,9 @@ Low-frequency-only & $0.00$ (5) & $0.00$ & $92.74$ (195) & $0.05$ \\
 Mixed-domain & $40.80$ (85) & $21.47$ & $86.92$ (195) & $1.72$ \\
 \bottomrule
 \end{tabular*}
-\end{table}
+\end{table*}
 
-\FloatBarrier
-\subsection{Pixel-only control}
+\subsection{Pixel-Only Control}
 \label{sec:pixel-results}
 The pixel-only control displays the expected signature of robust overfitting
 under pixel-PGD-20: aggregate pixel robustness peaks at epoch 105 and falls by
@@ -468,7 +478,7 @@ remains 84.40\%. Pixel and joint accuracy are nearly identical, indicating
 that the additional low-frequency attack identifies few failures beyond those
 found by pixel-PGD-20.
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\linewidth]{pixel-only/overall/po_eval.pdf}
   \caption{Pixel-only five-seed checkpoint evaluation. The left panel shows
@@ -480,9 +490,9 @@ found by pixel-PGD-20.
   points, while low-frequency robustness declines by 1.88 points from its
   later peak.}
   \label{fig:pixel-eval}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\linewidth]{pixel-only/overall/po_train.pdf}
   \caption{Pixel-only training dynamics averaged across five seeds; shaded
@@ -495,10 +505,9 @@ found by pixel-PGD-20.
   \cref{fig:pixel-eval} use PGD-20, so the attack settings differ between
   the figures.}
   \label{fig:pixel-training}
-\end{figure}
+\end{figure*}
 
-\FloatBarrier
-\subsection{Low-frequency-only condition}
+\subsection{Low-Frequency-Only Condition}
 \label{sec:low-frequency-results}
 Low-frequency accuracy remains high late in training, with little decline
 from its peak. Mean low-frequency robustness reaches 92.74\% at epoch 195 and ends
@@ -509,7 +518,7 @@ its minimum of 0.266 at epoch 105 and ends at 0.318. Thus, under these
 finite-step evaluations, robustness learned against the restricted attack
 does not transfer to the pixel-space attack.
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_eval.pdf}
   \caption{Low-frequency-only five-seed checkpoint evaluation, using the same
@@ -520,9 +529,9 @@ does not transfer to the pixel-space attack.
   The loss annotation reports low-frequency loss at the accuracy peak,
   not the minimum loss, which occurs at epoch 105.}
   \label{fig:lfo-eval}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\linewidth]{low-frequency-only/overall/lfo_train.pdf}
   \caption{Low-frequency-only training dynamics averaged across five seeds;
@@ -533,10 +542,9 @@ does not transfer to the pixel-space attack.
   the matched-domain training curves and with the low-frequency-PGD-20
   checkpoint results in \cref{fig:lfo-eval}.}
   \label{fig:lfo-training}
-\end{figure}
+\end{figure*}
 
-\FloatBarrier
-\subsection{Mixed-domain condition}
+\subsection{Mixed-Domain Condition}
 \label{sec:mixed-results}
 The mixed-domain condition yields an aggregate pixel-robustness peak
 of 40.80\% and joint peak of 40.79\% at epoch 85. By epoch 200, these
@@ -567,7 +575,7 @@ during the checkpoint's final training epoch
 (\cref{fig:mixed-eval-grouped}). The training dynamics are shown separately
 in Appendix~\ref{app:mixed-training}.
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval.pdf}
   \caption{Mixed-domain five-seed checkpoint evaluation. The left panel shows
@@ -578,9 +586,9 @@ in Appendix~\ref{app:mixed-training}.
   peak-to-final gaps also reflect changes in the training attack. The loss
   annotation reports pixel loss at the joint-accuracy peak.}
   \label{fig:mixed-eval}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_eval_grouped.pdf}
   \caption{Mixed-domain checkpoint evaluation grouped by the attack used in
@@ -595,7 +603,7 @@ in Appendix~\ref{app:mixed-training}.
   effect reveals alternating domain-specialized states rather than stable
   simultaneous robustness.}
   \label{fig:mixed-eval-grouped}
-\end{figure}
+\end{figure*}
 
 \FloatBarrier
 \section{Discussion}
@@ -623,7 +631,7 @@ mixed-domain results do not show that epoch-wise mixing mitigates robust
 overfitting, and the high low-frequency accuracy still needs stronger
 matched-domain attack checks.
 
-\subsection{Practical implications}
+\subsection{Practical Implications}
 The control condition suggests that the final checkpoint can be substantially
 worse than an earlier checkpoint under pixel-PGD-20, reinforcing the practical
 importance of validation-based early stopping. The low-frequency-only condition
@@ -658,7 +666,6 @@ for the selected checkpoint, with each component attack reported separately.
   final low-frequency perturbations lie within the pixel threat set despite
   clipping-induced spectral leakage. Frequency restriction and the different
   attack update rules are not isolated experimentally.
-  \Needspace{4\baselineskip}
   \item \textbf{Scope.} The study uses one architecture, CIFAR-10, a single
   cutoff ($8$), one 200-epoch schedule, and five seeds. It does not establish
   generality across data sets, architectures, budgets, or frequency bands.
@@ -717,15 +724,7 @@ All 600 checkpoints from the three training conditions are available on
 \href{https://huggingface.co/KaiwenDu/robust-overfitting-checkpoints}{Hugging Face},
 organized by condition, seed, and epoch.
 
-\FloatBarrier
 \appendix
-\setcounter{topnumber}{5}
-\setcounter{bottomnumber}{5}
-\setcounter{totalnumber}{5}
-\renewcommand{\topfraction}{0.9}
-\renewcommand{\bottomfraction}{0.8}
-\renewcommand{\textfraction}{0.1}
-\renewcommand{\floatpagefraction}{0.7}
 \section{Per-seed Results}
 \label{app:per-seed}
 \Cref{tab:per-seed-pixel,tab:per-seed-low-frequency,tab:per-seed-mixed}
@@ -737,7 +736,7 @@ mixed-domain gaps remain schedule-confounded and are included to make the
 seed-level variation transparent rather than as standalone estimates of
 conventional robust overfitting.
 
-\begin{table}[!htbp]
+\begin{table*}[t]
 \centering
 \caption{Pixel-PGD-20 accuracy by seed for pixel-only training.
 Accuracies are percentages; gaps are percentage points.}
@@ -753,9 +752,9 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 46 & 105 & 50.76 & 42.40 & 8.36 \\
 \bottomrule
 \end{tabular*}
-\end{table}
+\end{table*}
 
-\begin{table}[!htbp]
+\begin{table*}[t]
 \centering
 \caption{Low-frequency-PGD-20 accuracy by seed for low-frequency-only
 training. Accuracies are percentages; gaps are percentage points.}
@@ -771,9 +770,9 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 46 & 170 & 92.65 & 92.53 & 0.12 \\
 \bottomrule
 \end{tabular*}
-\end{table}
+\end{table*}
 
-\begin{table}[!htbp]
+\begin{table*}[t]
 \centering
 \caption{Pixel-PGD-20 accuracy by seed for mixed-domain training.
 Accuracies are percentages; gaps are percentage points. These raw gaps
@@ -790,10 +789,9 @@ Seed & Peak epoch & Peak accuracy & Epoch-200 accuracy & Gap \\
 46 & 130 & 45.58 & 16.48 & 29.10 \\
 \bottomrule
 \end{tabular*}
-\end{table}
+\end{table*}
 
 \FloatBarrier
-\Needspace{14\baselineskip}
 \section{Mixed-Domain Schedules}
 \label{app:schedules}
 The complete schedules were read from the \texttt{attack\_domain\_schedule}
@@ -804,7 +802,7 @@ near-balanced but not constrained to be exactly balanced, as intended by the
 independent seeded random choice. All five runs ended epoch 85 with pixel
 training, whereas only seed 42 did so at epoch 200.
 
-\begin{table}[!htbp]
+\begin{table*}[t]
 \centering
 \caption{Realized mixed-domain attack schedules extracted from saved
 epoch-200 checkpoint metadata.}
@@ -820,7 +818,7 @@ Seed & Pixel epochs & Low-frequency epochs & Epoch-85 domain & Epoch-200 domain 
 46 & 100 & 100 & Pixel & Low-frequency \\
 \bottomrule
 \end{tabular*}
-\end{table}
+\end{table*}
 
 \FloatBarrier
 \section{Attack-Strength and Implementation Checks}
@@ -843,7 +841,7 @@ $0.03137258$, equal to $8/255$ to floating-point precision. Thus projection
 and budget enforcement behave as intended, while final image clipping creates
 some high-frequency leakage.
 
-\begin{table}[!htbp]
+\begin{table*}[t]
 \centering
 \caption{Pixel attack-strength diagnostic for pixel-only seed 42 on a fixed
 256-image test subset. PGD-20 uses one random start. PGD-50 uses three random
@@ -859,7 +857,7 @@ Epoch 105 & 49.22 & 48.83 & $-0.39$ & 1.319 \\
 Epoch 200 & 38.67 & 38.28 & $-0.39$ & 3.529 \\
 \bottomrule
 \end{tabular*}
-\end{table}
+\end{table*}
 
 The stronger attack reduces accuracy by one example out of 256 at each
 checkpoint and raises mean cross-entropy loss from 1.312 to 1.319 at epoch 105
@@ -874,7 +872,7 @@ attack suite.
 \Cref{fig:mixed-training} complements the checkpoint evaluations in
 \cref{sec:mixed-results} with the measurements recorded during training.
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
   \centering
   \includegraphics[width=\linewidth]{mixed-domain/overall/mdo_train.pdf}
   \caption{Mixed-domain training dynamics across five seeds; shaded bands
@@ -883,77 +881,77 @@ attack suite.
   measured against pixel-PGD-10. The training curves therefore combine results
   from different attacks and do not represent joint accuracy.}
   \label{fig:mixed-training}
-\end{figure}
+\end{figure*}
 
-\clearpage
+\FloatBarrier
 \begin{thebibliography}{99}
 
-\bibitem{goodfellow2015}
+\bibitem[Goodfellow et al.(2015)]{goodfellow2015}
 I. J. Goodfellow, J. Shlens, and C. Szegedy.
 \newblock \href{https://arxiv.org/abs/1412.6572}{Explaining and Harnessing Adversarial Examples}.
 \newblock In \emph{International Conference on Learning Representations
 (ICLR)}, 2015.
 
-\bibitem{madry2018}
+\bibitem[Madry et al.(2018)]{madry2018}
 A. Madry, A. Makelov, L. Schmidt, D. Tsipras, and A. Vladu.
 \newblock \href{https://arxiv.org/abs/1706.06083}{Towards Deep Learning Models Resistant to Adversarial Attacks}.
 \newblock In \emph{International Conference on Learning Representations
 (ICLR)}, 2018.
 
-\bibitem{rice2020}
+\bibitem[Rice et al.(2020)]{rice2020}
 L. Rice, E. Wong, and J. Z. Kolter.
 \newblock \href{https://proceedings.mlr.press/v119/rice20a.html}{Overfitting in Adversarially Robust Deep Learning}.
 \newblock In \emph{Proceedings of the 37th International Conference on Machine
 Learning}, PMLR 119:8093--8104, 2020.
 
-\bibitem{yu2022}
+\bibitem[Yu et al.(2022)]{yu2022}
 C. Yu, B. Han, L. Shen, J. Yu, C. Gong, M. Gong, and T. Liu.
 \newblock \href{https://proceedings.mlr.press/v162/yu22b.html}{Understanding Robust Overfitting of Adversarial Training and Beyond}.
 \newblock In \emph{Proceedings of the 39th International Conference on Machine
 Learning}, PMLR 162:25595--25610, 2022.
 
-\bibitem{guo2020}
+\bibitem[Guo et al.(2020)]{guo2020}
 C. Guo, J. S. Frank, and K. Q. Weinberger.
 \newblock \href{https://proceedings.mlr.press/v115/guo20a.html}{Low Frequency Adversarial Perturbation}.
 \newblock In \emph{Proceedings of the 35th Uncertainty in Artificial
 Intelligence Conference}, PMLR 115:1127--1137, 2020.
 
-\bibitem{chen2022}
+\bibitem[Chen et al.(2022)]{chen2022}
 Y. Chen, Q. Ren, and J. Yan.
 \newblock \href{https://proceedings.neurips.cc/paper_files/paper/2022/hash/022abe84083d235f7572ca5cba24c51c-Abstract-Conference.html}{Rethinking and Improving Robustness of Convolutional Neural Networks:
 A Shapley Value-based Approach in Frequency Domain}.
 \newblock In \emph{Advances in Neural Information Processing Systems 35}, 2022.
 
-\bibitem{bu2023}
+\bibitem[Bu et al.(2023)]{bu2023}
 Q. Bu, D. Huang, and H. Cui.
 \newblock \href{https://openaccess.thecvf.com/content/ICCV2023/html/Bu_Towards_Building_More_Robust_Models_with_Frequency_Bias_ICCV_2023_paper.html}{Towards Building More Robust Models with Frequency Bias}.
 \newblock In \emph{Proceedings of the IEEE/CVF International Conference on
 Computer Vision}, pages 4402--4411, 2023.
 
-\bibitem{tramer2019}
+\bibitem[Tram\`er and Boneh(2019)]{tramer2019}
 F. Tram\`er and D. Boneh.
 \newblock \href{https://proceedings.neurips.cc/paper_files/paper/2019/hash/5d4ae76f053f8f2516ad12961ef7fe97-Abstract.html}{Adversarial Training and Robustness for Multiple Perturbations}.
 \newblock In \emph{Advances in Neural Information Processing Systems 32}, 2019.
 
-\bibitem{maini2020}
+\bibitem[Maini et al.(2020)]{maini2020}
 P. Maini, E. Wong, and J. Z. Kolter.
 \newblock \href{https://proceedings.mlr.press/v119/maini20a.html}{Adversarial Robustness Against the Union of Multiple Perturbation
 Models}.
 \newblock In \emph{Proceedings of the 37th International Conference on Machine
 Learning}, PMLR 119:6640--6650, 2020.
 
-\bibitem{xie2026}
+\bibitem[Xie et al.(2026)]{xie2026}
 M. Xie, Y. He, and M. Fang.
 \newblock \href{https://arxiv.org/abs/2606.17540}{TaFD: Threat-Aware Frequency Decoupling for Adversarial Robustness
 against Heterogeneous Attacks}.
 \newblock arXiv:2606.17540 [cs.CV], 2026.
 
-\bibitem{he2016}
+\bibitem[He et al.(2016)]{he2016}
 K. He, X. Zhang, S. Ren, and J. Sun.
 \newblock \href{https://doi.org/10.1007/978-3-319-46493-0_38}{Identity Mappings in Deep Residual Networks}.
 \newblock In \emph{Computer Vision: ECCV 2016}, pages 630--645, 2016.
 
-\bibitem{krizhevsky2009}
+\bibitem[Krizhevsky(2009)]{krizhevsky2009}
 A. Krizhevsky.
 \newblock \href{https://www.cs.toronto.edu/~kriz/cifar.html}{Learning Multiple Layers of Features from Tiny Images}.
 \newblock Technical report, University of Toronto, 2009.
