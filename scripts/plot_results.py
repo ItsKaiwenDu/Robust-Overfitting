@@ -574,7 +574,7 @@ def plot_mixed_domain_grouped_evaluation_results(report_mode_dir, output_path):
         raise ValueError('No mixed-domain evaluation observations were available to plot.')
 
     plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
-    fig, axes = plt.subplots(2, 2, figsize=(15, 10), dpi=300, sharex=True)
+    fig, axes = plt.subplots(2, 2, figsize=(16, 9), dpi=300, sharex=True)
     domain_styles = {
         'pixel': {'label': 'After pixel-training epoch', 'color': '#1f77b4', 'marker': 'o', 'linestyle': '-'},
         'low-frequency': {'label': 'After low-frequency-training epoch', 'color': '#ff7f0e', 'marker': '^', 'linestyle': '-'},
@@ -596,9 +596,13 @@ def plot_mixed_domain_grouped_evaluation_results(report_mode_dir, output_path):
             )
             ax.fill_between(epochs, means - stds, means + stds, color=style['color'], alpha=0.16)
 
-        ax.set_title(title, fontsize=12, fontweight='bold')
-        ax.set_xlabel('Checkpoint Epoch', fontsize=11, fontweight='bold')
-        ax.set_ylabel(y_label, fontsize=11, fontweight='bold')
+        direction = '↑ Higher is better' if metric.endswith('_accs') else '↓ Lower is better'
+        ax.set_title(title, fontsize=13, fontweight='bold', pad=12)
+        ax.set_xlabel(f'Epoch\n({direction})', fontsize=11, fontweight='bold', labelpad=8)
+        ax.set_ylabel(y_label, fontsize=12, fontweight='bold', labelpad=8)
+        ax.tick_params(axis='both', labelsize=10, pad=5)
+        ax.tick_params(axis='x', labelbottom=True)
+        ax.set_xticks(np.arange(0, 201, 25))
         ax.grid(True, linestyle='--', alpha=0.55)
         if metric.endswith('_accs'):
             ax.set_ylim(-2, 100)
@@ -606,12 +610,14 @@ def plot_mixed_domain_grouped_evaluation_results(report_mode_dir, output_path):
             ax.set_ylim(bottom=0)
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.01), ncol=2, frameon=False, fontsize=10)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.01), ncol=2, frameon=False, fontsize=11)
     fig.suptitle(
         'Mixed-Domain Training: Evaluation by Last Training Attack',
-        fontsize=15, fontweight='bold', y=0.98,
+        fontsize=15, fontweight='bold', y=0.985,
     )
-    plt.tight_layout(rect=[0, 0.04, 1, 0.95])
+    fig.subplots_adjust(left=0.065, right=0.99, bottom=0.155, top=0.895,
+                        wspace=0.16, hspace=0.47)
+    fig.align_labels(axes)
 
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
     stem, extension = os.path.splitext(output_path)
