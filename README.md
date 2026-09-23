@@ -235,6 +235,7 @@ Robust-Overfitting/
 │   ├── pixel-only/[diagnostic/]seed-<seed>/
 │   ├── low-frequency-only/[diagnostic/]seed-<seed>/
 │   └── mixed-domain/[diagnostic/]seed-<seed>/
+├── run_logs/                          # [Ignored] Training log files from background runs
 ├── .gitignore                         # Files and folders ignored by Git
 ├── goals.md                           # Weekly goals, objectives, and expectations
 ├── LICENSE                            # Project license
