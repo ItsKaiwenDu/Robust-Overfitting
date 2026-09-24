@@ -208,71 +208,71 @@ one-restart PGD-20 checkpoint evaluations. The generated results are saved in
 
 ```text
 Robust-Overfitting/
-├── checkpoints/                       # [Ignored] Checkpoints saved every 5 epochs (epochs 5–200)
+├── checkpoints/                       # [Ignored] Saved checkpoints (epochs 5–200)
 │   ├── pixel-only/
-│   │   ├── baseline/                  # Completed original pixel-PGD replication (epochs 5–200)
-│   │   ├── diagnostic/seed-42/        # Local diagnostic checkpoint (1 epoch)
-│   │   └── seed-42/ ... seed-46/      # Completed full 5-seed control checkpoints
+│   │   ├── baseline/                  # Original pixel-PGD replication
+│   │   ├── diagnostic/seed-42/        # 1-epoch diagnostic checkpoint
+│   │   └── seed-42/ ... seed-46/      # Full 5-seed run checkpoints
 │   ├── low-frequency-only/
-│   │   ├── diagnostic/seed-42/        # Local diagnostic checkpoint (1 epoch)
-│   │   └── seed-42/ ... seed-46/      # Completed full 5-seed run checkpoints
+│   │   ├── diagnostic/seed-42/        # 1-epoch diagnostic checkpoint
+│   │   └── seed-42/ ... seed-46/      # Full 5-seed run checkpoints
 │   └── mixed-domain/
-│       ├── diagnostic/seed-42/        # Local diagnostic checkpoint (1 epoch)
-│       └── seed-42/ ... seed-46/      # Completed full 5-seed run checkpoints
-├── models/                            # Model architecture definitions
-│   ├── __init__.py                    # Exports PreActResNet variants
-│   └── preact_resnet.py               # PreActResNet-18 model architecture in PyTorch
-├── notes/                             # Reading literature notes
-│   ├── bu_et_al.md                    # Literature notes on frequency bias in robust models
-│   ├── chen_et_al.md                  # Literature notes on Shapley-value frequency domain analysis
-│   ├── goodfellow_et_al.md            # Literature notes on FGSM and adversarial training
-│   ├── guo_et_al.md                   # Literature notes on low-frequency adversarial perturbation
-│   ├── kim_et_al.md                   # Literature notes on phase-shifted adversarial training
-│   ├── li_et_al.md                    # Literature notes on DAT frequency domain amplitude mix-up
-│   ├── maini_et_al.md                 # Literature notes on robustness against union of perturbations
-│   ├── rice_et_al.md                  # Literature notes on robust overfitting
-│   ├── tramer_et_al.md                # Literature notes on adversarial training for multiple perturbations
-│   ├── xie_et_al.md                   # Literature notes on threat-aware frequency decoupling
-│   └── yu_et_al.md                    # Literature notes on understanding robust overfitting
-├── report/                            # Research paper, presentations, and evaluation outputs
-│   ├── main.tex                       # LaTeX paper / technical report source
-│   ├── slides.pptx                    # Research presentation slides
-│   ├── checks/                        # Reproducible DCT/leakage and stronger-attack diagnostics
+│       ├── diagnostic/seed-42/        # 1-epoch diagnostic checkpoint
+│       └── seed-42/ ... seed-46/      # Full 5-seed run checkpoints
+├── models/                            # Model architectures
+│   ├── __init__.py                    # Model exports
+│   └── preact_resnet.py               # PreActResNet-18 in PyTorch
+├── notes/                             # Literature reading notes
+│   ├── bu_et_al.md                    # Frequency bias in robust models
+│   ├── chen_et_al.md                  # Shapley-value frequency analysis
+│   ├── goodfellow_et_al.md            # FGSM & adversarial training
+│   ├── guo_et_al.md                   # Low-frequency perturbations
+│   ├── kim_et_al.md                   # Phase-shifted adversarial training
+│   ├── li_et_al.md                    # DAT amplitude mix-up
+│   ├── maini_et_al.md                 # Union of perturbation models (MSD)
+│   ├── rice_et_al.md                  # Robust overfitting (Rice et al.)
+│   ├── tramer_et_al.md                # Multi-perturbation training (AVG/MAX)
+│   ├── xie_et_al.md                   # Threat-aware frequency decoupling
+│   └── yu_et_al.md                    # Understanding robust overfitting
+├── report/                            # Paper source, presentation, and plots
+│   ├── main.tex                       # LaTeX paper source
+│   ├── slides.pptx                    # Presentation slide deck
+│   ├── checks/                        # Diagnostic check outputs
 │   │   ├── attack_strength_checks.csv
 │   │   └── implementation_checks.json
 │   ├── pixel-only/
-│   │   ├── baseline/                  # Completed legacy CSV, summary, and vector PDF plots
+│   │   ├── baseline/                  # Legacy replication results & plots
 │   │   ├── diagnostic/seed-42/        # Diagnostic evaluation CSV
-│   │   ├── seed-42/ ... seed-46/      # Completed per-seed CSVs, summaries, and vector PDF plots
-│   │   └── overall/                   # Completed 5-seed aggregate curves (PDF) and summary CSV
+│   │   ├── seed-42/ ... seed-46/      # Per-seed CSVs & vector PDF plots
+│   │   └── overall/                   # 5-seed aggregate curves & summary CSV
 │   ├── low-frequency-only/
 │   │   ├── diagnostic/seed-42/        # Diagnostic evaluation CSV
-│   │   ├── seed-42/ ... seed-46/      # Completed per-seed CSVs, summaries, and vector PDF plots
-│   │   └── overall/                   # Completed 5-seed aggregate curves (PDF) and summary CSV
+│   │   ├── seed-42/ ... seed-46/      # Per-seed CSVs & vector PDF plots
+│   │   └── overall/                   # 5-seed aggregate curves & summary CSV
 │   └── mixed-domain/
 │       ├── diagnostic/seed-42/        # Diagnostic evaluation CSV
-│       ├── seed-42/ ... seed-46/      # Completed per-seed CSVs, summaries, and vector PDF plots
-│       └── overall/                   # Completed 5-seed aggregate curves (PDF) and summary CSV
-├── scripts/                           # Python scripts for training, evaluation, plotting, and setup
-│   ├── dct_pgd.py                     # Low-frequency DCT-masked PGD implementation
-│   ├── evaluate.py                    # Four-metric checkpoint evaluation script (PGD-20)
-│   ├── plot_results.py                # Evaluation & training plotting script (per-seed & aggregate vector PDF)
-│   ├── run_report_checks.py           # DCT, leakage, perturbation-budget, and stronger-attack checks
-│   ├── train.py                       # Core adversarial PGD training script
-│   └── verify_setup.py                # Setup verification script
-├── data/                              # [Ignored] CIFAR-10 dataset files (downloaded automatically)
-├── runs/                              # [Ignored] TensorBoard logs, created and grouped like checkpoints/
+│       ├── seed-42/ ... seed-46/      # Per-seed CSVs & vector PDF plots
+│       └── overall/                   # 5-seed aggregate curves & summary CSV
+├── scripts/                           # Training, evaluation, and plotting
+│   ├── dct_pgd.py                     # DCT masking & low-frequency PGD
+│   ├── evaluate.py                    # 4-metric checkpoint evaluation (PGD-20)
+│   ├── plot_results.py                # Result plotting script (PDFs)
+│   ├── run_report_checks.py           # Diagnostic & sanity check script
+│   ├── train.py                       # Adversarial training script
+│   └── verify_setup.py                # Environment verification
+├── data/                              # [Ignored] CIFAR-10 dataset
+├── runs/                              # [Ignored] TensorBoard logs
 │   ├── pixel-only/[diagnostic/]seed-<seed>/
 │   ├── low-frequency-only/[diagnostic/]seed-<seed>/
 │   └── mixed-domain/[diagnostic/]seed-<seed>/
-├── run_logs/                          # [Ignored] Training log files from background runs
-├── .gitignore                         # Files and folders ignored by Git
-├── goals.md                           # Weekly goals, objectives, and expectations
+├── run_logs/                          # [Ignored] Background training logs
+├── .gitignore                         # Git ignore rules
+├── goals.md                           # Weekly research goals
 ├── LICENSE                            # Project license
-├── progress.md                        # Weekly progress reports
-├── README.md                          # Project documentation and setup
-├── setup_lambda_labs.md               # Cloud GPU setup guide for Lambda Labs
-└── requirements.txt                   # Python package dependencies
+├── progress.md                        # Weekly progress log
+├── README.md                          # Project documentation
+├── setup_lambda_labs.md               # Lambda Labs cloud GPU guide
+└── requirements.txt                   # Python dependencies
 ```
 
 ---
