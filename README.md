@@ -1,22 +1,32 @@
 ![Banner](assets/banner.png)
 
-# Investigating Robust Overfitting in Adversarial Training
+# Robust Overfitting Across Pixel-Space and Low-Frequency Adversarial Training
 
-This is GitHub repository for research on robust overfitting in adversarial training.
-Last updated: September 17, 2026
+This repository contains the code, evaluation scripts, and experimental results for the research paper [*"Robust Overfitting Across Pixel-Space and Low-Frequency Adversarial Training"*](report/main.tex) (Du, September 2026).
 
 ---
 
 ## Project Overview
-Deep neural networks can be easily tricked by adversarial attacks, which are small, human-imperceptible changes to inputs that cause model to make wrong predictions. Adversarial training helps fix this, but models often run into a problem known as **robust overfitting**. This means that later in training, model's performance on test attacks gets worse even though its training loss keeps improving.
+Deep neural networks can be highly accurate on unmodified images while being vulnerable to small, deliberately chosen perturbations. Adversarial training addresses this threat by optimizing a model on adversarially perturbed examples. However, robust performance often peaks and subsequently degrades as training continues—a phenomenon known as **robust overfitting** (Rice et al., 2020).
 
-The project reproduced robust overfitting with pixel-space PGD adversarial training and has completed all 5-seed experiments (seeds 42–46) across three training conditions: pixel-only control, low-frequency DCT-masked PGD, and epoch-wise mixed-domain adversarial training (randomly alternating pixel-space and low-frequency PGD).
+This study investigates how the perturbation domain used during adversarial training affects the timing and severity of robust overfitting. We train PreActResNet-18 models on CIFAR-10 across five seeds (42–46) under three controlled conditions:
+1. **Pixel-only:** Standard pixel-space PGD-10 control.
+2. **Low-frequency-only:** DCT-masked low-frequency PGD-10 (retaining an 8×8 top-left DCT coefficient block).
+3. **Mixed-domain:** Seeded, independent equal-probability choice between pixel and low-frequency PGD at the start of each epoch.
+
+### Key Contributions
+* **Controlled Multi-Domain Evaluation:** Implements and evaluates three controlled adversarial-training conditions under matched architectures, optimization schedules, and budgets.
+* **Dense Checkpoint Tracking:** Tracks all 40 saved checkpoints (epochs 5–200, every 5 epochs) across four accuracy metrics: clean, pixel-PGD-20, low-frequency DCT-masked PGD-20, and joint (union) accuracy.
+* **Robust Overfitting Dynamics:** Measures exact peak epochs and post-peak declines (robust-overfitting gaps) across seeds and conditions.
+* **Domain Specialization Discovery:** Demonstrates that once-per-epoch random domain mixing yields schedule-dependent domain specialization ($r = 0.971$) rather than stable simultaneous robustness across both evaluated attacks.
+
+---
 
 ## Research Question & Hypothesis
 
-**Research question:** During PGD adversarial training of PreActResNet-18 on CIFAR-10, how does randomly alternating pixel-space PGD and low-frequency DCT-masked PGD across epochs affect timing and severity of robust overfitting, compared with pixel-only and low-frequency-only training?
+**Research question:** During PGD adversarial training of PreActResNet-18 on CIFAR-10, how does independently selecting pixel-space or low-frequency DCT-masked PGD with equal probability at the start of each epoch affect the timing and severity of robust overfitting, compared with training exclusively against either attack?
 
-**Hypothesis:** With architecture, dataset, training schedule, perturbation budget, and evaluation schedule held constant, mixed-domain training will produce robust-accuracy curves that differ from single-domain baselines. The peak epoch may shift, peak may flatten, or post-peak decline may change under one or both evaluation attacks.
+**Hypothesis:** With architecture, dataset, optimization schedule, perturbation budget, and checkpoint-evaluation schedule held fixed, mixed-domain training will produce robust-accuracy curves that differ from those of the single-domain conditions. In particular, the peak epoch, peak shape, or post-peak decline may change under pixel-space and/or low-frequency evaluation.
 
 ---
 
@@ -24,31 +34,49 @@ The project reproduced robust overfitting with pixel-space PGD adversarial train
 
 ### Model and Dataset
 
-* **Model:** PreActResNet-18: Standard deep residual network used in adversarial training research, sourced from Rice et al. (2020) codebase.
-* **Dataset:** CIFAR-10: Contains 50,000 training images and 10,000 test images across 10 classes, each 32×32 pixels.
+* **Model:** PreActResNet-18 (He et al., 2016), sourced from the Rice et al. (2020) codebase.
+* **Dataset:** CIFAR-10 (50,000 training images, 10,000 test images across 10 classes, 32×32 resolution).
 
 ### Training Configurations
 
-All conditions use same PreActResNet-18 architecture, CIFAR-10 data, optimizer, learning-rate schedule, 200 epochs, 10-step training PGD, perturbation budget, and random-seed policy.
+All conditions use the same PreActResNet-18 architecture, CIFAR-10 data, SGD optimizer (momentum 0.9, weight decay $5 \times 10^{-4}$), 200 epochs, MultiStep learning rate decay (0.1 decaying by 0.1 at epochs 100 and 150), 10-step training PGD ($\epsilon = 8/255$, $\alpha = 2/255$), and random seeds (42–46).
 
-1. **Pixel-only:** Train with standard pixel-space PGD in every epoch. This is completed Rice et al. replication.
-2. **Low-frequency-only:** Train with low-frequency DCT-masked PGD in every epoch. The attack generation projects perturbations through a predefined low-frequency DCT mask before transforming them back to image space. Final image-range clipping can introduce a small amount of out-of-mask frequency energy, so this describes the attack-generation procedure rather than exact band limitation of every final perturbation.
-3. **Mixed-domain (pixel or low-frequency):** At start of each epoch, use a seeded fair random choice to select either pixel-space PGD or low-frequency DCT-masked PGD. Every batch in that epoch uses selected attack domain.
+1. **Pixel-only:** Train with standard pixel-space PGD-10 in every epoch.
+2. **Low-frequency-only:** Train with DCT-masked low-frequency PGD-10 in every epoch with cutoff 8 (64 out of 1,024 coefficients retained per channel).
+3. **Mixed-domain:** Dedicated seeded RNG selects pixel or low-frequency PGD with equal probability ($p = 0.5$) at the start of each epoch; all batches in that epoch use the selected attack.
 
 ### Evaluation Configurations
 
-For each new full run, all 40 saved checkpoints (epochs 5–200, every 5 epochs) are evaluated against full 10,000-image CIFAR-10 test set using four metrics:
+For each run, all 40 saved checkpoints (epochs 5–200, evaluated every 5 epochs) are evaluated on the full 10,000-image CIFAR-10 test set across four metrics:
 
-1. **Clean accuracy:** test model on unmodified images with no attack.
-2. **Pixel-space robustness:** attack each test image with pixel-space PGD-20 (20 steps, epsilon = 8/255) and measure how often model still predicts correctly.
-3. **Low-frequency robustness:** attack each test image with DCT-masked PGD-20 using same budget and measure robustness.
-4. **Union robustness:** per image, count it as correct only if model resisted *both* pixel-space and low-frequency attacks. This means measuring whether model is robust to both attack domains for same image.
+1. **Clean accuracy:** Evaluated on unmodified images without perturbation.
+2. **Pixel-space robustness:** Evaluated against pixel-space PGD-20 ($\epsilon = 8/255$, $\alpha = 2/255$).
+3. **Low-frequency robustness:** Evaluated against DCT-masked PGD-20 ($\epsilon = 8/255$, $\alpha = 2/255$, cutoff 8).
+4. **Joint accuracy (Union robustness):** Per-image correctness under *both* separately generated pixel and low-frequency attacks. (Labeled as `union robustness` in CSV files and plot legends).
 
-For each applicable metric, we record **peak epoch** (when accuracy was highest) and **post-peak decline** (how much it dropped by epoch 200). These are primary numbers compared across conditions. For mixed-domain training, however, the peak-to-final gap is descriptive: it also reflects which attack domain was used most recently, rather than only robust overfitting. The completed legacy pixel-only replication has clean and pixel-PGD-20 measurements only; low-frequency and union metrics were added for new multi-condition runs.
+### Results Snapshot & Summary Table
 
-### Results Snapshot
+#### Five-Seed Checkpoint Evaluation Results (Table 3 from paper)
 
-Across five seeds, pixel-only training reproduced robust overfitting under pixel-PGD-20: mean pixel robustness peaked at **51.22%** at epoch **105** and declined by **8.56 percentage points** by epoch 200. Low-frequency-only training retained **92.70%** final low-frequency-PGD-20 robustness, only **0.05 points** below its peak, but had **0.00%** measured pixel-PGD-20 and union robustness. Epoch-wise mixed-domain training did not yield stable simultaneous robustness: its mean pixel robustness was **42.36%** after pixel-training epochs and **3.53%** after low-frequency-training epochs, indicating schedule-dependent domain specialization.
+**Panel A: Final Accuracy at Epoch 200 (Mean ± SD across 5 seeds, %)**
+
+| Condition | Clean Acc (%) | Pixel-PGD-20 (%) | Low-Freq PGD-20 (%) | Joint Acc (%) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Pixel-only** | 84.40 ± 0.09 | 42.66 ± 0.22 | 76.48 ± 0.26 | 42.66 ± 0.22 |
+| **Low-frequency-only** | 94.28 ± 0.22 | 0.00 ± 0.00 | 92.70 ± 0.28 | 0.00 ± 0.00 |
+| **Mixed-domain** | 90.33 ± 3.45 | 19.33 ± 14.28 | 85.20 ± 4.29 | 19.33 ± 14.27 |
+
+**Panel B: Peak Accuracy and Robust-Overfitting Gaps (ROGs, percentage points)**
+
+| Condition | Pixel Peak (Epoch) | Pixel ROG (pp) | Low-Freq Peak (Epoch) | Low-Freq ROG (pp) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Pixel-only** | 51.22% (Epoch 105) | 8.56 | 78.36% (Epoch 155) | 1.88 |
+| **Low-frequency-only** | 0.00% (Epoch 5) | 0.00 | 92.74% (Epoch 195) | 0.05 |
+| **Mixed-domain** | 40.80% (Epoch 85) | 21.47 | 86.92% (Epoch 195) | 1.72 |
+
+* **Pixel-only Control:** Exhibits clear robust overfitting under pixel-PGD-20, peaking at **51.22%** at epoch 105 before falling by **8.56 pp** to **42.66%** by epoch 200. Every individual seed peaked at epoch 105.
+* **Low-frequency-only Training:** Maintains high matched robustness late into training, peaking at **92.74%** at epoch 195 and finishing at **92.70%** (a tiny **0.05 pp** decline). However, transfer to pixel-space PGD-20 is **0.00%** across all checkpoints.
+* **Mixed-domain Training:** Does not yield stable simultaneous robustness. It produces schedule-dependent oscillations between domain-specialized states: mean pixel robustness is **42.36%** immediately after pixel-training epochs versus **3.53%** after low-frequency-training epochs (point-biserial correlation $r = 0.971$). The apparent aggregate peak at epoch 85 occurs because all five seeds randomly trained on pixel PGD during epoch 85, whereas only seed 42 did so at epoch 200.
 
 ---
 
