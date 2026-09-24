@@ -1,3 +1,5 @@
+![Banner](assets/banner.png)
+
 # Investigating Robust Overfitting in Adversarial Training
 
 This is GitHub repository for research on robust overfitting in adversarial training.
