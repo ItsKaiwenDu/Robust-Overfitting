@@ -85,10 +85,10 @@ For each run, all 40 saved checkpoints (epochs 5–200, evaluated every 5 epochs
 **Local Initialization**:
 
 1. Clone this repository and navigate into this repo.
-   ```bash
-   git clone https://github.com/ItsKaiwenDu/Robust-Overfitting.git
-   cd Robust-Overfitting
-   ```
+```bash
+git clone https://github.com/ItsKaiwenDu/Robust-Overfitting.git
+cd Robust-Overfitting
+```
 2. Create and activate a Python virtual environment:
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
