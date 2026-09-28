@@ -285,8 +285,8 @@ Robust-Overfitting/
 ---
 
 ## Research Team
-* Principal Investigator: Dr. Nicholas Q. Tran (Department of Mathematics and Computer Science)
-* Student Researcher: Kaiwen Du (Computer Science)
+* Researcher: Kaiwen Du (Computer Science)
+* Mentor: Dr. Nicholas Q. Tran (Department of Mathematics and Computer Science), acknowledged for his mentorship and guidance on this research.
 
 ---
 
